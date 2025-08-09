@@ -297,6 +297,7 @@ body.dark-mode .menu-navigation-header #menu-section-title {
     border: none;
     border-radius: 6px;
     background-color: #e2e8f0;
+    color: #2d3748; /* Default text color for buttons */
     cursor: pointer;
     white-space: nowrap; /* Ensures buttons stay in a single line */
     font-size: 0.875rem;
@@ -307,6 +308,11 @@ body.dark-mode .menu-navigation-header #menu-section-title {
     transition: all 0.2s ease;
 }
 
+body.dark-mode .categories button {
+    background-color: #4a5568;
+    color: #e2e8f0;
+}
+
 .categories button.active {
     background-color: #2563eb;
     color: #ffffff;
@@ -314,6 +320,10 @@ body.dark-mode .menu-navigation-header #menu-section-title {
 
 .categories button:hover {
     background-color: #d1d5db;
+}
+
+body.dark-mode .categories button:hover {
+    background-color: #718096;
 }
 
 .categories button.active:hover {
@@ -1486,8 +1496,8 @@ const menuItems = [
     { name: "Burger with Fries (Chicken)", price: 370, category: "Burger with fries", section: "Kitchen", type: "food", image: "images/burger_chicken_with_fries.jpg" },
     { name: "Burger with Fries (Buff)", price: 350, category: "Burger with fries", section: "Kitchen", type: "food", image: "images/burger_buff_with_fries.jpg" },
     { name: "Burger with Fries (Veg)", price: 295, category: "Burger with fries", section: "Kitchen", type: "food", image: "images/burger_veg_with_fries.jpg" },
-    { name: "Wrap with Fries (Chicken)", price: 320, category: "Wrap with Fries", section: "Kitchen", type: "food", image: "images/wrap_chicken_with_fries.jpg" },
-    { name: "Wrap with Fries (Buff)", price: 300, category: "Wrap with Fries", section: "Kitchen", type: "food", image: "images/wrap_buff_with_fries.jpg" },
+    { name: "Wrap with Fries (Chicken)", price: 350, category: "Wrap with Fries", section: "Kitchen", type: "food", image: "images/wrap_chicken_with_fries.jpg" },
+    { name: "Wrap with Fries (Buff)", price: 330, category: "Wrap with Fries", section: "Kitchen", type: "food", image: "images/wrap_buff_with_fries.jpg" },
     { name: "Wrap with Fries (Veg)", price: 280, category: "Wrap with Fries", section: "Kitchen", type: "food", image: "images/wrap_veg_with_fries.jpg" },
     
     { name: "Keema Noodles (Chicken)", price: 300, category: "Keema Noodles", section: "Kitchen", type: "food", image: "images/keema_noodles_chicken.jpg" },
@@ -1530,15 +1540,16 @@ const menuItems = [
     { name: "Chocolate Muffin", price: 150, category: "Bakery", section: "Bar", type: "food", image: "images/chocolate_muffin.jpg" },
     { name: "Mushroom Pie", price: 100, category: "Bakery", section: "Bar", type: "food", image: "images/mushroom_pie.jpg" },
 
-    // ================== DRINK GROUPS ==================
-    { name: "Americano", price: 170, category: "Hot coffee", section: "Bar", type: "drink", image: "images/americano.jpg" },
-    { name: "Latte", price: 190, category: "Hot coffee", section: "Bar", type: "drink", image: "images/latte.jpg" },
-    { name: "Cappuccino", price: 220, category: "Hot coffee", section: "Bar", type: "drink", image: "images/cappuccino.jpg" },
-    { name: "Vanilla Latte", price: 270, category: "Hot coffee", section: "Bar", type: "drink", image: "images/latte_vanilla.jpg" },
-    { name: "Hazelnut Latte", price: 270, category: "Hot coffee", section: "Bar", type: "drink", image: "images/flavored_latte_hazelnut.jpg" },
-    { name: "Caramel Latte", price: 270, category: "Hot coffee", section: "Bar", type: "drink", image: "images/latte_caramel.jpg" },
-    { name: "Hot Chocolate", price: 270, category: "Hot coffee", section: "Bar", type: "drink", image: "images/hot_chocolate.jpg" },
+    // ================== DRINK GROUPS (now section "Bar", type "drink") ==================
+    { name: "Americano", price: 150, category: "Hot coffee", section: "Bar", type: "drink", image: "images/americano.jpg" },
+    { name: "Latte", price: 170, category: "Hot coffee", section: "Bar", type: "drink", image: "images/latte.jpg" },
+    { name: "Cappuccino", price: 170, category: "Hot coffee", section: "Bar", type: "drink", image: "images/cappuccino.jpg" },
+    { name: "Vanilla Latte", price: 250, category: "Hot coffee", section: "Bar", type: "drink", image: "images/latte_vanilla.jpg" },
+    { name: "Hazelnut Latte", price: 250, category: "Hot coffee", section: "Bar", type: "drink", image: "images/flavored_latte_hazelnut.jpg" },
+    { name: "Caramel Latte", price: 250, category: "Hot coffee", section: "Bar", type: "drink", image: "images/latte_caramel.jpg" },
+    { name: "Hot Chocolate", price: 250, category: "Hot coffee", section: "Bar", type: "drink", image: "images/hot_chocolate.jpg" },
 
+    // Moved Cold Coffee OUT of "Cold Drinks" section to be a top-level category
     { name: "Iced Latte", price: 240, category: "Cold coffee", section: "Bar", type: "drink", image: "images/iced_latte.jpg" },
     { name: "Iced Americano", price: 220, category: "Cold coffee", section: "Bar", type: "drink", image: "images/iced_americano.jpg" },
     { name: "Iced Cappuccino", price: 260, category: "Cold coffee", section: "Bar", type: "drink", image: "images/iced_cappuccino.jpg" },
@@ -1667,7 +1678,7 @@ const discountCodes = {
     "FREEDRINK": 15
 };
 
-// NEW: This object defines the top-level sections and their categories
+// MODIFIED: "Cold coffee" is now a top-level category outside of "Cold Drinks" section.
 const menuSections = {
     "Food": [
         "Bakery",
@@ -1684,18 +1695,15 @@ const menuSections = {
         "Sausage",
         "Laping"
     ],
-    "Drinks": [
-        "Hot coffee",
-        "Cold coffee",
-        "Tea", // Added Tea category
-        "Iced Tea",
-        "Mojito",
-        "Lemonade",
-        "Lassi",
+    "Cold Drinks": [ // This section will now contain only these sub-categories
         "Bubble Tea",
-        "Sparkling tea",
         "Frappe/Blended",
-        "Soft Drinks" // Added Soft Drinks category
+        "Iced Tea",
+        "Lassi",
+        "Lemonade",
+        "Mojito",
+        "Soft Drinks",
+        "Sparkling tea"
     ],
     "Retail & Misc": [
         "Retail",
@@ -2062,7 +2070,7 @@ async function selectTable(tableNumber) {
 // Helper to get image for category or section
 function getRepresentativeImage(name, isSection = false) {
     if (isSection) {
-        // For top-level sections, pick a representative category's image
+        // For top-level sections (Food, Cold Drinks, Retail & Misc), pick a representative category's image
         const categoriesInSection = menuSections[name];
         if (categoriesInSection && categoriesInSection.length > 0) {
             const firstCategory = categoriesInSection[0];
@@ -2070,7 +2078,7 @@ function getRepresentativeImage(name, isSection = false) {
             if (firstItemInCategory) return firstItemInCategory.image;
         }
     } else {
-        // For individual categories, pick the first item's image
+        // For individual categories (including all drink categories), pick the first item's image
         const firstItemInCategory = menuItems.find(item => item.category === name && item.image);
         if (firstItemInCategory) return firstItemInCategory.image;
     }
@@ -2078,7 +2086,7 @@ function getRepresentativeImage(name, isSection = false) {
 }
 
 
-// NEW: Central function for rendering menu navigation
+// MODIFIED: Central function for rendering menu navigation
 function renderMenuNavigation() {
     const categoriesContainer = document.getElementById('categories'); // This will be empty for grid categories
     const menuItemsContainer = document.getElementById('menu');
@@ -2105,71 +2113,129 @@ function renderMenuNavigation() {
     }
 
     if (currentMenuLevel === 'topLevelSections') {
-        menuSectionTitle.textContent = "Select Section";
-        Object.keys(menuSections).sort().forEach(sectionName => {
-            const div = document.createElement('div');
-            div.className = `menu-item category-card`; // Reuse menu-item styling, add specific class
+        menuSectionTitle.textContent = "Select Section or Category"; // More general title
 
-            const imageUrl = getRepresentativeImage(sectionName, true); // Get image for the section
+        // Get categories that are explicitly defined as sections
+        const sectionNames = Object.keys(menuSections).sort();
+        
+        // Get all unique drink categories from 'Bar' section, excluding those now inside 'Cold Drinks' section
+        const coldDrinkCategoriesInNewSection = menuSections["Cold Drinks"] || [];
+        const topLevelDrinkCategories = [...new Set(
+            menuItems
+                .filter(item => item.section === "Bar" && item.type === "drink" && !coldDrinkCategoriesInNewSection.includes(item.category))
+                .map(item => item.category)
+        )].sort();
+
+        // Combine traditional sections and direct top-level drink categories for the initial display
+        const allTopLevelDisplayItems = [
+            ...sectionNames, // "Food", "Cold Drinks", "Retail & Misc"
+            ...topLevelDrinkCategories // "Hot coffee", "Tea", "Cold coffee" (now moved out)
+        ].sort(); // Sort the combined list alphabetically
+
+        allTopLevelDisplayItems.forEach(displayName => {
+            const div = document.createElement('div');
+            div.className = `menu-item category-card`; 
+
+            let imageUrl;
+            let clickHandler;
+
+            // Check if it's one of the main sections (Food, Cold Drinks, Retail & Misc)
+            if (menuSections[displayName]) { 
+                imageUrl = getRepresentativeImage(displayName, true); // Get section image
+                clickHandler = () => {
+                    activeSection = displayName;
+                    currentMenuLevel = 'categoriesOfSection'; // Go to categories within this section
+                    renderMenuNavigation();
+                };
+            } else {
+                // It's a direct category (like Hot coffee, Tea, or Cold coffee)
+                imageUrl = getRepresentativeImage(displayName, false); // Get category image
+                clickHandler = () => {
+                    activeCategoryDisplayGroup = displayName;
+                    currentMenuLevel = 'itemsOfCategory'; // Go directly to items for this category
+                    renderMenuNavigation();
+                };
+            }
 
             div.innerHTML = `
-                <img src="${imageUrl}" alt="${sectionName}" loading="lazy">
-                <p class="category-card-name">${sectionName}</p>
+                <img src="${imageUrl}" alt="${displayName}" loading="lazy">
+                <p class="category-card-name">${displayName}</p>
             `;
-
-            div.addEventListener('click', () => {
-                activeSection = sectionName;
-                currentMenuLevel = 'categoriesOfSection';
-                renderMenuNavigation(); // Re-render to show categories of selected section
-            });
-            menuItemsContainer.appendChild(div); // Append to menu div, which is the grid
+            div.addEventListener('click', clickHandler);
+            menuItemsContainer.appendChild(div);
         });
+
     } else if (currentMenuLevel === 'categoriesOfSection' && activeSection) {
         menuSectionTitle.textContent = activeSection;
         backButton.style.display = 'block'; 
 
-        menuSections[activeSection].sort().forEach(categoryName => {
-            const div = document.createElement('div');
-            div.className = `menu-item category-card`; 
+        // Clear menuItemsContainer when showing category buttons
+        menuItemsContainer.innerHTML = ''; 
 
-            const imageUrl = getRepresentativeImage(categoryName, false); // Get image for the category
+        // Renders categories specific to the selected section (Food, Cold Drinks, Retail & Misc)
+        if (menuSections[activeSection]) {
+            menuSections[activeSection].sort().forEach(categoryName => {
+                const button = document.createElement('button'); // Use button element
+                button.textContent = categoryName; // Set text content
 
-            div.innerHTML = `
-                <img src="${imageUrl}" alt="${categoryName}" loading="lazy">
-                <p class="category-card-name">${categoryName}</p>
-            `;
+                button.addEventListener('click', () => {
+                    // Remove 'active' class from previously selected category button
+                    document.querySelectorAll('.categories button').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active'); // Add 'active' class to the clicked button
 
-            div.addEventListener('click', () => {
-                activeCategoryDisplayGroup = categoryName;
-                currentMenuLevel = 'itemsOfCategory';
-                renderMenuNavigation(); // Re-render to show items of selected category
+                    activeCategoryDisplayGroup = categoryName;
+                    currentMenuLevel = 'itemsOfCategory';
+                    renderMenuNavigation(); // Re-render to show items of selected category
+                });
+                categoriesContainer.appendChild(button); // Append to categories div for horizontal scroll
             });
-            menuItemsContainer.appendChild(div);
-        });
+        }
     } else if (currentMenuLevel === 'itemsOfCategory' && activeCategoryDisplayGroup) {
-        renderMenuItemsForCategory(activeCategoryDisplayGroup); // Renamed from renderMenuItemsForGroup
+        // Ensure category buttons are visible and active when showing items
+        categoriesContainer.innerHTML = ''; // Clear existing category buttons if any
         menuSectionTitle.textContent = activeCategoryDisplayGroup;
-        backButton.style.display = 'block'; 
+        backButton.style.display = 'block';
+
+        // Re-render the category buttons for the current activeSection,
+        // and mark the activeCategoryDisplayGroup button as 'active'.
+        if (activeSection && menuSections[activeSection]) {
+             menuSections[activeSection].sort().forEach(categoryName => {
+                const button = document.createElement('button');
+                button.textContent = categoryName;
+                if (categoryName === activeCategoryDisplayGroup) {
+                    button.classList.add('active');
+                }
+                button.addEventListener('click', () => {
+                    document.querySelectorAll('.categories button').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    activeCategoryDisplayGroup = categoryName;
+                    renderMenuItemsForCategory(activeCategoryDisplayGroup); // Just re-render items, stay on current menu level
+                    menuSectionTitle.textContent = activeCategoryDisplayGroup; // Update title
+                });
+                categoriesContainer.appendChild(button);
+            });
+        } else {
+             // If we are at items of a top-level category (not nested under a section),
+             // then there are no horizontal category buttons to show.
+             // This case is for "Hot coffee", "Tea", and "Cold coffee"
+             categoriesContainer.innerHTML = ''; 
+        }
+
+        renderMenuItemsForCategory(activeCategoryDisplayGroup);
     }
 }
 
-// NEW: Navigate back function
+// MODIFIED: Navigate back function to always go to topLevelSections
 function navigateBackMenu() {
     const searchInput = document.getElementById('search');
-    // If we are currently showing search results, clear search and go back to top-level sections
-    if (searchInput.value.trim() !== '') {
-        searchInput.value = ''; // Clear search term
-        currentMenuLevel = 'topLevelSections';
-        activeSection = null;
-        activeCategoryDisplayGroup = null;
-    } else if (currentMenuLevel === 'itemsOfCategory') {
-        currentMenuLevel = 'categoriesOfSection';
-        activeCategoryDisplayGroup = null; // Clear the selected category
-    } else if (currentMenuLevel === 'categoriesOfSection') {
-        currentMenuLevel = 'topLevelSections';
-        activeSection = null; // Clear the selected section
-    }
-    renderMenuNavigation(); // Re-render to show previous level
+    
+    // Always reset to topLevelSections
+    currentMenuLevel = 'topLevelSections';
+    activeSection = null;
+    activeCategoryDisplayGroup = null;
+    searchInput.value = ''; // Clear search term if it was active
+
+    renderMenuNavigation(); // Re-render to show main page
 }
 
 // Renamed from renderMenuItemsForGroup to be more explicit
