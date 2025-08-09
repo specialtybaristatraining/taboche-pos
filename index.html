@@ -1,0 +1,4519 @@
+
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Taboche POS</title>
+    <meta name="description" content="A fast, organized, and modern POS system.">
+    <meta name="theme-color" content="#1976d2">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="preload" href="styles.css" as="style">
+    <!-- POS and Analytics Libraries -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+       /* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background-color: #f5f7fa;
+    color: #2d3748;
+    overflow-x: hidden;
+    font-size: 16px;
+    line-height: 1.6;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.dark-mode {
+    background-color: #1f272e;
+    color: #e2e8f0;
+}
+
+/* Header Styles */
+header {
+    background-color: #2563eb;
+    color: #ffffff;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.hamburger-menu {
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: transform 0.2s ease;
+}
+
+.hamburger-menu:hover {
+    transform: scale(1.1);
+}
+
+.restaurant-logo-container {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.restaurant-logo {
+    height: 2.5rem;
+    width: auto;
+    object-fit: contain;
+}
+
+.restaurant-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.datetime {
+    font-size: 0.875rem;
+    opacity: 0.9;
+}
+
+#theme-toggle {
+    cursor: pointer;
+    font-size: 1.25rem;
+    padding: 0.5rem;
+    transition: transform 0.2s ease;
+}
+
+#theme-toggle:hover {
+    transform: rotate(15deg);
+}
+
+/* Indicators and Notifications */
+.notification-toast {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    display: none; /* Controlled by JS */
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    color: #ffffff;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    z-index: 1055; /* Above bootstrap modals */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    min-width: 300px;
+    max-width: 400px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.notification-icon { font-size: 1.5rem; }
+.notification-message { font-size: 0.9rem; font-weight: 500; }
+.notification-info { background-color: #3b82f6; }
+.notification-success { background-color: #16a34a; }
+.notification-warning { background-color: #f59e0b; }
+.notification-error { background-color: #dc2626; }
+
+
+.loading-spinner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.95);
+    padding: 1.5rem;
+    border-radius: 12px;
+    font-size: 2rem;
+    color: #2563eb;
+    display: none;
+    z-index: 1051;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* POS Container */
+.pos-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 4rem);
+    overflow: hidden;
+}
+
+.tables-dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+}
+
+
+/* Table Buttons */
+.table-btn {
+    position: relative;
+    padding: 0.3rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    text-align: center;
+    min-height: 40px;
+    line-height: 1.2;
+    touch-action: manipulation;
+    transition: all 0.3s ease;
+}
+
+.table-btn:after {
+    content: '';
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #22c55e;
+}
+
+.table-btn.occupied:after {
+    background: #f59e0b;
+}
+
+.table-btn.reserved:after {
+    background: #3b82f6;
+}
+
+.table-btn.blinking:after {
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.3; }
+    100% { opacity: 1; }
+}
+
+.table-btn.available {
+    background-color: #22c55e;
+    color: #ffffff;
+}
+
+.table-btn.occupied {
+    background-color: #f59e0b;
+    color: #ffffff;
+}
+
+.table-btn.reserved {
+    background-color: #3b82f6;
+    color: #ffffff;
+}
+
+.table-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Main Content */
+.main-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.menu-section {
+    flex: 1;
+    padding: 0.5rem;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+}
+
+.search-bar {
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    width: 100%;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    transition: border-color 0.2s ease;
+}
+
+.search-bar:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.menu-navigation-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+.menu-navigation-header #back-button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+}
+.menu-navigation-header #menu-section-title {
+    margin: 0;
+    margin-left: 0.5rem;
+    font-size: 1.1rem;
+    color: #2d3748;
+}
+body.dark-mode .menu-navigation-header #menu-section-title {
+    color: #e2e8f0;
+}
+
+
+.categories {
+    display: flex; /* Kept for compatibility but will be empty for grid categories */
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    overflow-x: auto; /* This is the key for horizontal scrolling */
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.3rem;
+    touch-action: pan-x;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+
+.categories::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+.categories button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    background-color: #e2e8f0;
+    cursor: pointer;
+    white-space: nowrap; /* Ensures buttons stay in a single line */
+    font-size: 0.875rem;
+    font-weight: 500;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    transition: all 0.2s ease;
+}
+
+.categories button.active {
+    background-color: #2563eb;
+    color: #ffffff;
+}
+
+.categories button:hover {
+    background-color: #d1d5db;
+}
+
+.categories button.active:hover {
+    background-color: #1e40af;
+}
+
+.menu {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 0.5rem;
+    touch-action: pan-y;
+}
+
+.menu-item {
+    position: relative; /* Needed for the "LOW STOCK" overlay */
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    text-align: center;
+    padding: 0.5rem;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    transition: all 0.3s ease;
+}
+
+.menu-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.menu-item:active {
+    transform: scale(0.98);
+}
+
+.menu-item img {
+    width: 100%;
+    display: block;
+    aspect-ratio: 1 / 1; /* Creates a perfect square for the image */
+    object-fit: cover; /* Fills the square without stretching */
+    border-radius: 6px;
+    loading: lazy;
+    background-color: #e2e8f0; /* Placeholder color */
+}
+body.dark-mode .menu-item img {
+    background-color: #2d3748;
+}
+
+.menu-item p {
+    margin: 0.5rem 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.menu-item .price, .menu-item .stock {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+/* ✅ NEW: Class for items with insufficient stock (Logic removed) */
+.menu-item.insufficient-stock {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #f8f9fa;
+    border-color: #f5c6cb;
+}
+.menu-item.insufficient-stock::after {
+    content: "OUT OF STOCK"; /* Changed from LOW STOCK for clarity */
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    background: #dc3545;
+    color: white;
+    font-size: 0.6rem;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-weight: bold;
+    z-index: 2;
+}
+
+/* NEW: Category Card specific styling (reusing menu-item base) */
+.category-card .category-card-name {
+    font-size: 1rem; /* Slightly larger font for category names */
+    font-weight: 600;
+    margin-top: 0.75rem;
+    margin-bottom: 0.25rem;
+    color: #2563eb; /* Highlight category name */
+}
+body.dark-mode .category-card .category-card-name {
+    color: #93c5fd;
+}
+
+/* Order Section */
+.order-section {
+    flex: 1;
+    background-color: #ffffff;
+    border-left: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.order-header {
+    padding: 0.3rem;
+    border-bottom: 1px solid #e2e8f0;
+    background-color: #f9fafb;
+}
+
+.order-items {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0.3rem;
+}
+
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.3rem;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 0.75rem;
+    border-radius: 6px;
+    margin-bottom: 0.3rem;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+}
+
+.order-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.order-item-details p {
+    margin: 0.2rem 0;
+    font-size: 0.75rem;
+}
+
+.order-item-details .notes {
+    font-size: 0.65rem;
+    color: #6b7280;
+    font-style: italic;
+}
+
+.order-status {
+    display: flex;
+    gap: 0.3rem;
+    margin-top: 0.3rem;
+}
+
+.order-status button {
+    padding: 0.2rem 0.5rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.order-item-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+}
+
+.order-item-controls input {
+    width: 40px;
+    padding: 0.2rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 5px;
+    font-size: 0.75rem;
+}
+
+.order-item-controls button {
+    padding: 0.2rem 0.5rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.65rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.order-footer {
+    padding: 0.3rem;
+    border-top: 1px solid #e2e8f0;
+    background-color: #f9fafb;
+}
+
+.order-footer-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+    gap: 0.3rem;
+}
+
+.order-footer-buttons button {
+    padding: 0.3rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.order-footer-buttons button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+.finalize-btn { background-color: #22c55e; color: #ffffff; }
+.checkout-btn { background-color: #2563eb; color: #ffffff; }
+.change-table-btn { background-color: #f59e0b; color: #ffffff; }
+.void-btn { background-color: #ef4444; color: #ffffff; }
+.print-receipt-btn { background-color: #6b7280; color: #ffffff; }
+
+
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 80%;
+    max-width: 320px;
+     height: 100vh;
+    background-color: #ffffff;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+    transition: left 0.3s ease;
+    z-index: 1000;
+ overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.sidebar.active {
+    left: 0;
+}
+
+.sidebar-header {
+    background-color: #2563eb;
+    color: #ffffff;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sidebar-content {
+    padding: 1.5rem;
+}
+
+.sidebar-content a {
+    display: block;
+    padding: 0.75rem;
+    color: #2d3748;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-bottom: 1px solid #e2e8f0;
+    transition: background-color 0.2s ease;
+}
+
+.sidebar-content a:hover {
+    background-color: #f3f4f6;
+    border-radius: 6px;
+}
+
+/* Extras Modal Styling */
+.extra-option {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    margin: 5px 0;
+    background: #f5f5f5;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.extra-option:hover {
+    background: #e0e0e0;
+}
+
+.extra-name {
+    margin: 0 8px;
+    flex-grow: 1;
+}
+
+.extra-price {
+    color: #4CAF50;
+    font-weight: 500;
+}
+
+.save-extras-btn {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-top: 15px;
+    background-color: #1a73e8;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.save-extras-btn:hover {
+    background-color: #0d5bba;
+}
+/* Modals */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1040; /* Adjusted for bootstrap compatibility */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+
+.modal-content {
+    background-color: #ffffff;
+    margin: 10% auto;
+    padding: 1rem;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 85vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode .modal-content {
+    background-color: #2c343a;
+    color: #e2e8f0;
+}
+
+
+.modal-content h3 {
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+/* ✅ UNIFIED: Close button styling */
+.close-modal, .close-sidebar, .qr-close-btn {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    font-size: 1.5rem;
+    color: #6b7280;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    line-height: 1;
+    transition: color 0.2s ease, transform 0.2s ease;
+    z-index: 10;
+}
+
+.close-modal:hover, .close-sidebar:hover, .qr-close-btn:hover {
+    color: #ef4444;
+    transform: rotate(90deg);
+}
+
+/* QR Code Dialog */
+#qr-code-dialog {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.6);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1045;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.qr-dialog-content {
+    background-color: #ffffff;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    max-width: 90%;
+    width: 400px;
+    text-align: center;
+    position: relative;
+}
+
+.qr-close-btn { /* Style inherited from .close-modal */
+    color: #ffffff;
+    background-color: #ef4444;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    font-size: 1.25rem;
+    line-height: 32px;
+}
+
+.qr-close-btn:hover {
+    background-color: #b91c1c;
+    transform: none; /* Override rotation for this specific button */
+}
+
+.qr-dialog-title {
+    font-size: 1.5rem;
+    color: #2563eb;
+    margin-bottom: 1.25rem;
+    font-weight: 600;
+}
+
+.qr-image {
+    max-width: 200px;
+    max-height: 200px;
+    border: 2px solid #2563eb;
+    border-radius: 8px;
+    margin: 1.25rem auto;
+    display: block;
+}
+
+.qr-instruction {
+    font-size: 0.875rem;
+    color: #2d3748;
+    margin-bottom: 1.25rem;
+}
+
+.qr-footer {
+    font-size: 0.75rem;
+    color: #6b7280;
+    font-style: italic;
+}
+
+/* Checkout Dialog */
+#checkout-dialog .modal-content {
+    max-width: 95%;
+}
+
+.numeric-input {
+    padding: 0.5rem;
+    font-size: 1rem;
+    width: 100%;
+    margin-bottom: 0.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    text-align: right;
+}
+
+#keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+#keypad button {
+    padding: 1rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 6px;
+    background-color: #e2e8f0;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+#keypad button:hover {
+    background-color: #d1d5db;
+}
+
+#quick-amounts {
+    display: flex;
+    flex-wrap: wrap; /* ✅ This is the key change */
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+#quick-amounts button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    background-color: #2563eb;
+    color: #ffffff;
+    cursor: pointer;
+    white-space: nowrap;
+    font-size: 0.875rem;
+    transition: background-color 0.2s ease;
+}
+
+#quick-amounts button:hover {
+    background-color: #1e40af;
+}
+
+#discount-section {
+    margin-bottom: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+#discount-section button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    background-color: #f59e0b;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: background-color 0.2s ease;
+}
+
+#discount-section button:hover {
+    background-color: #d97706;
+}
+
+#discount-code {
+    padding: 0.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    width: 120px;
+    font-size: 0.875rem;
+}
+
+#apply-discount-code, #clear-discount {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: background-color 0.2s ease;
+}
+
+#apply-discount-code {
+    background-color: #22c55e;
+}
+
+#apply-discount-code:hover {
+    background-color: #16a34a;
+}
+
+#clear-discount {
+    background-color: #ef4444;
+}
+
+#clear-discount:hover {
+    background-color: #b91c1c;
+}
+
+.payment-methods {
+    margin: 0.5rem 0;
+    padding: 0;
+    list-style: none;
+}
+
+.payment-methods li {
+    padding: 0.3rem 0;
+    font-size: 0.875rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.payment-methods li button {
+    background-color: #ef4444;
+    color: #ffffff;
+    border: none;
+    padding: 0.3rem 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: background-color 0.2s ease;
+}
+
+.payment-methods li button:hover {
+    background-color: #b91c1c;
+}
+
+.payment-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.payment-buttons button {
+    flex: 1;
+    padding: 0.5rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+#cash-btn {
+    background-color: #22c55e;
+    color: #ffffff;
+}
+
+#cash-btn:hover {
+    background-color: #16a34a;
+}
+
+#mobile-btn {
+    background-color: #3b82f6;
+    color: #ffffff;
+}
+
+#mobile-btn:hover {
+    background-color: #2563eb;
+}
+
+#complete-btn {
+    background-color: #2563eb;
+    color: #ffffff;
+    width: 100%;
+    padding: 0.75rem;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+#complete-btn:hover {
+    background-color: #1e40af;
+}
+
+#insufficient-message {
+    color: #ef4444;
+    margin-bottom: 0.5rem;
+    display: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.void-item {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.void-item p { margin: 0.5rem 0; }
+.void-item strong { color: #2563eb; }
+
+/* Blinking Animation */
+.table-btn.blinking { animation: blink 1s linear infinite; }
+@keyframes blink { 50% { opacity: 0.5; } }
+
+/* Media Queries */
+@media (max-width: 768px) {
+    header { padding: 0.75rem; gap: 0.5rem; }
+    .restaurant-logo { height: 2rem; }
+    .restaurant-name { font-size: 1rem; }
+    .datetime { font-size: 0.75rem; }
+    .pos-container { height: calc(100vh - 4.5rem); }
+    .tables-dashboard { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); }
+    .table-btn { font-size: 0.75rem; min-height: 50px; }
+    .main-content { flex-direction: column; }
+    .menu-section { border-right: none; border-bottom: 1px solid #e2e8f0; }
+    .order-section { border-left: none; }
+    .menu { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
+    .modal-content { margin: 15% auto; width: 95%; max-height: 80vh; }
+}
+
+@media (max-width: 480px) {
+    body { font-size: 14px; }
+    header { padding: 0.5rem; }
+    .hamburger-menu { font-size: 1.25rem; padding: 0.5rem; }
+    .restaurant-logo { height: 1.5rem; }
+    .restaurant-name { font-size: 0.875rem; }
+    .datetime { font-size: 0.75rem; }
+    .tables-dashboard { grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)); }
+    .table-btn { font-size: 0.75rem; min-height: 45px; }
+    .menu { grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)); }
+    .modal-content { margin: 20% auto; padding: 0.75rem; }
+}
+
+@media (min-width: 769px) {
+    .sidebar { width: 280px; left: -280px; }
+    .sidebar.active { left: 0; }
+}
+
+/* ========================================================== */
+/* ========= ✅ CSS FOR GENERIC MODALS (THE FIX) ========= */
+/* ========================================================== */
+.generic-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: none; /* Hidden by default */
+    justify-content: center;
+    align-items: center;
+    z-index: 1060; /* Higher than standard modals but below system alerts */
+    padding: 1rem;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.generic-modal-content {
+    background-color: #ffffff;
+    padding: 1.5rem 2rem;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    max-width: 450px;
+    text-align: center;
+    animation: fadeInScale 0.3s ease-out;
+}
+
+.dark-mode .generic-modal-content {
+    background-color: #2d3748;
+    color: #e2e8f0;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.generic-modal-content h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.generic-modal-content p {
+    margin-bottom: 1.5rem;
+    color: #6b7280;
+    font-size: 0.95rem;
+}
+
+.dark-mode .generic-modal-content p {
+    color: #a0aec0;
+}
+
+.generic-modal-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+}
+.dark-mode .generic-modal-input {
+    background-color: #4a5568;
+    border-color: #718096;
+    color: #e2e8f0;
+}
+
+.generic-modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.generic-modal-actions button {
+    padding: 0.6rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.generic-modal-actions .btn-primary {
+    background-color: #2563eb;
+    color: white;
+}
+.generic-modal-actions .btn-primary:hover {
+    background-color: #1e40af;
+}
+
+.generic-modal-actions .btn-secondary {
+    background-color: #e2e8f0;
+    color: #2d3748;
+}
+.generic-modal-actions .btn-secondary:hover {
+    background-color: #d1d5db;
+}
+.dark-mode .generic-modal-actions .btn-secondary {
+    background-color: #4a5568;
+    color: #e2e8f0;
+}
+.dark-mode .generic-modal-actions .btn-secondary:hover {
+    background-color: #718096;
+}
+
+.report-container {
+    background-color: #ffffff;
+    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    overflow-x: auto;
+    display: block;
+}
+
+.report-table th,
+.report-table td {
+    padding: 0.5rem;
+    border: 1px solid #e2e8f0;
+    text-align: left;
+}
+
+.report-table th {
+    background-color: #2563eb;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.report-filter {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.report-filter input,
+.report-filter select {
+    padding: 0.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 0.875rem;
+}
+
+.export-btn {
+    padding: 0.5rem 1rem;
+    background-color: #22c55e;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.export-btn:hover {
+    background-color: #16a34a;
+}
+
+.view-receipt-btn {
+    background-color: #2563eb;
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.view-receipt-btn:hover {
+    background-color: #1e40af;
+}
+
+/* For Order History */
+.order-history-item { border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-bottom: 15px; background: #fff; }
+.order-history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+.order-history-status { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+.status-completed { background-color: #4caf50; color: white; }
+.status-pending { background-color: #ff9800; color: white; }
+.status-voided { background-color: #f44336; color: white; }
+.order-history-items { margin-top: 10px; }
+.order-item-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed #eee; font-size: 0.9em; }
+.order-item-row:last-child { border-bottom: none; }
+.order-item-name { flex: 2; }
+.order-item-qty { flex: 1; text-align: center; }
+.order-item-price { flex: 1; text-align: right; }
+.order-history-actions { display: flex; gap: 10px; margin-top: 10px; }
+.no-orders { text-align: center; padding: 20px; color: #777; }
+#pagination button { padding: 5px 10px; border: 1px solid #ddd; background-color: #f0f0f0; cursor: pointer; border-radius: 4px; }
+#pagination button.active { background-color: #1a73e8; color: white; border-color: #1a73e8; }
+.order-item-extras, .order-item-notes-display { font-size: 0.8em; color: #666; margin-left: 15px; }
+
+.order-history-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+}
+.payment-breakdown {
+    font-size: 0.9em;
+    color: #333;
+}
+.payment-breakdown div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+.grand-total-section {
+    text-align: right;
+    font-size: 1.1em;
+}
+.grand-total-section strong {
+    color: #555;
+    font-weight: 500;
+}
+.grand-total-section span {
+    font-weight: bold;
+    color: #1a73e8;
+}
+
+    </style>
+</head>
+<body>
+    
+    <!-- =================================================================== -->
+    <!-- ======================= CORE UI STRUCTURE ======================= -->
+    <!-- =================================================================== -->
+    <header>
+        <div class="hamburger-menu" id="hamburger-menu">
+            <i class="fas fa-bars"></i>
+        </div>
+        <div class="restaurant-logo-container">
+            <img src="./images/logo.png" alt="Taboche Restaurant Logo" loading="lazy" class="restaurant-logo">
+            <div class="restaurant-name">
+                Taboche Restaurant
+                <!-- Mobile app icon added here -->
+                <i class="fas fa-mobile-alt" style="margin-left: 10px; font-size: 0.8em; vertical-align: middle;"></i>
+            </div>
+        </div>
+        <div class="datetime" id="datetime"></div>
+        <i class="fas fa-moon" id="theme-toggle"></i>
+    </header>
+
+    <div class="notification-toast" id="notification-toast"></div>
+
+    <div class="loading-spinner" id="loading-spinner">
+        <i class="fas fa-spinner fa-spin"></i>
+    </div>
+
+    <div class="pos-container">
+        <div class="tables-dashboard" id="tables-dashboard"></div>
+        <div class="main-content">
+            <div class="menu-section">
+                <label for="search" class="visually-hidden">Search menu</label>
+                <input type="text" id="search" class="search-bar" placeholder="Search menu...">
+                
+                <!-- NEW: Menu Navigation Header -->
+                <div class="menu-navigation-header">
+                    <button id="back-button" class="btn btn-secondary" style="display:none;"><i class="fas fa-arrow-left me-2"></i>Back</button>
+                    <h4 id="menu-section-title">Categories</h4>
+                </div>
+
+                <div class="categories" id="categories"></div>
+                <div class="menu" id="menu"></div>
+            </div>
+            <div class="order-section">
+                <div class="order-header">
+                    <h3>Table <span id="selected-table">-</span></h3>
+                </div>
+                <div class="order-items" id="order-items"></div>
+                <div class="order-footer">
+                    <p>Total: Rs <span id="total-amount">0.00</span></p>
+                    <div class="order-footer-buttons">
+                        <button class="finalize-btn" id="finalize-btn">Send to Kitchen (KOT)</button>
+                        <button class="checkout-btn" id="checkout-btn">Checkout</button>
+                        <button class="change-table-btn" id="change-table-btn">Change Table</button>
+                        <button class="void-btn" id="void-btn">Void Entire Order</button>
+                        <button class="print-receipt-btn" id="print-receipt-btn">Print Bill</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Menu</h2>
+            <span class="close-sidebar" id="close-sidebar">×</span>
+        </div>
+        <div class="sidebar-content">
+            <a href="#" id="nav-sales-reports">Sales Reports</a>
+            <a href="#" id="nav-items-sold">Items Sold Report</a>
+            <a href="#" id="nav-order-history">Order History</a>
+            <a href="#" id="nav-void-details">Void Details</a>
+            <hr>
+            <h6 class="text-muted mb-2">Reports & Utilities</h6>
+            <a href="#" id="nav-reset-data"><i class="fas fa-trash-restore me-2"></i>Reset All Data</a>
+        </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- ======================= MODAL DEFINITIONS ======================= -->
+    <!-- =================================================================== -->
+
+    <!-- Main Modal for Sidebar Content -->
+    <div class="modal" id="sidebar-content-modal">
+        <div class="modal-content">
+            <span class="close-modal" id="close-sidebar-content-modal">×</span>
+            <div id="modal-content-area"></div>
+        </div>
+    </div>
+
+    <!-- Checkout Dialog -->
+    <div class="modal" id="checkout-dialog">
+        <div class="modal-content" style="max-width: 800px;">
+            <span class="close-modal" id="close-checkout-dialog">×</span>
+            <h3>Checkout - Table <span id="selected-table-checkout">-</span></h3>
+            <div class="row">
+                <div class="col-md-7">
+                    <p class="h4">Total Due: <strong class="text-primary">Rs <span id="dialog-total-amount">0</span></strong></p>
+                    <label for="numeric-input" class="visually-hidden">Amount</label>
+                    <input type="text" class="numeric-input" id="numeric-input" value="0" readonly>
+                    <div id="keypad">
+                        <button data-num="1">1</button><button data-num="2">2</button><button data-num="3">3</button>
+                        <button data-num="4">4</button><button data-num="5">5</button><button data-num="6">6</button>
+                        <button data-num="7">7</button><button data-num="8">8</button><button data-num="9">9</button>
+                        <button data-num="0">0</button><button data-num=".">.</button><button id="clear-input">C</button>
+                    </div>
+                    <div id="quick-amounts" class="mt-2">
+                         <button data-amount="exact">Exact</button><button data-amount="500">500</button><button data-amount="1000">1000</button><button data-amount="2000">2000</button>
+                    </div>
+                    <div class="payment-buttons mt-3">
+                        <button id="cash-btn" class="btn-lg"><i class="fas fa-money-bill-wave me-2"></i>Add Cash</button>
+                        <button id="mobile-btn" class="btn-lg"><i class="fas fa-mobile-alt me-2"></i>Add Mobile</button>
+                    </div>
+                </div>
+               <div class="col-md-5 border-start">
+                    <h5 class="mb-3">Payment Summary</h5>
+                    <ul class="payment-methods" id="payment-methods"></ul>
+                    <hr>
+                    
+                    <!-- ✅ CORRECTED DISCOUNT SECTION -->
+                    <div id="discount-section">
+                        <p class="small text-muted mb-1 w-100">Apply Discount</p>
+                        <button data-discount="5">5%</button>
+                        <button data-discount="10">10%</button>
+                        <button data-discount="15">15%</button>
+                        <input type="text" id="discount-code" placeholder="Enter Code">
+                        <button id="apply-discount-code">Apply</button>
+                        <button id="clear-discount">Clear</button>
+                    </div>
+                    
+                    <hr>
+                    <div class="h5 d-flex justify-content-between">
+                        <span>Remaining Due:</span> 
+                        <span id="remaining-due" class="text-danger">Rs 0.00</span>
+                    </div>
+                    <div class="h5 d-flex justify-content-between">
+                        <span>Change:</span> 
+                        <span id="change-amount" class="text-success">Rs 0.00</span>
+                    </div>
+
+<button id="complete-btn" class="btn-primary btn-lg w-100 mt-3" disabled>Complete Payment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- QR Code Dialog -->
+    <div id="qr-code-dialog">
+        <div class="qr-dialog-content">
+            <button id="close-qr-code-dialog" class="qr-close-btn">×</button>
+            <h3 class="qr-dialog-title">Scan to Pay</h3>
+            <img id="qr-code-image" class="qr-image" alt="QR Code" src="./images/qr.jpeg" loading="lazy">
+            <p class="qr-instruction">Please scan the QR code to complete your mobile payment.</p>
+        </div>
+    </div>
+
+<!-- Extras Modal -->
+<div class="modal" id="extras-modal">
+    <div class="modal-content modal-md-width">
+        <span class="close-modal" id="close-extras-modal">×</span>
+        <h3>Add Extras for <span id="extras-item-name" class="text-primary">Item</span></h3>
+        <p class="text-muted small">Select additional options for this item.</p>
+        <hr>
+        <div id="extras-content" class="mb-3">
+            <!-- Checkboxes will be dynamically inserted here by JavaScript -->
+        </div>
+        <!-- The "Save" button will be dynamically added by the script -->
+    </div>
+</div>
+    
+    <!-- Modal for adding/editing item notes -->
+    <div class="modal" id="notes-modal">
+        <div class="modal-content">
+            <span class="close-modal" id="close-notes-modal">×</span>
+            <h3>Add/Edit Note</h3>
+            <p>Add special instructions for this item.</p>
+            <textarea id="item-notes" class="form-control" rows="4" placeholder="e.g., Extra spicy, no onions..."></textarea>
+            <button id="save-notes-btn" class="btn btn-primary w-100 mt-3">Save Note</button>
+        </div>
+    </div>
+
+    <!-- Generic Prompt/Confirm Modal (Used by showPromptModal, showConfirmModal) -->
+    <div class="generic-modal-overlay" id="generic-prompt-modal">
+        <div class="generic-modal-content">
+            <h3 id="generic-prompt-title"></h3>
+            <p id="generic-prompt-message"></p>
+            <div id="generic-prompt-input-container">
+                <!-- Input or textarea will be inserted here -->
+            </div>
+            <div class="generic-modal-actions">
+                <button id="generic-prompt-cancel-btn" class="btn-secondary">Cancel</button>
+                <button id="generic-prompt-confirm-btn" class="btn-primary">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+</script> 
+<script type="module">
+// =========================================================================
+// ===================== POS SYSTEM SCRIPT (In-memory with LocalStorage) ======================
+// =========================================================================
+
+// Global state variables, loaded from localStorage or initialized empty
+let currentTable = null;
+let orders = {}; // { tableNumber: [item1, item2, ...] }
+let tableTimers = {}; // { tableNumber: { start: timestamp, elapsed: ms, lastUpdated: ms } }
+let salesHistory = []; // [sale1, sale2, ...]
+let orderHistory = []; // Same as salesHistory in this simplified version
+let voidDetails = []; // [void1, void2, ...]
+let kotHistory = []; // [kot1, kot2, ...]
+let itemsSold = []; // Aggregated items from sales history
+let removedItems = []; // Not used in this simplified version, kept for compatibility if needed.
+
+let paymentAmount = 0;
+let discount = 0;
+let discountCodeApplied = null;
+let paymentMethods = [];
+let currentItemIndex = null;
+let currentPage = 1;
+const itemsPerPage = 10;
+
+// NEW: Menu Navigation State
+let currentMenuLevel = 'topLevelSections'; // 'topLevelSections', 'categoriesOfSection', 'itemsOfCategory'
+let activeSection = null; // Stores the top-level section selected (e.g., 'Food')
+let activeCategoryDisplayGroup = null; // Stores the category selected (e.g., 'Burger with fries')
+
+// Dummy current user for local-only mode
+let currentUser = { email: 'localuser@example.com', role: 'Staff' }; 
+
+// Hardcoded menu and extras
+const menuItems = [
+    // ================== FOOD GROUPS ==================
+    { name: "Burger with Fries (Chicken)", price: 370, category: "Burger with fries", section: "Kitchen", type: "food", image: "images/burger_chicken_with_fries.jpg" },
+    { name: "Burger with Fries (Buff)", price: 350, category: "Burger with fries", section: "Kitchen", type: "food", image: "images/burger_buff_with_fries.jpg" },
+    { name: "Burger with Fries (Veg)", price: 295, category: "Burger with fries", section: "Kitchen", type: "food", image: "images/burger_veg_with_fries.jpg" },
+    { name: "Wrap with Fries (Chicken)", price: 320, category: "Wrap with Fries", section: "Kitchen", type: "food", image: "images/wrap_chicken_with_fries.jpg" },
+    { name: "Wrap with Fries (Buff)", price: 300, category: "Wrap with Fries", section: "Kitchen", type: "food", image: "images/wrap_buff_with_fries.jpg" },
+    { name: "Wrap with Fries (Veg)", price: 280, category: "Wrap with Fries", section: "Kitchen", type: "food", image: "images/wrap_veg_with_fries.jpg" },
+    
+    { name: "Keema Noodles (Chicken)", price: 300, category: "Keema Noodles", section: "Kitchen", type: "food", image: "images/keema_noodles_chicken.jpg" },
+    { name: "Keema Noodles (Buff)", price: 280, category: "Keema Noodles", section: "Kitchen", type: "food", image: "images/keema_noodles_buff.jpg" },
+    { name: "Keema Noodles (Egg)", price: 250, category: "Keema Noodles", section: "Kitchen", type: "food", image: "images/keema_noodles_egg.jpg" },
+
+    { name: "Stm Mo:Mo (Chicken)", price: 285, category: "Stm Mo:Mo", section: "Kitchen", type: "food", image: "images/momo_chicken.jpg" },
+    { name: "Stm Mo:Mo (Buff)", price: 260, category: "Stm Mo:Mo", section: "Kitchen", type: "food", image: "images/momo_buff.jpg" },
+    { name: "Stm Mo:Mo (Veg)", price: 220, category: "Stm Mo:Mo", section: "Kitchen", type: "food", image: "images/momo_veg.jpg" },
+    
+    { name: "Jhol Mo:Mo (Chicken)", price: 320, category: "Jhol Mo:Mo", section: "Kitchen", type: "food", image: "images/jhol_momo_chicken.jpg" },
+    { name: "Jhol Mo:Mo (Buff)", price: 285, category: "Jhol Mo:Mo", section: "Kitchen", type: "food", image: "images/jhol_momo_buff.jpg" },
+    { name: "Jhol Mo:Mo (Veg)", price: 250, category: "Jhol Mo:Mo", section: "Kitchen", type: "food", image: "images/jhol_momo_veg.jpg" },
+    
+    { name: "Chilly (Chicken)", price: 360, category: "Chilly", section: "Kitchen", type: "food", image: "images/chilly_chicken.jpg" },
+    { name: "Chilly (Buff)", price: 320, category: "Chilly", section: "Kitchen", type: "food", image: "images/chilly_buff.jpg" },
+    
+    { name: "Pizza (Cheese)", price: 500, category: "Pizza", section: "Kitchen", type: "food", image: "images/pizza_cheese.jpg" },
+    { name: "Pizza (Chicken)", price: 580, category: "Pizza", section: "Kitchen", type: "food", image: "images/pizza_chicken.jpg" },
+    { name: "Pizza (Mixed)", price: 650, category: "Pizza", section: "Kitchen", type: "food", image: "images/pizza_mixed.jpg" },
+    
+    { name: "French Fry", price: 350, category: "French fry", section: "Kitchen", type: "food", image: "images/french_fry.jpg" },
+    { name: "Wings", price: 480, category: "Wings", section: "Kitchen", type: "food", image: "images/wings.jpg" },
+    
+    { name: "Fry Rice (Chicken)", price: 360, category: "Fry Rice", section: "Kitchen", type: "food", image: "images/fried_rice_chicken.jpg" },
+    { name: "Fry Rice (Buff)", price: 320, category: "Fry Rice", section: "Kitchen", type: "food", image: "images/fried_rice_buff.jpg" },
+    { name: "Fry Rice (Egg)", price: 285, category: "Fry Rice", section: "Kitchen", type: "food", image: "images/fried_rice_egg.jpg" },
+    
+    { name: "Sausage (Chicken)", price: 340, category: "Sausage", section: "Kitchen", type: "food", image: "images/sausage_chicken.jpg" },
+    { name: "Sausage (Buff)", price: 300, category: "Sausage", section: "Kitchen", type: "food", image: "images/sausage_buff.jpg" },
+    
+    { name: "Laping (Noodles)", price: 95, category: "Laping", section: "Kitchen", type: "food", image: "images/laping_noodles.jpg" },
+    { name: "Laping (Chips)", price: 120, category: "Laping", section: "Kitchen", type: "food", image: "images/laping_chips.jpg" },
+    { name: "Laping (Mix)", price: 140, category: "Laping", section: "Kitchen", type: "food", image: "images/laping_mix.jpg" },
+
+    { name: "Apple Pie", price: 100, category: "Bakery", section: "Bar", type: "food", image: "images/apple_pie.jpg" },
+    { name: "Banana Muffin", price: 150, category: "Bakery", section: "Bar", type: "food", image: "images/banana_muffin.jpg" },
+    { name: "Brownie Walnut", price: 200, category: "Bakery", section: "Bar", type: "food", image: "images/brownie_walnut.jpg" },
+    { name: "Chicken Pie", price: 100, category: "Bakery", section: "Bar", type: "food", image: "images/chicken_pie.jpg" },
+    { name: "Chocolate Muffin", price: 150, category: "Bakery", section: "Bar", type: "food", image: "images/chocolate_muffin.jpg" },
+    { name: "Mushroom Pie", price: 100, category: "Bakery", section: "Bar", type: "food", image: "images/mushroom_pie.jpg" },
+
+    // ================== DRINK GROUPS ==================
+    { name: "Americano", price: 170, category: "Hot coffee", section: "Bar", type: "drink", image: "images/americano.jpg" },
+    { name: "Latte", price: 190, category: "Hot coffee", section: "Bar", type: "drink", image: "images/latte.jpg" },
+    { name: "Cappuccino", price: 220, category: "Hot coffee", section: "Bar", type: "drink", image: "images/cappuccino.jpg" },
+    { name: "Vanilla Latte", price: 270, category: "Hot coffee", section: "Bar", type: "drink", image: "images/latte_vanilla.jpg" },
+    { name: "Hazelnut Latte", price: 270, category: "Hot coffee", section: "Bar", type: "drink", image: "images/flavored_latte_hazelnut.jpg" },
+    { name: "Caramel Latte", price: 270, category: "Hot coffee", section: "Bar", type: "drink", image: "images/latte_caramel.jpg" },
+    { name: "Hot Chocolate", price: 270, category: "Hot coffee", section: "Bar", type: "drink", image: "images/hot_chocolate.jpg" },
+
+    { name: "Iced Latte", price: 240, category: "Cold coffee", section: "Bar", type: "drink", image: "images/iced_latte.jpg" },
+    { name: "Iced Americano", price: 220, category: "Cold coffee", section: "Bar", type: "drink", image: "images/iced_americano.jpg" },
+    { name: "Iced Cappuccino", price: 260, category: "Cold coffee", section: "Bar", type: "drink", image: "images/iced_cappuccino.jpg" },
+    { name: "Iced Vanilla", price: 270, category: "Cold coffee", section: "Bar", type: "drink", image: "images/iced_vanilla_latte.jpg" },
+    { name: "Iced Caramel", price: 290, category: "Cold coffee", section: "Bar", type: "drink", image: "images/iced_caramel_latte.jpg" },
+    { name: "Iced Mocha", price: 290, category: "Cold coffee", section: "Bar", type: "drink", image: "images/iced_mocha.jpg" },
+    { name: "Iced Hazelnut", price: 290, category: "Cold coffee", section: "Bar", type: "drink", image: "images/iced_hazelnut_latte.jpg" },
+
+    { name: "Mocha (Frappe)", price: 320, category: "Frappe/Blended", section: "Bar", type: "drink", image: "images/frappe_crushed_mocha.jpg" },
+    { name: "Vanilla (Frappe)", price: 320, category: "Frappe/Blended", section: "Bar", type: "drink", image: "images/frappe_crushed_vanilla.jpg" },
+    { name: "Caramel (Frappe)", price: 320, category: "Frappe/Blended", section: "Bar", type: "drink", image: "images/frappe_crushed_caramel.jpg" },
+    { name: "Hazelnut (Frappe)", price: 320, category: "Frappe/Blended", section: "Bar", type: "drink", image: "images/frappe_crushed_hazelnut.jpg" },
+    { name: "Oreo (Frappe)", price: 320, category: "Frappe/Blended", section: "Bar", type: "drink", image: "images/alternate_oreo.jpg" },
+    { name: "Kitkat (Frappe)", price: 350, category: "Frappe/Blended", section: "Bar", type: "drink", image: "images/alternate_kitkat.jpg" },
+
+    { name: "Virgin Mojito", price: 250, category: "Mojito", section: "Bar", type: "drink", image: "images/virgin_mojito.jpg" },
+    { name: "Peach Mojito", price: 280, category: "Mojito", section: "Bar", type: "drink", image: "images/peach_mojito.jpg" },
+    { name: "Blueberry Mojito", price: 295, category: "Mojito", section: "Bar", type: "drink", image: "images/blueberry_mojito.jpg" },
+    { name: "Mango Mojito", price: 295, category: "Mojito", section: "Bar", type: "drink", image: "images/mango_mojito.jpg" },
+    { name: "Strawberry Mojito", price: 295, category: "Mojito", section: "Bar", type: "drink", image: "images/strawberry_mojito.jpg" },
+
+    { name: "Sparkling Tea (Apple)", price: 320, category: "Sparkling tea", section: "Bar", type: "drink", image: "images/sparkling_apple.jpg" },
+    { name: "Sparkling Tea (Peach)", price: 300, category: "Sparkling tea", section: "Bar", type: "drink", image: "images/sparkling_peach.jpg" },
+    { name: "Sparkling Tea (Lemon)", price: 290, category: "Sparkling tea", section: "Bar", type: "drink", image: "images/sparkling_lemon.jpg" },
+
+    { name: "Lemonade (Regular)", price: 230, category: "Lemonade", section: "Bar", type: "drink", image: "images/lemonade.jpg" },
+    { name: "Mint Lemonade", price: 250, category: "Lemonade", section: "Bar", type: "drink", image: "images/mint_lemonade.jpg" },
+    { name: "Peach Lemonade", price: 285, category: "Lemonade", section: "Bar", type: "drink", image: "images/peach_lemonade.jpg" },
+    { name: "Strawberry Lemonade", price: 285, category: "Lemonade", section: "Bar", type: "drink", image: "images/strawberry_lemonade.jpg" },
+
+    { name: "Iced Tea (Lemon)", price: 220, category: "Iced Tea", section: "Bar", type: "drink", image: "images/iced_tea_lemon.jpg" },
+    { name: "Iced Tea (Peach)", price: 270, category: "Iced Tea", section: "Bar", type: "drink", image: "images/iced_tea_peach.jpg" },
+    { name: "Iced Tea (Hibiscus)", price: 270, category: "Iced Tea", section: "Bar", type: "drink", image: "images/iced_tea_hibiscus.jpg" },
+    { name: "Iced Tea (Blackberries)", price: 270, category: "Iced Tea", section: "Bar", type: "drink", image: "images/blackberry_iced_tea.jpg" },
+    
+    { name: "Bubble Tea (Mango)", price: 280, category: "Bubble Tea", section: "Bar", type: "drink", image: "images/bubble_tea_mango.jpg" },
+    { name: "Bubble Tea (Vanilla)", price: 280, category: "Bubble Tea", section: "Bar", type: "drink", image: "images/bubble_tea_vanilla.jpg" },
+    { name: "Bubble Tea (Blueberry)", price: 280, category: "Bubble Tea", section: "Bar", type: "drink", image: "images/bubble_tea_blueberry.jpg" },
+    { name: "Bubble Tea (Chocolate)", price: 280, category: "Bubble Tea", section: "Bar", type: "drink", image: "images/bubble_tea_chocolate.jpg" },
+    { name: "Bubble Tea (Strawberry)", price: 280, category: "Bubble Tea", section: "Bar", type: "drink", image: "images/bubble_tea_strawberry.jpg" },
+    { name: "Bubble Tea (Honey Dew)", price: 280, category: "Bubble Tea", section: "Bar", type: "drink", image: "images/bubble_tea_honeydew.jpg" },
+    { name: "Bubble Tea (Mocha)", price: 280, category: "Bubble Tea", section: "Bar", type: "drink", image: "images/bubble_tea_mocha.jpg" },
+    { name: "Bubble Tea (Matcha)", price: 280, category: "Bubble Tea", section: "Bar", type: "drink", image: "images/bubble_tea_matcha.jpg" },
+    
+    { name: "Lassi (Sweet)", price: 195, category: "Lassi", section: "Bar", type: "drink", image: "images/lassi_sweet.jpg" },
+    { name: "Lassi (Mango)", price: 250, category: "Lassi", section: "Bar", type: "drink", image: "images/lassi_mango.jpg" },
+    { name: "Lassi (Strawberry)", price: 250, category: "Lassi", section: "Bar", type: "drink", image: "images/lassi_strawberry.jpg" },
+
+    // ================== NEW TEA ITEMS ==================
+    { name: "Black Rosella", price: 150, category: "Tea", section: "Bar", type: "drink", image: "images/black_rosella.jpg", recipe: [{ materialId: 'tea-bag-rosella', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
+    { name: "Butterfly", price: 180, category: "Tea", section: "Bar", type: "drink", image: "images/butterfly.jpg", recipe: [{ materialId: 'tea-bag-butterfly-pea', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
+    { name: "Calming Tea", price: 200, category: "Tea", section: "Bar", type: "drink", image: "images/calming_tea.jpg", recipe: [{ materialId: 'tea-bag-calming', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
+    { name: "Chamomile", price: 150, category: "Tea", section: "Bar", type: "drink", image: "images/chamomile.jpg", recipe: [{ materialId: 'tea-bag-chamomile', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
+    { name: "Earl Grey", price: 150, category: "Tea", section: "Bar", type: "drink", image: "images/earl_grey.jpg", recipe: [{ materialId: 'tea-bag-earl-grey', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
+    { name: "Floral Delight", price: 200, category: "Tea", section: "Bar", type: "drink", image: "images/floral_delight.jpg", recipe: [{ materialId: 'tea-bag-floral-delight', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
+    { name: "Ginger Honey Hot Lemon", price: 130, category: "Tea", section: "Bar", type: "drink", image: "images/ginger_honey_hot_lemon.jpg", recipe: [{ materialId: 'hot-water', quantity: 0.22 }, { materialId: 'ginger-slice', quantity: 2 }, { materialId: 'honey', quantity: 0.02 }, { materialId: 'lemon-slice', quantity: 1 }] },
+    { name: "Green Tea", price: 150, category: "Tea", section: "Bar", type: "drink", image: "images/green_tea.jpg", recipe: [{ materialId: 'tea-bag-green', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
+    { name: "Hibiscus", price: 180, category: "Tea", section: "Bar", type: "drink", image: "images/hibiscus.jpg", recipe: [{ materialId: 'tea-bag-hibiscus', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
+    { name: "Himalayan Green Tea", price: 150, category: "Tea", section: "Bar", type: "drink", image: "images/himalayan_green_tea.jpg", recipe: [{ materialId: 'tea-bag-himalayan-green', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
+    { name: "Himalayan Herbal", price: 150, category: "Tea", section: "Bar", type: "drink", image: "images/himalayan_herbal.jpg", recipe: [{ materialId: 'tea-bag-himalayan-herbal', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
+    { name: "Himalayan Pearl Black Tea", price: 120, category: "Tea", section: "Bar", type: "drink", image: "images/himalayan_pearl_black_tea.jpg", recipe: [{ materialId: 'tea-bag-himalayan-black', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
+    { name: "Honey Hot Lemon", price: 125, category: "Tea", section: "Bar", type: "drink", image: "images/honey_hot_lemon.jpg", recipe: [{ materialId: 'hot-water', quantity: 0.22 }, { materialId: 'honey', quantity: 0.02 }, { materialId: 'lemon-slice', quantity: 1 }] },
+    { name: "Hot Lemon", price: 75, category: "Tea", section: "Bar", type: "drink", image: "images/hot_lemon.jpg", recipe: [{ materialId: 'hot-water', quantity: 0.22 }, { materialId: 'lemon-slice', quantity: 2 }] },
+    { name: "Illam with Lemon Grass", price: 150, category: "Tea", section: "Bar", type: "drink", image: "images/illam_with_lemon_grass.jpg", recipe: [{ materialId: 'tea-loose-illam', quantity: 0.01 }, { materialId: 'lemongrass-stalk', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
+    { name: "Jasmine", price: 150, category: "Tea", section: "Bar", type: "drink", image: "images/jasmine.jpg", recipe: [{ materialId: 'tea-bag-jasmine', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
+    { name: "Lavender Rose", price: 220, category: "Tea", section: "Bar", type: "drink", image: "images/flower_tea.jpg", recipe: [{ materialId: 'tea-bag-lavender-rose', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
+    { name: "Lemon Tea", price: 150, category: "Tea", section: "Bar", type: "drink", image: "images/lemon_tea.jpg", recipe: [{ materialId: 'tea-bag-black', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }, { materialId: 'lemon-slice', quantity: 1 }] },
+    { name: "Midnight Red Rose", price: 200, category: "Tea", section: "Bar", type: "drink", image: "images/midnight_red_rose.jpg", recipe: [{ materialId: 'tea-bag-red-rose', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
+    { name: "Organic Black Tea", price: 100, category: "Tea", section: "Bar", type: "drink", image: "images/organic_black_tea.jpg", recipe: [{ materialId: 'tea-bag-organic-black', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
+    { name: "Pearl Green Tea", price: 150, category: "Tea", section: "Bar", type: "drink", image: "images/pearl_green_tea.jpg", recipe: [{ materialId: 'tea-loose-pearl-green', quantity: 0.01 }, { materialId: 'hot-water', quantity: 0.22 }] },
+    { name: "Peppermint", price: 150, category: "Tea", section: "Bar", type: "drink", image: "images/peppermint.jpg", recipe: [{ materialId: 'tea-bag-peppermint', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
+    { name: "Spearmint", price: 150, category: "Tea", section: "Bar", type: "drink", image: "images/spearmint.jpg", recipe: [{ materialId: 'tea-bag-spearmint', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
+    
+    // ================== NEW SOFT DRINKS ==================
+    { name: "Sprite", price: 95, category: "Soft Drinks", section: "Bar", type: "drink", image: "images/sprite.jpg" },
+    { name: "Coke", price: 95, category: "Soft Drinks", section: "Bar", type: "drink", image: "images/coke.jpg" },
+
+    // ================== RETAIL & MISC ==================
+    { name: "Butterfly Pea Packet", price: 400, category: "Retail", section: "Bar", type: "food", image: "images/butterfly_peaPKT.jpg" },
+    { name: "Calming Tea Packet", price: 400, category: "Retail", section: "Bar", type: "food", image: "images/calming_teaPKT.jpg" },
+    { name: "Coffee Bag Packet", price: 950, category: "Retail", section: "Bar", type: "food", image: "images/coffee_bagPKT.jpg" },
+    { name: "Strainer 1", price: 250, category: "Retail", section: "Bar", type: "tool", image: "images/strainer1.jpg" },
+    { name: "Strainer 2", price: 300, category: "Retail", section: "Bar", type: "tool", image: "images/strainer2.jpg" },
+    { name: "Strainer 3", price: 400, category: "Retail", section: "Bar", type: "tool", image: "images/strainer3.jpg" },
+    { name: "Hibiscus PKT", price: 450, category: "Retail", section: "Bar", type: "food", image: "images/hibiscus_PKT.jpg" },
+    { name: "Chamomile PKT", price: 350, category: "Retail", section: "Bar", type: "food", image: "images/chamomile_PKT.jpg" },
+    { name: "Lavender PKT", price: 300, category: "Retail", section: "Bar", type: "food", image: "images/lavender_PKT.jpg" },
+    { name: "Pepper Mint PKT", price: 250, category: "Retail", section: "Bar", type: "food", image: "images/peppermint_PKT.jpg" },
+    { name: "Spearmint PKT", price: 250, category: "Retail", section: "Bar", type: "food", image: "images/spearmint_PKT.jpg" },
+    { name: "Floral Delight PKT", price: 490, category: "Retail", section: "Bar", type: "food", image: "images/floral_delight_PKT.jpg" },
+    { name: "Herbal Tea PKT", price: 400, category: "Retail", section: "Bar", type: "food", image: "images/herbal_tea.jpg" },
+    { name: "Jasmine PKT", price: 380, category: "Retail", section: "Bar", type: "food", image: "images/jasmine.jpg" },
+
+    { name: "Artice Brust", price: 30, category: "Misc", section: "Bar", type: "misc", image: "images/artice_brust.jpg", discountable: false },
+    { name: "Hukka", price: 550, category: "Misc", section: "Bar", type: "misc", image: "images/hukka.jpg", discountable: false },
+    { name: "Juju Dhau", price: 85, category: "Misc", section: "Bar", type: "misc", image: "images/juju_dhau.jpg", discountable: false },
+    { name: "Shikhar Ice", price: 25, category: "Misc", section: "Bar", type: "misc", image: "images/shikhar_ICE.jpg", discountable: false },
+    { name: "Surya Light", price: 30, category: "Misc", section: "Bar", type: "misc", image: "images/surya_light.jpg", discountable: false },
+    { name: "Surya Red", price: 30, category: "Misc", section: "Bar", type: "misc", image: "images/surya_red.jpg", discountable: false },
+    { name: "Water", price: 50, category: "Misc", section: "Bar", type: "misc", image: "images/water.jpg", discountable: false }
+];
+
+const extras = [
+    // Food Extras
+    { name: "Cheese", price: 75, image: "images/cheese.jpg", type: "food" },
+    { name: "Sausage", price: 40, image: "images/sausage.jpg", type: "food" },
+    { name: "Extra Chicken", price: 120, image: "images/extra_chicken.jpg", type: "food" },
+    { name: "Extra Buff", price: 100, image: "images/extra_buff.jpg", type: "food" },
+    { name: "Egg", price: 50, image: "images/egg.jpg", type: "food" },
+    { name: "Salad", price: 75, image: "images/salad.jpg", type: "food" },
+    { name: "Toast", price: 50, image: "images/toast.jpg", type: "food" },
+
+    // Drink Extras
+    { name: "Boba", price: 50, image: "images/boba.jpg", type: "drink" },
+    { name: "Flavour Shot", price: 50, image: "images/flavour.jpg", type: "drink" },
+    { name: "Extra Ice", price: 10, image: "images/ice.jpg", type: "drink" },
+    { name: "Extra Sugar", price: 5, image: "images/sugar.jpg", type: "drink" },
+
+    // Misc Extras (for hukka, etc.)
+    { name: "Extra Coil", price: 50, image: "images/coil.jpg", type: "misc" },
+    { name: "Extra Flavour", price: 250, image: "images/extraflavour.jpg", type: "misc" }
+];
+const discountCodes = {
+    "SAVE10": 10,
+    "SAVE20": 20,
+    "FREEDRINK": 15
+};
+
+// NEW: This object defines the top-level sections and their categories
+const menuSections = {
+    "Food": [
+        "Bakery",
+        "Burger with fries",
+        "Wrap with Fries",
+        "Keema Noodles",
+        "Stm Mo:Mo",
+        "Jhol Mo:Mo",
+        "Chilly",
+        "Pizza",
+        "French fry",
+        "Wings",
+        "Fry Rice",
+        "Sausage",
+        "Laping"
+    ],
+    "Drinks": [
+        "Hot coffee",
+        "Cold coffee",
+        "Tea", // Added Tea category
+        "Iced Tea",
+        "Mojito",
+        "Lemonade",
+        "Lassi",
+        "Bubble Tea",
+        "Sparkling tea",
+        "Frappe/Blended",
+        "Soft Drinks" // Added Soft Drinks category
+    ],
+    "Retail & Misc": [
+        "Retail",
+        "Misc"
+    ]
+};
+
+
+// =========================================================================
+// =================== LOCAL STORAGE MANAGEMENT ==========================
+// =========================================================================
+function saveToLocalStorage(key, data) {
+    try {
+        localStorage.setItem(key, JSON.stringify(data));
+        console.log(`Saved '${key}' to localStorage.`);
+    } catch (error) {
+        console.error(`Error saving '${key}' to localStorage:`, error);
+        notifications.show(`Error saving data locally for '${key}'.`, 'error');
+    }
+}
+
+function getFromLocalStorage(key) {
+    try {
+        const data = localStorage.getItem(key);
+        return data ? JSON.parse(data) : null;
+    } catch (error) {
+        console.error(`Error reading '${key}' from localStorage:`, error);
+        notifications.show(`Error loading data locally for '${key}'.`, 'error');
+        return null;
+    }
+}
+
+function loadFromLocalStorage() {
+    orders = getFromLocalStorage('orders') || {};
+    tableTimers = getFromLocalStorage('tableTimers') || {};
+    salesHistory = getFromLocalStorage('salesHistory') || [];
+    orderHistory = getFromLocalStorage('orderHistory') || [];
+    voidDetails = getFromLocalStorage('voidDetails') || [];
+    kotHistory = getFromLocalStorage('kotHistory') || [];
+    itemsSold = getFromLocalStorage('itemsSold') || []; // Load aggregated items
+    
+    // Ensure data structures are correct types on load
+    if (!Array.isArray(salesHistory)) salesHistory = [];
+    if (!Array.isArray(orderHistory)) orderHistory = [];
+    if (!Array.isArray(voidDetails)) voidDetails = [];
+    if (!Array.isArray(kotHistory)) kotHistory = [];
+    if (!Array.isArray(itemsSold)) itemsSold = [];
+}
+
+// Automatically save all main state variables to localStorage
+function persistAllData() {
+    saveToLocalStorage('orders', orders);
+    saveToLocalStorage('tableTimers', tableTimers);
+    saveToLocalStorage('salesHistory', salesHistory);
+    saveToLocalStorage('orderHistory', orderHistory);
+    saveToLocalStorage('voidDetails', voidDetails);
+    saveToLocalStorage('kotHistory', kotHistory);
+    saveToLocalStorage('itemsSold', itemsSold);
+}
+
+// =========================================================================
+// =================== UTILITY FUNCTIONS ===================================
+// =========================================================================
+
+function showLoadingSpinner() {
+    const spinner = document.getElementById('loading-spinner');
+    if (spinner) spinner.style.display = 'block';
+}
+
+function hideLoadingSpinner() {
+    const spinner = document.getElementById('loading-spinner');
+    if (spinner) spinner.style.display = 'none';
+}
+
+/**
+ * A modern, promise-based replacement for the native `prompt()`.
+ * This is non-blocking and works reliably on all devices, especially mobile.
+ * @param {string} title - The title for the modal dialog.
+ * @param {string} message - The message or question to display.
+ * @param {object} options - Configuration for the prompt.
+ * @param {string} options.inputType - 'text' or 'textarea'.
+ * @param {string} options.initialValue - An initial value for the input field.
+ * @param {string} options.placeholder - Placeholder text for the input.
+ * @returns {Promise<string|null>} A promise that resolves with the user's input, or null if cancelled.
+ */
+function showPromptModal(title, message, options = {}) {
+    return new Promise(resolve => {
+        const modal = document.getElementById('generic-prompt-modal');
+        const titleEl = document.getElementById('generic-prompt-title');
+        const messageEl = document.getElementById('generic-prompt-message');
+        const inputContainer = document.getElementById('generic-prompt-input-container');
+        const confirmBtn = document.getElementById('generic-prompt-confirm-btn');
+        const cancelBtn = document.getElementById('generic-prompt-cancel-btn');
+
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+
+        inputContainer.innerHTML = ''; // Clear previous input
+        const inputType = options.inputType || 'text';
+        const inputEl = inputType === 'textarea'
+            ? document.createElement('textarea')
+            : document.createElement('input');
+        
+        inputEl.className = 'generic-modal-input';
+        if (inputType !== 'textarea') inputEl.type = 'text';
+        inputEl.id = 'generic-prompt-input-field';
+        inputEl.value = options.initialValue || '';
+        inputEl.placeholder = options.placeholder || '';
+        if (inputType === 'textarea') inputEl.rows = 4;
+        
+        inputContainer.appendChild(inputEl);
+        inputContainer.style.display = 'block'; // Ensure input is visible
+        
+        modal.style.display = 'flex';
+        inputEl.focus();
+
+        const cleanupAndResolve = (value) => {
+            modal.style.display = 'none';
+            // Use .replaceWith to remove event listeners cleanly
+            confirmBtn.replaceWith(confirmBtn.cloneNode(true));
+            cancelBtn.replaceWith(cancelBtn.cloneNode(true));
+            resolve(value);
+        };
+
+        const newConfirmBtn = confirmBtn.cloneNode(true);
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+        
+        newConfirmBtn.onclick = () => cleanupAndResolve(inputEl.value);
+        newCancelBtn.onclick = () => cleanupAndResolve(null);
+    });
+}
+
+/**
+ * A modern, promise-based replacement for the native `confirm()`.
+ * This is non-blocking and provides a better user experience.
+ * @param {string} title - The title for the confirmation dialog.
+ * @param {string} message - The question to ask the user.
+ * @returns {Promise<boolean>} A promise that resolves with `true` if confirmed, or `false` if cancelled.
+ */
+function showConfirmModal(title, message) {
+     return new Promise(resolve => {
+        const modal = document.getElementById('generic-prompt-modal');
+        const titleEl = document.getElementById('generic-prompt-title');
+        const messageEl = document.getElementById('generic-prompt-message');
+        const inputContainer = document.getElementById('generic-prompt-input-container');
+        const confirmBtn = document.getElementById('generic-prompt-confirm-btn');
+        const cancelBtn = document.getElementById('generic-prompt-cancel-btn');
+
+        titleEl.textContent = title;
+        messageEl.innerHTML = message;
+        inputContainer.style.display = 'none'; // Hide the input field
+        
+        modal.style.display = 'flex';
+
+        const cleanupAndResolve = (value) => {
+            modal.style.display = 'none';
+            inputContainer.style.display = 'block'; // Show input field again for next use
+            confirmBtn.replaceWith(confirmBtn.cloneNode(true));
+            cancelBtn.replaceWith(cancelBtn.cloneNode(true));
+            resolve(value);
+        };
+        
+        const newConfirmBtn = confirmBtn.cloneNode(true);
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+        
+        newConfirmBtn.onclick = () => cleanupAndResolve(true);
+        newCancelBtn.onclick = () => cleanupAndResolve(false);
+    });
+}
+
+class NotificationSystem {
+    constructor() {
+        this.notificationQueue = [];
+        this.isShowing = false;
+    }
+
+    show(message, type = 'info', duration = 3000) {
+        if (!message) return;
+        this.notificationQueue.push({ message, type, duration });
+        if (!this.isShowing) {
+            this.processQueue();
+        }
+    }
+
+    processQueue() {
+        if (this.notificationQueue.length === 0) {
+            this.isShowing = false;
+            return;
+        }
+        this.isShowing = true;
+        const { message, type, duration } = this.notificationQueue.shift();
+        this.displayNotification(message, type, duration);
+    }
+
+    displayNotification(message, type, duration) {
+        const toast = document.getElementById('notification-toast');
+        if (!toast) return;
+
+        toast.className = 'notification-toast'; // Reset classes
+        toast.classList.add(`notification-${type}`);
+        toast.innerHTML = `
+            <div class="notification-icon">${this.getIconForType(type)}</div>
+            <div class="notification-message">${message}</div>
+        `;
+        toast.style.display = 'flex';
+        
+        requestAnimationFrame(() => {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateY(0)';
+        });
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                toast.style.display = 'none';
+                this.processQueue();
+            }, 300);
+        }, duration);
+    }
+
+    getIconForType(type) {
+        const icons = {
+            info: '<i class="fas fa-info-circle"></i>',
+            success: '<i class="fas fa-check-circle"></i>',
+            warning: '<i class="fas fa-exclamation-triangle"></i>',
+            error: '<i class="fas fa-times-circle"></i>'
+        };
+        return icons[type] || icons.info;
+    }
+}
+const notifications = new NotificationSystem();
+
+// Date and Time
+function updateDateTime() {
+    const datetimeEl = document.getElementById('datetime');
+    if (datetimeEl) datetimeEl.textContent = new Date().toLocaleString();
+}
+
+// Theme Management
+function loadTheme() {
+    const theme = localStorage.getItem('theme') || 'light';
+    if (theme === 'dark') document.body.classList.add('dark-mode');
+    document.getElementById('theme-toggle').className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+}
+
+function toggleTheme() {
+    document.body.classList.toggle('dark-mode');
+    const isDark = document.body.classList.contains('dark-mode');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    document.getElementById('theme-toggle').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+}
+
+function generateOrderId() {
+    const now = new Date();
+    return `TAB-${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+}
+
+function pad(num) {
+    return num.toString().padStart(2, '0');
+}
+
+// =========================================================================
+// =================== POS CORE LOGIC ======================================
+// =========================================================================
+
+const tableList = ['1', '2', '3', '4', '5', '6', '7', '8A', '8B', '9A', '9B', '10A', '10B', '10C', '11', '12'];
+
+function initializeTables() {
+    const tablesDashboard = document.getElementById('tables-dashboard');
+    if (!tablesDashboard) return;
+
+    tablesDashboard.innerHTML = '';
+
+    tableList.forEach(table => {
+        const tableBtn = document.createElement('button');
+        tableBtn.className = 'table-btn';
+        tableBtn.id = `table-btn-${table}`;
+
+        // Determine table status from local data
+        let status = (orders[table] && orders[table].length > 0) ? 'occupied' : 'available';
+        tableBtn.classList.add(status);
+
+        // Timer display logic
+        const elapsedTime = tableTimers[table] ? formatTime(Math.floor(tableTimers[table].elapsed / 1000)) : '00:00';
+
+        tableBtn.innerHTML = `
+            <div>Table ${table}</div>
+            ${status !== 'available' ? `<div class="timer" id="timer-${table}">${elapsedTime}</div>` : ''}
+        `;
+
+        tableBtn.addEventListener('click', () => selectTable(table));
+        tablesDashboard.appendChild(tableBtn);
+    });
+}
+
+function formatTime(seconds) {
+    if (isNaN(seconds) || seconds < 0) return "00:00";
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
+function updateTableTimers() {
+    const now = Date.now();
+    let changed = false;
+
+    Object.entries(tableTimers).forEach(([table, timer]) => {
+        if (orders[table] && orders[table].length > 0) {
+            const lastUpdated = timer.lastUpdated || now;
+            const elapsed = (timer.elapsed || 0) + (now - lastUpdated);
+            tableTimers[table] = { ...timer, elapsed, lastUpdated: now };
+            changed = true;
+            const timerElement = document.getElementById(`timer-${table}`);
+            if (timerElement) {
+                timerElement.textContent = formatTime(Math.floor(elapsed / 1000));
+            }
+        } else {
+            // If order is empty, clear timer
+            delete tableTimers[table];
+            changed = true;
+            const tableBtn = document.getElementById(`table-btn-${table}`);
+            if (tableBtn) {
+                tableBtn.classList.remove('occupied', 'blinking');
+                tableBtn.classList.add('available');
+                const timerElement = tableBtn.querySelector('.timer');
+                if (timerElement) timerElement.textContent = '00:00';
+            }
+        }
+    });
+
+    if (changed) {
+        persistAllData();
+    }
+}
+
+async function selectTable(tableNumber) {
+    showLoadingSpinner();
+    currentTable = tableNumber;
+    document.getElementById('selected-table').textContent = tableNumber;
+    document.getElementById('selected-table-checkout').textContent = tableNumber;
+
+    // Immediately clear and show loading for order items
+    const orderItemsDiv = document.getElementById('order-items');
+    if (orderItemsDiv) {
+        orderItemsDiv.innerHTML = '<div class="no-items">Loading order...</div>';
+    }
+    updateTotal();
+
+    // Load order from local storage (already loaded on app start, this just ensures it's referenced)
+    orders[tableNumber] = orders[tableNumber] || []; 
+    
+    renderOrderItems();
+    updateTotal();
+    stopBlinking(tableNumber);
+    initializeTables(); // Update table status visual
+    hideLoadingSpinner();
+}
+
+// Helper to get image for category or section
+function getRepresentativeImage(name, isSection = false) {
+    if (isSection) {
+        // For top-level sections, pick a representative category's image
+        const categoriesInSection = menuSections[name];
+        if (categoriesInSection && categoriesInSection.length > 0) {
+            const firstCategory = categoriesInSection[0];
+            const firstItemInCategory = menuItems.find(item => item.category === firstCategory && item.image);
+            if (firstItemInCategory) return firstItemInCategory.image;
+        }
+    } else {
+        // For individual categories, pick the first item's image
+        const firstItemInCategory = menuItems.find(item => item.category === name && item.image);
+        if (firstItemInCategory) return firstItemInCategory.image;
+    }
+    return 'images/placeholder.jpg'; // Generic placeholder
+}
+
+
+// NEW: Central function for rendering menu navigation
+function renderMenuNavigation() {
+    const categoriesContainer = document.getElementById('categories'); // This will be empty for grid categories
+    const menuItemsContainer = document.getElementById('menu');
+    const backButton = document.getElementById('back-button');
+    const menuSectionTitle = document.getElementById('menu-section-title');
+    const searchInput = document.getElementById('search');
+
+    if (!categoriesContainer || !menuItemsContainer || !backButton || !menuSectionTitle || !searchInput) return;
+
+    // Clear previous content
+    categoriesContainer.innerHTML = ''; 
+    menuItemsContainer.innerHTML = '';
+    
+    // Hide back button by default
+    backButton.style.display = 'none'; 
+    
+    // Clear active states for buttons (though they won't be used for top-level categories now)
+    document.querySelectorAll('.categories button').forEach(btn => btn.classList.remove('active'));
+
+    // If there's an active search, prioritize showing search results
+    if (searchInput.value.trim() !== '') {
+        searchMenu(); // This function will handle rendering and title
+        return; // Exit, as searchMenu handles the display
+    }
+
+    if (currentMenuLevel === 'topLevelSections') {
+        menuSectionTitle.textContent = "Select Section";
+        Object.keys(menuSections).sort().forEach(sectionName => {
+            const div = document.createElement('div');
+            div.className = `menu-item category-card`; // Reuse menu-item styling, add specific class
+
+            const imageUrl = getRepresentativeImage(sectionName, true); // Get image for the section
+
+            div.innerHTML = `
+                <img src="${imageUrl}" alt="${sectionName}" loading="lazy">
+                <p class="category-card-name">${sectionName}</p>
+            `;
+
+            div.addEventListener('click', () => {
+                activeSection = sectionName;
+                currentMenuLevel = 'categoriesOfSection';
+                renderMenuNavigation(); // Re-render to show categories of selected section
+            });
+            menuItemsContainer.appendChild(div); // Append to menu div, which is the grid
+        });
+    } else if (currentMenuLevel === 'categoriesOfSection' && activeSection) {
+        menuSectionTitle.textContent = activeSection;
+        backButton.style.display = 'block'; 
+
+        menuSections[activeSection].sort().forEach(categoryName => {
+            const div = document.createElement('div');
+            div.className = `menu-item category-card`; 
+
+            const imageUrl = getRepresentativeImage(categoryName, false); // Get image for the category
+
+            div.innerHTML = `
+                <img src="${imageUrl}" alt="${categoryName}" loading="lazy">
+                <p class="category-card-name">${categoryName}</p>
+            `;
+
+            div.addEventListener('click', () => {
+                activeCategoryDisplayGroup = categoryName;
+                currentMenuLevel = 'itemsOfCategory';
+                renderMenuNavigation(); // Re-render to show items of selected category
+            });
+            menuItemsContainer.appendChild(div);
+        });
+    } else if (currentMenuLevel === 'itemsOfCategory' && activeCategoryDisplayGroup) {
+        renderMenuItemsForCategory(activeCategoryDisplayGroup); // Renamed from renderMenuItemsForGroup
+        menuSectionTitle.textContent = activeCategoryDisplayGroup;
+        backButton.style.display = 'block'; 
+    }
+}
+
+// NEW: Navigate back function
+function navigateBackMenu() {
+    const searchInput = document.getElementById('search');
+    // If we are currently showing search results, clear search and go back to top-level sections
+    if (searchInput.value.trim() !== '') {
+        searchInput.value = ''; // Clear search term
+        currentMenuLevel = 'topLevelSections';
+        activeSection = null;
+        activeCategoryDisplayGroup = null;
+    } else if (currentMenuLevel === 'itemsOfCategory') {
+        currentMenuLevel = 'categoriesOfSection';
+        activeCategoryDisplayGroup = null; // Clear the selected category
+    } else if (currentMenuLevel === 'categoriesOfSection') {
+        currentMenuLevel = 'topLevelSections';
+        activeSection = null; // Clear the selected section
+    }
+    renderMenuNavigation(); // Re-render to show previous level
+}
+
+// Renamed from renderMenuItemsForGroup to be more explicit
+function renderMenuItemsForCategory(categoryName = null) {
+    const menu = document.getElementById('menu');
+    if (!menu) return;
+    menu.innerHTML = ''; // Clear existing items
+
+    let filteredItems = menuItems;
+    if (categoryName) {
+        filteredItems = menuItems.filter(item => item.category === categoryName);
+    }
+    // Apply search filter if active
+    const searchTerm = document.getElementById('search')?.value.toLowerCase() || '';
+    if (searchTerm) {
+        filteredItems = filteredItems.filter(item => item.name.toLowerCase().includes(searchTerm));
+    }
+
+    if (filteredItems.length === 0) {
+        menu.innerHTML = '<p class="text-muted text-center py-4">No items found in this category.</p>';
+        return;
+    }
+
+    filteredItems.forEach(item => {
+        const div = document.createElement('div');
+        div.className = `menu-item`; 
+        
+        div.innerHTML = `
+            <img src="${item.image}" alt="${item.name}" loading="lazy">
+            <p>${item.name}</p>
+            <div class="price">Rs ${item.price.toFixed(2)}</div>
+        `;
+
+        div.addEventListener('click', () => addToOrder(item));
+        menu.appendChild(div);
+    });
+}
+
+// No stock check without inventory system
+function hasSufficientStock(menuItem) {
+    return true; // Always true as inventory tracking is removed
+}
+
+async function addToOrder(item) {
+    if (!currentTable) {
+        notifications.show('Please select a table first!', 'warning');
+        return;
+    }
+
+    orders[currentTable] ??= [];
+    const existingItem = orders[currentTable].find(i =>
+        i.name === item.name &&
+        JSON.stringify(i.extras || []) === JSON.stringify(i.extras || []) &&
+        (i.notes || '') === (item.notes || '')
+    );
+
+    if (existingItem) {
+        existingItem.quantity += 1;
+    } else {
+        orders[currentTable].push({
+            ...item,
+            quantity: 1,
+            extras: item.extras || [],
+            notes: item.notes || '',
+            status: 'pending' // pending -> finalized
+        });
+    }
+
+    persistAllData();
+    renderOrderItems();
+    updateTotal();
+    startBlinking(currentTable);
+    initializeTables(); // Update table status visual
+    notifications.show(`${item.name} added to Table ${currentTable}`, 'success');
+}
+
+function renderOrderItems() {
+    const orderItemsDiv = document.getElementById('order-items');
+    if (!orderItemsDiv) return;
+
+    if (!currentTable || !orders[currentTable] || orders[currentTable].length === 0) {
+        orderItemsDiv.innerHTML = '<div class="no-items">No items added to this table</div>';
+        updateTotal();
+        return;
+    }
+
+    orderItemsDiv.innerHTML = orders[currentTable].map((item, index) => {
+        const extrasTotal = item.extras?.reduce((sum, e) => sum + e.price, 0) || 0;
+        const isFinalized = item.finalized;
+        const isDiscountable = item.discountable !== false;
+
+        let statusBadge = '';
+        if (isFinalized) {
+            statusBadge = '<span class="finalized-badge">FINALIZED</span>';
+            if (item.kotNumber) {
+                statusBadge += ` <span class="kot-info-badge">KOT: ${item.kotNumber}</span>`;
+            }
+        } else if (item.quantity > 0 && item.name) {
+            statusBadge = '<span class="pending-kot-badge" style="color:orange; font-size:0.8em; margin-left:5px;">PENDING KOT</span>';
+        }
+
+        const removeButtonHTML = !isFinalized
+            ? `<button class="remove-btn" style="background-color: #cc0000; color: white;">Remove Item</button>`
+            : '';
+
+        const priceDisplayHTML = `Rs ${(item.quantity * (item.price + extrasTotal)).toFixed(2)}`;
+
+        let comboDetailsHTML = '';
+        if (item.type === 'combo' && Array.isArray(item.details) && item.details.length > 0) {
+            comboDetailsHTML = `<ul class="combo-details-list" style="margin: 4px 0 0 0; padding-left: 18px; font-size: 0.95em; color: #0a4d6a;">
+                ${item.details.map(detail => `<li>${detail}</li>`).join('')}
+            </ul>`;
+        }
+        return `
+            <div class="order-item" data-index="${index}">
+                <div class="order-item-details">
+                    <p>
+                        ${item.name} x${item.quantity} - ${priceDisplayHTML}
+                        ${!isDiscountable ? '<span class="non-discountable">(Non-discountable)</span>' : ''}
+                        ${statusBadge}
+                    </p>
+                    ${comboDetailsHTML}
+                    ${item.extras?.length ? `<p class="extras-display" style="font-size: 0.8em; color: #555; margin-top: 4px;">Extras: ${item.extras.map(e => `${e.name} (+Rs ${e.price.toFixed(2)})`).join(', ')}</p>` : ''}
+                    ${item.notes ? `<p class="notes">Notes: ${item.notes}</p>` : ''}
+                </div>
+                <div class="order-item-controls">
+                    <div class="quantity-control">
+                        <button class="decrement-btn" ${isFinalized ? 'disabled' : ''}>-</button>
+                        <input type="number" value="${item.quantity}" min="1" ${isFinalized ? 'disabled' : ''}>
+                        <button class="increment-btn">+</button>
+                    </div>
+                    <button class="notes-btn" style="background-color: #2196f3; color: white;" ${isFinalized ? 'disabled' : ''}>Notes</button>
+                    <button class="extras-btn" data-name="${item.name}"
+                            style="background-color: #ff9800; color: white;" ${isFinalized ? 'disabled' : ''}>Extras</button>
+                    <button class="void-btn" style="background-color: #ef4444; color: white;">Void Item</button>
+                    ${removeButtonHTML}
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    updateTotal();
+    const styleElement = document.createElement('style');
+    styleElement.innerHTML = `
+        .finalized-badge { background-color: #673AB7; color: white; padding: 2px 5px; border-radius: 3px; font-size: 0.7em; margin-left: 5px; }
+        .kot-info { font-size: 0.8em; color: #666; margin-top: 3px; }
+        .order-item-controls button[disabled] { opacity: 0.5; cursor: not-allowed; }
+        .order-item-controls input[disabled] { background-color: #eee; cursor: not-allowed; }
+        .combo-details-list { margin: 4px 0 0 0; padding-left: 18px; font-size: 0.95em; color: #0a4d6a; }
+        .combo-details-list li { margin-bottom: 2px; }
+    `;
+    document.head.appendChild(styleElement);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const orderItemsDiv = document.getElementById('order-items');
+    if (orderItemsDiv) {
+        orderItemsDiv.addEventListener('click', async (e) => {
+            const target = e.target;
+            const orderItemElement = target.closest('.order-item');
+            if (!orderItemElement) return;
+
+            const index = parseInt(orderItemElement.dataset.index);
+            if (isNaN(index)) {
+                console.error("Could not determine item index from clicked element.");
+                return;
+            }
+
+            if (target.classList.contains('increment-btn')) {
+                await incrementQuantity(index);
+            } else if (target.classList.contains('decrement-btn')) {
+                await decrementQuantity(index);
+            } else if (target.classList.contains('notes-btn')) {
+                if (target.disabled) {
+                    notifications.show("Cannot add notes to a finalized item.", "warning");
+                    return;
+                }
+                currentItemIndex = index;
+                showNotesModal();
+            } else if (target.classList.contains('extras-btn')) {
+                if (target.disabled) {
+                    notifications.show("Cannot add extras to a finalized item.", "warning");
+                    return;
+                }
+                currentItemIndex = index;
+                showExtrasModal();
+            } else if (target.classList.contains('void-btn')) {
+                voidItem(index);
+            } else if (target.classList.contains('remove-btn')) {
+                removeOrderItem(index);
+            }
+        });
+
+        orderItemsDiv.addEventListener('change', (e) => {
+            const targetInput = e.target;
+            if (targetInput.tagName === 'INPUT' && targetInput.type === 'number') {
+                if (targetInput.disabled) {
+                     notifications.show("Cannot change quantity of a finalized item.", "warning");
+                     const index = parseInt(targetInput.closest('.order-item')?.dataset.index);
+                     if (!isNaN(index) && orders[currentTable]?.[index]) {
+                        targetInput.value = orders[currentTable][index].quantity;
+                     }
+                     return;
+                }
+
+                const index = parseInt(targetInput.closest('.order-item')?.dataset.index);
+                if (!isNaN(index)) {
+                    updateOrderQuantity(index, parseInt(targetInput.value));
+                }
+            }
+        });
+    }
+});
+
+function updateOrderQuantity(index, quantity) {
+    if (!orders[currentTable]?.[index]) return;
+    const item = orders[currentTable][index];
+    
+    if (isNaN(quantity) || quantity < 1) {
+        notifications.show(`Invalid quantity.`, 'error');
+        renderOrderItems();
+        return;
+    }
+
+    item.quantity = quantity;
+
+    if (item.quantity <= 0) {
+        removeOrderItem(index);
+    } else {
+        persistAllData();
+        renderOrderItems();
+        initializeTables();
+    }
+
+    if (orders[currentTable].length === 0) {
+        delete tableTimers[currentTable];
+        persistAllData();
+    }
+}
+
+async function incrementQuantity(index) {
+    if (!currentTable || !orders[currentTable]?.[index]) {
+        notifications.show('Item not found in the current order.', 'error');
+        console.error('Attempted to increment non-existent item at index:', index, 'for table:', currentTable, 'Current orders:', JSON.parse(JSON.stringify(orders)));
+        return;
+    }
+
+    showLoadingSpinner();
+    const itemEntry = orders[currentTable][index];
+    const wasFinalizedInitially = itemEntry.finalized;
+
+    itemEntry.quantity += 1;
+    if (wasFinalizedInitially) {
+        itemEntry.finalized = false;
+        delete itemEntry.kotNumber;
+    }
+    
+    persistAllData();
+    renderOrderItems();
+    updateTotal();
+    hideLoadingSpinner();
+
+    if (wasFinalizedInitially) {
+        notifications.show(
+            `${itemEntry.name} quantity increased. It's now un-finalized and will be included in the next KOT.`,
+            'info',
+            5000
+        );
+    } else {
+        notifications.show(`Quantity for ${itemEntry.name} increased.`, 'success');
+    }
+}
+
+async function decrementQuantity(index) {
+    if (!orders[currentTable]?.[index]) return;
+    if (orders[currentTable][index].finalized) {
+        notifications.show("This item has already been finalized and cannot be modified.", 'warning');
+        return;
+    }
+
+    const item = orders[currentTable][index];
+    if (item.quantity <= 1) {
+        await removeOrderItem(index);
+        return;
+    }
+
+    showLoadingSpinner();
+    item.quantity -= 1;
+    
+    persistAllData();
+    renderOrderItems();
+    updateTotal();
+    hideLoadingSpinner();
+}
+
+function showExtrasModal() {
+    const modal = document.getElementById('extras-modal');
+    const content = document.getElementById('extras-content');
+    const itemNameEl = document.getElementById('extras-item-name');
+
+    if (!modal || !content || !itemNameEl) {
+        console.error("Error: Missing elements for Extras modal!");
+        notifications.show("Cannot open extras dialog. UI error.", "error");
+        return;
+    }
+
+    if (currentItemIndex === null || currentItemIndex === undefined || !orders[currentTable]?.[currentItemIndex]) {
+        console.error("Cannot show extras: Invalid item index for modal.", currentItemIndex);
+        notifications.show("Cannot determine which item to add extras for.", "error");
+        return;
+    }
+
+    if (orders[currentTable][currentItemIndex].finalized) {
+        notifications.show("Cannot add extras to a finalized item.", "warning");
+        return;
+    }
+
+    const currentItem = orders[currentTable][currentItemIndex];
+    itemNameEl.textContent = currentItem.name;
+
+    let itemType = currentItem.type || 'food';
+
+    if (currentItem.name.toLowerCase().includes('hukka')) {
+        itemType = 'misc';
+    }
+
+    const filteredExtras = extras.filter(extra => {
+        return extra.type === itemType || !extra.type;
+    });
+
+    content.innerHTML = filteredExtras.map(extra => {
+        const isChecked = currentItem.extras?.some(e => e.name === extra.name) || false;
+        return `
+            <div class="extra-option">
+                <input type="checkbox" id="extra-${extra.name.replace(/\s+/g, '-')}"
+                    data-name="${extra.name}" data-price="${extra.price}"
+                    ${isChecked ? 'checked' : ''}>
+                <label for="extra-${extra.name.replace(/\s+/g, '-')}">
+                    ${extra.name} (+Rs ${extra.price.toFixed(2)})
+                </label>
+            </div>
+        `;
+    }).join('');
+
+    const saveBtn = document.createElement('button');
+    saveBtn.textContent = 'Save Extras';
+    saveBtn.className = 'save-extras-btn';
+    saveBtn.addEventListener('click', saveExtras);
+    content.appendChild(saveBtn);
+
+    modal.style.display = 'block';
+}
+
+function closeExtrasModal() {
+    const modal = document.getElementById('extras-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+async function saveExtras() {
+    const content = document.getElementById('extras-content');
+
+    if (!content) {
+        console.error("Extras modal content area not found!");
+        notifications.show("Error saving extras. UI element missing.", "error");
+        return;
+    }
+    if (!currentTable || !orders[currentTable]) {
+        console.error("Cannot save extras: No current table or order selected.");
+        notifications.show("Please select a table with an order first.", "warning");
+        closeExtrasModal();
+        return;
+    }
+    if (currentItemIndex === null || currentItemIndex === undefined || !orders[currentTable][currentItemIndex]) {
+        console.error("Cannot save extras: Invalid item index.", currentItemIndex);
+        notifications.show("Error identifying the item to add extras to.", "error");
+        closeExtrasModal();
+        return;
+    }
+    if (orders[currentTable][currentItemIndex].finalized) {
+        notifications.show("Cannot add extras to a finalized item.", "warning");
+        closeExtrasModal();
+        return;
+    }
+
+    showLoadingSpinner();
+
+    const checkboxes = content.querySelectorAll('input[type="checkbox"]');
+    const selectedExtras = Array.from(checkboxes)
+        .filter(cb => cb.checked)
+        .map(cb => ({
+            name: cb.dataset.name,
+            price: parseFloat(cb.dataset.price)
+        }));
+
+    orders[currentTable][currentItemIndex].extras = selectedExtras;
+    persistAllData();
+    renderOrderItems();
+    updateTotal();
+    closeExtrasModal();
+    notifications.show("Extras updated successfully!", "success");
+    hideLoadingSpinner();
+}
+
+function closeNotesModal() {
+    const modal = document.getElementById('notes-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+function showNotesModal() {
+    const modal = document.getElementById('notes-modal');
+    const textarea = document.getElementById('item-notes');
+    const saveBtn = document.getElementById('save-notes-btn');
+    const closeBtn = document.getElementById('close-notes-modal');
+    
+    if (!modal || !textarea || !saveBtn || !closeBtn) {
+        console.error("Notes modal elements are missing!");
+        return;
+    }
+
+    if (currentItemIndex === null || !orders[currentTable]?.[currentItemIndex]) {
+        notifications.show("No item selected to add a note to.", "warning");
+        return;
+    }
+    
+    textarea.value = orders[currentTable][currentItemIndex].notes || '';
+    
+    saveBtn.onclick = () => saveNotes();
+    closeBtn.onclick = () => closeNotesModal();
+    
+    modal.style.display = 'block';
+    textarea.focus();
+}
+
+async function saveNotes() {
+    const textarea = document.getElementById('item-notes');
+    const notesValue = textarea.value.trim();
+
+    if (currentItemIndex === null || !orders[currentTable]?.[currentItemIndex]) {
+        notifications.show("Error: No item selected to save notes for.", "error");
+        closeNotesModal();
+        return;
+    }
+
+    orders[currentTable][currentItemIndex].notes = notesValue;
+    persistAllData();
+    renderOrderItems();
+    closeNotesModal();
+    notifications.show("Note saved successfully.", "success");
+}
+
+async function removeOrderItem(index) {
+    if (!currentTable || !orders[currentTable]?.[index]) {
+        notifications.show("Cannot remove: Item not found.", 'error');
+        return;
+    }
+    const itemToRemove = { ...orders[currentTable][index] };
+
+    if (itemToRemove.finalized) {
+        notifications.show(`"${itemToRemove.name}" is finalized. Use 'Void Item' instead.`, 'warning', 4000);
+        return;
+    }
+
+    const confirmed = await showConfirmModal('Remove Item', `Are you sure you want to remove "${itemToRemove.name}" from the order?`);
+    if (!confirmed) {
+        return;
+    }
+
+    showLoadingSpinner();
+
+    orders[currentTable].splice(index, 1);
+    const isOrderEmpty = orders[currentTable].length === 0;
+    if (isOrderEmpty) {
+        delete orders[currentTable];
+        delete tableTimers[currentTable];
+    }
+
+    persistAllData();
+    refreshUI();
+    notifications.show(`Removed "${itemToRemove.name}"`, 'success');
+    hideLoadingSpinner();
+}
+
+function refreshUI() {
+    renderOrderItems();
+    renderMenuNavigation(); // Call the new navigation rendering
+    initializeTables();
+}
+
+// =========================================================================
+// =================== SIDEBAR & REPORT FUNCTIONS ==========================
+// =========================================================================
+
+function showSidebarContentModal(title, contentHTML, setupCallback = null) {
+    const modal = document.getElementById('sidebar-content-modal');
+    const contentArea = document.getElementById('modal-content-area');
+    if (!modal || !contentArea) return;
+    contentArea.innerHTML = `<h3>${title}</h3>${contentHTML}`;
+    modal.style.display = 'block';
+    if (setupCallback) setupCallback();
+    toggleSidebar({ preventDefault: () => {} });
+}
+
+function closeSidebarContentModal() {
+    const modal = document.getElementById('sidebar-content-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+function showSalesReportsContent(e) {
+    e.preventDefault();
+
+    showSidebarContentModal('Sales Reports', `
+        <div class="report-container">
+            <h4>Sales Report</h4>
+            <div class="report-filter">
+                <input type="date" id="start-date" value="${new Date().toISOString().split('T')[0]}">
+                <input type="date" id="end-date" value="${new Date().toISOString().split('T')[0]}">
+                <button id="generate-report" class="export-btn">Generate Report</button>
+            </div>
+            <hr>
+            <div id="sales-report-content" class="text-center p-4">
+                <p class="text-muted">Select a date range and click "Generate Report" to view sales data.</p>
+            </div>
+            <button id="export-sales-csv" class="export-btn" style="display:none; margin-top:10px;">Export to CSV</button>
+        </div>
+    `, () => {
+        document.getElementById('generate-report')?.addEventListener('click', generateSalesReport);
+        document.getElementById('export-sales-csv')?.addEventListener('click', exportSalesReport);
+    });
+}
+
+function generateSalesReport() {
+    showLoadingSpinner();
+    const reportContentEl = document.getElementById('sales-report-content');
+    const exportButton = document.getElementById('export-sales-csv');
+    if (!reportContentEl || !exportButton) {
+        hideLoadingSpinner();
+        return;
+    }
+    reportContentEl.innerHTML = `<p>Loading report...</p>`;
+    exportButton.style.display = 'none';
+
+    const startDate = new Date(document.getElementById('start-date').value);
+    const endDate = new Date(document.getElementById('end-date').value);
+    endDate.setHours(23, 59, 59, 999);
+
+    const filteredSales = salesHistory.filter(sale => {
+        const saleDate = new Date(sale.timestamp);
+        return saleDate >= startDate && saleDate <= endDate;
+    });
+
+    const metrics = calculateSalesMetrics(filteredSales);
+
+    reportContentEl.innerHTML = `
+        <table class="report-table">
+            <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+            <tbody>
+                <tr><td>Total Sales (All Sources)</td><td>Rs ${metrics.totalSales.toFixed(2)}</td></tr>
+                <tr><td>Total Cash Sales (Net)</td><td>Rs ${metrics.totalCash.toFixed(2)}</td></tr>
+                <tr><td>Total Mobile Sales</td><td>Rs ${metrics.totalMobile.toFixed(2)}</td></tr>
+                <tr><td>Total Discount Given</td><td>Rs ${metrics.totalDiscount.toFixed(2)}</td></tr>
+                <tr><td>Total Transactions</td><td>${metrics.transactionCount}</td></tr>
+                <tr><td>Average Transaction Value</td><td>Rs ${metrics.atv.toFixed(2)}</td></tr>
+            </tbody>
+        </table>
+    `;
+    if (filteredSales.length > 0) {
+        exportButton.style.display = 'block';
+    }
+    hideLoadingSpinner();
+}
+
+function calculateSalesMetrics(sales) {
+    let totalSales = 0;
+    let totalCash = 0; // Will be net cash received
+    let totalMobile = 0;
+    let totalDiscount = 0;
+    let transactionCount = 0;
+
+    sales.forEach(sale => {
+        const saleTotal = typeof sale.total === 'number' ? sale.total : 0;
+        totalSales += saleTotal;
+        transactionCount++;
+        totalDiscount += parseFloat(sale.discountAmount || 0);
+
+        let cashTenderedForSale = 0;
+        let mobilePaidForSale = 0;
+
+        if (Array.isArray(sale.paymentMethods)) {
+            sale.paymentMethods.forEach(pm => {
+                const amount = parseFloat(pm.amount) || 0;
+                if (pm.method === 'Cash') {
+                    cashTenderedForSale += amount;
+                } else if (pm.method === 'Mobile') {
+                    mobilePaidForSale += amount;
+                }
+            });
+        }
+        
+        // Deduct the order's change from the cash component of payment if any.
+        totalCash += (cashTenderedForSale - (sale.change || 0));
+        totalMobile += mobilePaidForSale;
+    });
+
+    const atv = transactionCount > 0 ? totalSales / transactionCount : 0;
+
+    return {
+        totalSales: totalSales,
+        totalCash: Math.max(0, totalCash), // Ensure net cash is not negative
+        totalMobile: totalMobile,
+        totalDiscount: totalDiscount,
+        transactionCount: transactionCount,
+        atv: atv
+    };
+}
+
+function exportSalesReport() {
+    const startDate = document.getElementById('start-date').value;
+    const endDate = document.getElementById('end-date').value;
+    const filteredSales = salesHistory.filter(sale => {
+        const saleDate = new Date(sale.timestamp);
+        return saleDate >= new Date(startDate) && saleDate <= new Date(endDate);
+    });
+
+    const headers = ["Order ID", "Table", "Total", "Discount", "Payment Methods", "Timestamp", "Items"];
+    const csvRows = [headers.join(',')];
+
+    filteredSales.forEach(sale => {
+        const paymentMethodsStr = sale.paymentMethods.map(pm => `${pm.method}: Rs ${pm.amount.toFixed(2)}`).join('; ');
+        const itemsStr = sale.items.map(item => `${item.name} x${item.quantity}`).join('; ');
+        csvRows.push([
+            `"${sale.orderNumber}"`,
+            `"${sale.table}"`,
+            sale.total.toFixed(2),
+            sale.discountAmount,
+            `"${paymentMethodsStr}"`,
+            `"${new Date(sale.timestamp).toLocaleString()}"`,
+            `"${itemsStr}"`
+        ].join(','));
+    });
+
+    const csvContent = "data:text/csv;charset=utf-8," + csvRows.join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `sales_report_${startDate}_to_${endDate}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    notifications.show('Sales report exported to CSV.', 'success');
+}
+
+function showItemsSoldContent(e) {
+    e.preventDefault();
+
+    const getMarkup = () => {
+        // Collect all unique categories from menuItems
+        const categories = [...new Set(menuItems.map(item => item.category))];
+        const categoryOptions = categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+
+        return `
+            <div class="items-sold-dashboard report-container">
+                <div class="dashboard-header"><h3>Items Sold Performance</h3></div>
+
+                <div class="report-controls-grid">
+                    <div class="control-group">
+                        <label for="items-sold-start-date">From:</label>
+                        <input type="date" id="items-sold-start-date" class="report-filter-input">
+                    </div>
+                    <div class="control-group">
+                        <label for="items-sold-end-date">To:</label>
+                        <input type="date" id="items-sold-end-date" class="report-filter-input">
+                    </div>
+                    <div class="control-group">
+                        <label for="items-sold-category">Category:</label>
+                        <select id="items-sold-category" class="report-filter-input">
+                            <option value="all">All Categories</option>${categoryOptions}
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label for="items-sold-sort">Sort By:</label>
+                        <select id="items-sold-sort" class="report-filter-input">
+                            <option value="revenue">Revenue</option>
+                            <option value="quantity">Quantity</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="items-sold-table-container">
+                    <table class="pro-table report-table mt-3">
+                        <thead><tr><th class="item-name-col">Item</th><th class="numeric-col">Qty</th><th class="numeric-col">Revenue</th></tr></thead>
+                        <tbody id="items-sold-tbody"></tbody>
+                    </table>
+                </div>
+                <div id="no-data-container" class="text-center p-4" style="display: none;">
+                    <p class="text-muted">No items sold matching your criteria.</p>
+                </div>
+                <button id="export-items-sold-csv" class="export-btn mt-3 w-100">Export Full Report to CSV</button>
+            </div>
+        `;
+    };
+
+    const renderReport = () => {
+        showLoadingSpinner();
+        const startDateEl = document.getElementById('items-sold-start-date');
+        const endDateEl = document.getElementById('items-sold-end-date');
+        
+        if (!startDateEl.value || !endDateEl.value) {
+            notifications.show('Please select a valid start and end date.', 'warning');
+            hideLoadingSpinner();
+            return;
+        }
+
+        const start = new Date(startDateEl.value);
+        const end = new Date(endDateEl.value);
+        end.setHours(23, 59, 59, 999);
+
+        // Filter raw sales history to only include sales within the date range
+        const salesInDateRange = salesHistory.filter(s => {
+            const saleDate = new Date(s.timestamp);
+            return saleDate >= start && saleDate <= end;
+        });
+
+        // Aggregate items from these filtered sales
+        const aggregatedItems = {};
+        salesInDateRange.forEach(sale => {
+            if (sale.items && Array.isArray(sale.items)) {
+                sale.items.forEach(item => {
+                    const itemRevenue = (item.price + (item.extras?.reduce((sum, e) => sum + (e.price || 0), 0) || 0)) * item.quantity;
+                    if (!aggregatedItems[item.name]) {
+                        const menuItem = menuItems.find(m => m.name === item.name);
+                        aggregatedItems[item.name] = {
+                            name: item.name,
+                            category: menuItem?.category || 'Uncategorized',
+                            quantity: 0, totalRevenue: 0
+                        };
+                    }
+                    aggregatedItems[item.name].quantity += item.quantity;
+                    aggregatedItems[item.name].totalRevenue += itemRevenue;
+                });
+            }
+        });
+
+        let displayData = Object.values(aggregatedItems);
+        const categoryFilter = document.getElementById('items-sold-category').value;
+        const sortBy = document.getElementById('items-sold-sort').value;
+        
+        if (categoryFilter !== 'all') {
+            displayData = displayData.filter(item => item.category === categoryFilter);
+        }
+        displayData.sort((a, b) => (sortBy === 'revenue' ? b.totalRevenue - a.totalRevenue : b.quantity - a.quantity));
+        
+        const tbody = document.getElementById('items-sold-tbody');
+        const noDataContainer = document.getElementById('no-data-container');
+        if (!tbody || !noDataContainer) { hideLoadingSpinner(); return; }
+
+        if (displayData.length === 0) {
+            document.getElementById('items-sold-table-container').style.display = 'none';
+            noDataContainer.style.display = 'block';
+        } else {
+            document.getElementById('items-sold-table-container').style.display = 'block';
+            noDataContainer.style.display = 'none';
+            tbody.innerHTML = displayData.map(item => `<tr><td class="item-name-col">${item.name}</td><td class="numeric-col">${item.quantity.toLocaleString()}</td><td class="numeric-col">Rs ${item.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td></tr>`).join('');
+        }
+        hideLoadingSpinner();
+    };
+
+    const exportToCSV = () => {
+        const startDateEl = document.getElementById('items-sold-start-date');
+        const endDateEl = document.getElementById('items-sold-end-date');
+        const categoryFilter = document.getElementById('items-sold-category').value;
+        const sortBy = document.getElementById('items-sold-sort').value;
+
+        const start = new Date(startDateEl.value);
+        const end = new Date(endDateEl.value);
+        end.setHours(23, 59, 59, 999);
+
+        // Filter raw sales history to only include sales within the date range
+        const salesInDateRange = salesHistory.filter(s => {
+            const saleDate = new Date(s.timestamp);
+            return saleDate >= start && saleDate <= end;
+        });
+
+        // Re-aggregate items for export based on current filters
+        const aggregatedItemsForExport = {};
+        salesInDateRange.forEach(sale => {
+            if (sale.items && Array.isArray(sale.items)) {
+                sale.items.forEach(item => {
+                    const itemRevenue = (item.price + (item.extras?.reduce((sum, e) => sum + (e.price || 0), 0) || 0)) * item.quantity;
+                    if (!aggregatedItemsForExport[item.name]) {
+                        const menuItem = menuItems.find(m => m.name === item.name);
+                        aggregatedItemsForExport[item.name] = {
+                            name: item.name,
+                            category: menuItem?.category || 'Uncategorized',
+                            quantity: 0, totalRevenue: 0
+                        };
+                    }
+                    aggregatedItemsForExport[item.name].quantity += item.quantity;
+                    aggregatedItemsForExport[item.name].totalRevenue += itemRevenue;
+                });
+            }
+        });
+
+        let exportData = Object.values(aggregatedItemsForExport);
+        
+        if (categoryFilter !== 'all') {
+            exportData = exportData.filter(item => item.category === categoryFilter);
+        }
+        exportData.sort((a, b) => (sortBy === 'revenue' ? b.totalRevenue - a.totalRevenue : b.quantity - a.quantity));
+
+        if (exportData.length === 0) {
+            notifications.show('No data to export.', 'warning');
+            return;
+        }
+        
+        const headers = ["Item Name", "Category", "Quantity Sold", "Total Revenue (Rs)"];
+        const csvRows = [headers.join(',')];
+
+        exportData.forEach(item => {
+            csvRows.push([
+                `"${item.name.replace(/"/g, '""')}"`,
+                `"${item.category}"`,
+                item.quantity,
+                item.totalRevenue.toFixed(2)
+            ].join(','));
+        });
+
+        const link = document.createElement('a');
+        link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvRows.join('\n'));
+        link.download = `items_sold_report_${startDateEl.value}_to_${endDateEl.value}.csv`;
+        link.click();
+        notifications.show('Items Sold report exported to CSV.', 'success');
+    };
+    
+    showSidebarContentModal('Items Sold Dashboard', getMarkup(), () => {
+        const today = new Date();
+        document.getElementById('items-sold-start-date').valueAsDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        document.getElementById('items-sold-end-date').valueAsDate = today;
+        document.querySelectorAll('.report-filter-input').forEach(el => el.addEventListener('change', renderReport));
+        document.getElementById('export-items-sold-csv').addEventListener('click', exportToCSV);
+        renderReport();
+    });
+}
+
+function showOrderHistoryContent(e) {
+    e.preventDefault();
+    
+    showSidebarContentModal('Order History', `
+        <div class="report-container">
+            <h4>Order History</h4>
+
+            <div class="report-filter"> 
+                <input type="date" id="history-start-date" value="${new Date().toISOString().split('T')[0]}">
+                <input type="date" id="history-end-date" value="${new Date().toISOString().split('T')[0]}">
+                <select id="history-status-filter">
+                    <option value="all">All Statuses</option>
+                    <option value="completed">Completed</option>
+                    <option value="pending">Pending</option>
+                    <option value="voided">Voided</option>
+                </select>
+            </div>
+
+            <div class="report-filter" style="margin-top: 10px; margin-bottom: 5px; align-items: center;">
+                <input type="text" id="history-search" placeholder="Search (ID, Table, Item, Payment)..." style="flex-grow: 1;"> 
+                <button id="filter-history" class="export-btn" style="margin-left: 10px;">Filter</button>
+            </div>
+
+            <div id="order-history-results">
+                <div class="history-summary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 20px;">
+                    <div class="summary-card" style="background: #f8f9fa; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <h5>Total Orders</h5>
+                        <p id="total-orders-count">0</p>
+                    </div>
+                    <div class="summary-card" style="background: #f8f9fa; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <h5>Total Revenue</h5>
+                        <p id="total-revenue">Rs 0.00</p>
+                    </div>
+                    <div class="summary-card" style="background: #f8f9fa; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <h5>Avg. Order Value</h5>
+                        <p id="avg-order-value">Rs 0.00</p>
+                    </div>
+                </div>
+                <div id="order-history-list"></div>
+            </div>
+            <div id="pagination" style="display: flex; justify-content: center; gap: 10px; margin-top: 10px;"></div>
+        </div>
+    `, () => {
+        const filterButton = document.getElementById('filter-history');
+        if (filterButton) {
+            const filterHandler = () => renderOrderHistory(1);
+            filterButton.addEventListener('click', filterHandler);
+        }
+        
+        const searchInput = document.getElementById('history-search');
+        if (searchInput) {
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    renderOrderHistory(1);
+                }
+            });
+        }
+
+        currentPage = 1; 
+        renderOrderHistory(currentPage);
+    });
+}
+
+function renderOrderHistory(pageToShow) {
+    currentPage = pageToShow;
+
+    const startDateElement = document.getElementById('history-start-date');
+    const endDateElement = document.getElementById('history-end-date');
+    const statusFilterElement = document.getElementById('history-status-filter');
+    const searchElement = document.getElementById('history-search');
+
+    if (!startDateElement || !endDateElement || !statusFilterElement || !searchElement) {
+        return;
+    }
+
+    const startDate = new Date(startDateElement.value);
+    const endDate = new Date(endDateElement.value);
+    endDate.setHours(23, 59, 59, 999);
+
+    const statusFilter = statusFilterElement.value || "all";
+    const searchQuery = (searchElement.value || "").trim().toLowerCase();
+
+    const filteredHistory = orderHistory.filter(order => {
+        if (!order || !order.timestamp) return false;
+        const orderDate = new Date(order.timestamp);
+
+        return (
+            orderDate >= startDate && orderDate <= endDate &&
+            (statusFilter === 'all' || (order.status && order.status.toLowerCase() === statusFilter.toLowerCase())) &&
+            (!searchQuery || matchesSearch(order, searchQuery))
+        );
+    }).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    const paginatedHistory = paginateOrders(filteredHistory, currentPage);
+
+    updateOrderHistorySummaryUI(filteredHistory);
+
+    const historyDiv = document.getElementById('order-history-list');
+    if (historyDiv) {
+        historyDiv.innerHTML = paginatedHistory.length > 0
+            ? paginatedHistory.map((order) => renderOrderHistoryItem(order)).join('')
+            : '<div class="no-orders">No orders found matching your criteria.</div>';
+
+        if (paginatedHistory.length > 0) {
+            attachOrderHistoryEventListeners(filteredHistory);
+        }
+    }
+    renderOrderHistoryPagination(filteredHistory.length, currentPage);
+}
+
+function renderOrderHistoryItem(order) {
+    const statusClass = `status-${order.status || 'pending'}`;
+    
+    // Payment breakdown
+    let paymentDetailsHTML = '';
+    if (order.paymentMethods && order.paymentMethods.length > 0) {
+        paymentDetailsHTML = order.paymentMethods.map(pm => `
+            <div>
+                <i class="fas fa-${pm.method === 'Cash' ? 'money-bill-wave' : 'mobile-alt'}"></i> ${pm.method}: Rs ${pm.amount.toFixed(2)}
+            </div>
+        `).join('');
+    }
+
+    return `
+        <div class="order-history-item">
+            <div class="order-history-header">
+                <span class="order-history-status ${statusClass}">${(order.status || 'pending').replace(/_/g, ' ')}</span>
+                <span>Order #${order.orderNumber || ''}</span>
+            </div>
+            <div class="order-history-items">
+                <h5>Items:</h5>
+                ${order.items?.map(renderOrderRow).join('') || '<p>No items available</p>'}
+            </div>
+            <div class="order-history-footer">
+                <div class="payment-breakdown">
+                    ${paymentDetailsHTML}
+                </div>
+                <div class="grand-total-section">
+                    <strong>Total:</strong>
+                    <span>Rs ${order.total?.toFixed(2) || '0.00'}</span>
+                </div>
+            </div>
+            <div class="order-history-actions">
+                <button class="view-receipt-btn" data-order-number="${order.orderNumber}">View Receipt</button>
+                <button class="reprint-btn" data-order-number="${order.orderNumber}">Reprint</button>
+                ${order.status !== 'voided' ? `<button class="void-order-btn" data-order-number="${order.orderNumber}">Void Order</button>` : ''}
+            </div>
+        </div>
+    `;
+}
+
+function matchesSearch(order, query) {
+    const orderIdString = String(order.orderNumber || '').toLowerCase();
+    const tableString = String(order.table || '').toLowerCase();
+    
+    if (orderIdString.includes(query) || tableString.includes(query)) {
+        return true;
+    }
+
+    if (order.items && Array.isArray(order.items)) {
+        if (order.items.some(item => item.name && item.name.toLowerCase().includes(query))) {
+            return true;
+        }
+    }
+
+    if (order.paymentMethods && Array.isArray(order.paymentMethods)) {
+        if (order.paymentMethods.some(pm => pm.method && pm.method.toLowerCase().includes(query))) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+function paginateOrders(orders, page) {
+    const startIndex = (page - 1) * itemsPerPage;
+    return orders.slice(startIndex, startIndex + itemsPerPage);
+}
+
+function updateOrderHistorySummaryUI(filteredHistory) {
+    const totalOrders = filteredHistory.length;
+    const totalRevenue = filteredHistory.reduce((sum, order) => sum + (order.total || 0), 0);
+    const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+
+    document.getElementById('total-orders-count').textContent = totalOrders;
+    document.getElementById('total-revenue').textContent = `Rs ${totalRevenue.toFixed(2)}`;
+    document.getElementById('avg-order-value').textContent = `Rs ${avgOrderValue.toFixed(2)}`;
+}
+
+function renderOrderRow(item) {
+    const extrasTotal = item.extras?.reduce((sum, e) => sum + (e.price || 0), 0) || 0;
+    const itemTotal = (item.price + extrasTotal) * (item.quantity || 1);
+    const extrasDisplay = item.extras?.length 
+        ? `<div class="order-item-extras">Extras: ${item.extras.map(e => `${e.name} (+Rs ${e.price.toFixed(2)})`).join(', ')}</div>` 
+        : '';
+    const notesDisplay = item.notes 
+        ? `<div class="order-item-notes-display">Notes: ${item.notes}</div>` 
+        : '';
+
+    return `
+        <div class="order-item-row">
+            <div class="order-item-name">
+                ${item.name || 'Unknown Item'}
+                ${extrasDisplay}
+                ${notesDisplay}
+            </div>
+            <div class="order-item-qty">x${item.quantity || 1}</div>
+            <div class="order-item-price">Rs ${itemTotal.toFixed(2)}</div>
+        </div>
+    `;
+}
+
+function attachOrderHistoryEventListeners(filteredHistory) {
+    document.querySelectorAll('.view-receipt-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const orderNumber = button.dataset.orderNumber;
+            const order = orderHistory.find(o => o.orderNumber === orderNumber);
+            if (order) generateReceipt(order);
+        });
+    });
+
+    document.querySelectorAll('.reprint-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const orderNumber = button.dataset.orderNumber;
+            const order = orderHistory.find(o => o.orderNumber === orderNumber);
+            if (order) generateReceipt(order);
+        });
+    });
+
+    document.querySelectorAll('.void-order-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const orderNumber = button.dataset.orderNumber;
+            const order = orderHistory.find(o => o.orderNumber === orderNumber);
+            if (order) voidOrderFromHistory(order);
+        });
+    });
+}
+
+function renderOrderHistoryPagination(totalOrders, page) {
+    const pagination = document.getElementById('pagination');
+    if (!pagination) return;
+
+    pagination.innerHTML = '';
+    const totalPages = Math.ceil(totalOrders / itemsPerPage);
+    
+    if (totalPages <= 1) return;
+
+    if (page > 1) {
+        const prevBtn = document.createElement('button');
+        prevBtn.innerHTML = '« Previous';
+        prevBtn.addEventListener('click', () => renderOrderHistory(page - 1));
+        pagination.appendChild(prevBtn);
+    }
+
+    let startPage = Math.max(1, page - 2);
+    let endPage = Math.min(totalPages, page + 2);
+
+    if (startPage > 1) {
+        const firstBtn = document.createElement('button');
+        firstBtn.textContent = '1';
+        firstBtn.addEventListener('click', () => renderOrderHistory(1));
+        pagination.appendChild(firstBtn);
+        if (startPage > 2) {
+            const ellipsis = document.createElement('span');
+            ellipsis.textContent = '...';
+            pagination.appendChild(ellipsis);
+        }
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.textContent = i;
+        if (i === page) {
+            pageBtn.classList.add('active');
+        }
+        pageBtn.addEventListener('click', () => renderOrderHistory(i));
+        pagination.appendChild(pageBtn);
+    }
+
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+             const ellipsis = document.createElement('span');
+            ellipsis.textContent = '...';
+            pagination.appendChild(ellipsis);
+        }
+        const lastBtn = document.createElement('button');
+        lastBtn.textContent = totalPages;
+        lastBtn.addEventListener('click', () => renderOrderHistory(totalPages));
+        pagination.appendChild(lastBtn);
+    }
+
+    if (page < totalPages) {
+        const nextBtn = document.createElement('button');
+        nextBtn.innerHTML = 'Next »';
+        nextBtn.addEventListener('click', () => renderOrderHistory(page + 1));
+        pagination.appendChild(nextBtn);
+    }
+}
+
+
+function showVoidDetailsContent(e) {
+    e.preventDefault();
+    
+    showSidebarContentModal('Void Details', `
+        <div class="report-container">
+            <h4>Void Details</h4>
+            <div class="report-filter">
+                <input type="date" id="void-start-date">
+                <input type="date" id="void-end-date">
+                <button id="filter-voids" class="export-btn">Filter</button>
+                <button id="export-voids" class="export-btn">Export</button>
+            </div>
+            <div id="void-details-list"></div>
+        </div>
+    `, () => {
+        document.getElementById('void-start-date').valueAsDate = new Date();
+        document.getElementById('void-end-date').valueAsDate = new Date();
+
+        renderVoidDetails();
+        
+        document.getElementById('filter-voids')?.addEventListener('click', filterVoidDetails);
+        document.getElementById('export-voids')?.addEventListener('click', exportVoidDetails);
+    });
+}
+
+function renderVoidDetails() {
+    const list = document.getElementById('void-details-list');
+    if (!list) return;
+    
+    const startDate = new Date(document.getElementById('void-start-date').value);
+    const endDate = new Date(document.getElementById('void-end-date').value);
+    endDate.setHours(23, 59, 59, 999);
+
+    const filteredVoids = voidDetails.filter(item => {
+        const itemDate = new Date(item.timestamp);
+        return itemDate >= startDate && itemDate <= endDate;
+    });
+
+    if (filteredVoids.length === 0) {
+        list.innerHTML = '<p class="text-center text-muted mt-4">No void records found for the selected dates.</p>';
+        return;
+    }
+
+    list.innerHTML = filteredVoids.map(voidItem => {
+        const date = voidItem.timestamp ? new Date(voidItem.timestamp).toLocaleString() : 'Unknown date';
+        const total = voidItem.total ? `Rs ${voidItem.total.toFixed(2)}` : 'Rs 0.00';
+        const itemsList = voidItem.items?.map(i => `${i.name} x${i.quantity}`).join(', ') || 'No items';
+        
+        return `
+            <div class="void-item">
+                <p><strong>Table ${voidItem.table || 'Unknown'}</strong> - ${date}</p>
+                <p>Items: ${itemsList}</p>
+                <p>Total: ${total}</p>
+                <p>Reason: ${voidItem.reason || 'No reason provided'}</p>
+                <p>Voided by: ${voidItem.user || 'Unknown user'}</p>
+            </div>
+        `;
+    }).join('');
+}
+
+function filterVoidDetails() {
+    renderVoidDetails(); // Simply re-render with current filter settings
+}
+
+function exportVoidDetails() {
+    const startDate = document.getElementById('void-start-date').value;
+    const endDate = document.getElementById('void-end-date').value;
+    const filteredVoids = voidDetails.filter(item => {
+        const itemDate = new Date(item.timestamp);
+        return itemDate >= new Date(startDate) && itemDate <= new Date(endDate);
+    });
+
+    const csvContent = "data:text/csv;charset=utf-8," +
+        "Table,Items,Total,Reason,User,Timestamp\n" +
+        filteredVoids.map(e => 
+            `"${e.table}","${e.items.map(i => `${i.name} x${i.quantity}`).join('; ')}",${e.total},"${e.reason}","${e.user}","${new Date(e.timestamp).toLocaleString()}"`
+        ).join("\n");
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `void_details_${startDate}_to_${endDate}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    notifications.show('Void details exported to CSV.', 'success');
+}
+
+
+// =========================================================================
+// =================== CHECKOUT & PAYMENT FUNCTIONS ========================
+// =========================================================================
+
+function resetCheckoutState() {
+    paymentMethods = [];
+    paymentAmount = 0;
+    discount = 0;
+    discountCodeApplied = null;
+    
+    const numericInput = document.getElementById('numeric-input');
+    if (numericInput) numericInput.value = '0';
+    
+    const discountCodeInput = document.getElementById('discount-code');
+    if (discountCodeInput) discountCodeInput.value = '';
+}
+
+function showCheckoutDialog() {
+    if (!currentTable || !orders[currentTable] || !orders[currentTable].length) {
+        notifications.show('No items to checkout!', 'warning');
+        return;
+    }
+
+    resetCheckoutState();
+    updateTotal(); 
+    document.getElementById('dialog-total-amount').textContent = calculateTotal().toFixed(2);
+    renderPaymentMethods(); 
+    updateChange();         
+    
+    document.getElementById('checkout-dialog').style.display = 'block';
+}
+
+function closeCheckoutDialog() {
+    document.getElementById('checkout-dialog').style.display = 'none';
+    resetCheckoutState();
+    renderOrderItems();
+    updateTotal();
+}
+
+function appendNumber(num) {
+    const input = document.getElementById('numeric-input');
+    if (!input) return;
+    let value = input.value;
+    if (num === '.' && value.includes('.')) return;
+    if (value === '0' && num !== '.') value = num;
+    else value += num;
+    input.value = value;
+    paymentAmount = parseFloat(value) || 0;
+    updateChange();
+}
+
+function clearInput() {
+    const input = document.getElementById('numeric-input');
+    if (input) input.value = '0';
+    paymentAmount = 0;
+    updateChange();
+}
+
+function setQuickAmount(amount) {
+    const input = document.getElementById('numeric-input');
+    if (!input) return;
+
+    let finalAmount;
+    if (isNaN(amount)) { // For "Exact" button
+        const total = parseFloat(document.getElementById('dialog-total-amount').textContent) || 0;
+        const paidSoFar = paymentMethods.reduce((sum, pm) => sum + pm.amount, 0);
+        finalAmount = Math.max(0, total - paidSoFar);
+    } else {
+        finalAmount = amount;
+    }
+
+    input.value = finalAmount.toFixed(2);
+    paymentAmount = finalAmount;
+    updateChange();
+}
+
+function applyDiscount(percentage) {
+    if (typeof percentage !== 'number' || percentage < 0) {
+        console.error("Invalid discount percentage provided.");
+        return;
+    }
+
+    discount = percentage;
+    discountCodeApplied = null;
+
+    updateTotal();
+    document.getElementById('dialog-total-amount').textContent = calculateTotal().toFixed(2);
+    updateChange();
+    notifications.show(`${percentage}% discount applied to eligible items.`, 'success');
+    
+    const discountCodeEl = document.getElementById('discount-code');
+    if(discountCodeEl) discountCodeEl.value = '';
+}
+
+function applyDiscountCode() {
+    const codeInput = document.getElementById('discount-code');
+    if (!codeInput) return;
+
+    const code = codeInput.value.trim().toUpperCase();
+    if (!code) {
+        notifications.show('Please enter a discount code.', 'warning');
+        return;
+    }
+
+    if (discountCodes[code]) {
+        const percentage = discountCodes[code];
+        discount = percentage;
+        discountCodeApplied = code;
+
+        updateTotal();
+        document.getElementById('dialog-total-amount').textContent = calculateTotal().toFixed(2);
+        updateChange();
+
+        notifications.show(`Discount code "${code}" applied for ${percentage}%.`, 'success');
+    } else {
+        notifications.show('Invalid discount code.', 'error');
+        discountCodeApplied = null;
+    }
+}
+
+async function clearDiscount() {
+    if (discount === 0 && !discountCodeApplied) {
+        notifications.show('No discount has been applied.', 'info');
+        return;
+    }
+
+    const confirmed = await showConfirmModal('Confirm Action', 'Are you sure you want to remove the current discount?');
+    if (!confirmed) {
+        return;
+    }
+    
+    discount = 0;
+    discountCodeApplied = null;
+
+    renderOrderItems();
+    updateTotal();
+    document.getElementById('dialog-total-amount').textContent = calculateTotal().toFixed(2);
+    updateChange();
+    notifications.show('Discount has been cleared.', 'success');
+}
+
+function processPayment(method) {
+    const total = calculateTotal();
+    const paidSoFar = paymentMethods.reduce((sum, pm) => sum + pm.amount, 0);
+    const remainingDue = Math.max(0, total - paidSoFar);
+
+    if (total <= 0.01 && paymentAmount === 0) {
+        notifications.show('Zero total order. Completing payment directly.', 'info');
+        completePayment();
+        return;
+    }
+    
+    if (remainingDue <= 0.01 && paymentAmount === 0) {
+        notifications.show('The bill is already fully paid. Click "Complete Payment".', 'info');
+        return;
+    }
+
+    if (paymentAmount <= 0) {
+        notifications.show('Please enter a valid payment amount.', 'warning');
+        return;
+    }
+    
+    if (method === 'Mobile' && paymentAmount > remainingDue) {
+        notifications.show(`Mobile payment cannot exceed the remaining due amount of Rs ${remainingDue.toFixed(2)}`, 'error');
+        return;
+    }
+
+    paymentMethods.push({ method, amount: paymentAmount });
+    renderPaymentMethods();
+    paymentAmount = 0;
+    document.getElementById('numeric-input').value = '0';
+    updateChange();
+
+    if (method === 'Mobile') {
+        displayQRCode();
+    } else if (method === 'Cash') {
+        closeQRCodeDialog(); // Always close QR for cash
+    }
+}
+
+function renderPaymentMethods() {
+    const paymentList = document.getElementById('payment-methods');
+    if (!paymentList) {
+        console.error("Error: Payment list element not found!");
+        return;
+    }
+
+    paymentList.innerHTML = paymentMethods.map((pm, index) => `
+        <li>
+            ${pm.method}: Rs ${pm.amount.toFixed(2)}
+            <button class="remove-payment-btn" data-index="${index}">Remove</button>
+        </li>
+    `).join('');
+
+    document.querySelectorAll('.remove-payment-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const index = parseInt(button.dataset.index);
+            removePayment(index);
+        });
+        button.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const index = parseInt(button.dataset.index);
+            removePayment(index);
+        });
+    });
+
+    const hasMobilePayment = paymentMethods.some(pm => pm.method === 'Mobile');
+    if (hasMobilePayment) {
+        displayQRCode();
+    } else {
+        closeQRCodeDialog();
+    }
+}
+
+function removePayment(index) {
+    paymentMethods.splice(index, 1);
+    renderPaymentMethods();
+    updateChange();
+}
+
+function updateChange() {
+    const total = calculateTotal();
+    const paidSoFar = paymentMethods.reduce((sum, pm) => sum + pm.amount, 0);
+
+    const remainingDue = Math.max(0, total - paidSoFar);
+    const changeAmount = Math.max(0, paidSoFar - total);
+    
+    const remainingDueEl = document.getElementById('remaining-due');
+    const changeAmountEl = document.getElementById('change-amount');
+    const completeBtn = document.getElementById('complete-btn');
+    const insufficientMsgEl = document.getElementById('insufficient-message');
+
+    if (remainingDueEl) remainingDueEl.textContent = `Rs ${remainingDue.toFixed(2)}`;
+    if (changeAmountEl) changeAmountEl.textContent = `Rs ${changeAmount.toFixed(2)}`;
+    
+    if (completeBtn) {
+        completeBtn.disabled = remainingDue > 0.01;
+    }
+    
+    if (insufficientMsgEl) {
+        if (remainingDue > 0.01) {
+            insufficientMsgEl.textContent = `Payment is insufficient.`;
+            insufficientMsgEl.style.display = 'block';
+        } else {
+            insufficientMsgEl.style.display = 'none';
+        }
+    }
+}
+
+function calculateTotal() {
+    if (!orders[currentTable] || !Array.isArray(orders[currentTable])) return 0;
+
+    let discountableTotal = 0;
+    let nonDiscountableTotal = 0;
+
+    orders[currentTable].forEach(item => {
+        const extrasTotal = (item.extras && Array.isArray(item.extras))
+            ? item.extras.reduce((s, e) => s + e.price, 0)
+            : 0;
+        const itemTotal = (item.price + extrasTotal) * item.quantity;
+
+        const isDiscountable = item.discountable !== false;
+
+        if (isDiscountable) {
+            discountableTotal += itemTotal;
+        } else {
+            nonDiscountableTotal += itemTotal;
+        }
+    });
+
+    const validDiscount = (typeof discount === 'number' && discount >= 0) ? discount : 0;
+    const discountedTotal = discountableTotal * (1 - validDiscount / 100);
+
+    return discountedTotal + nonDiscountableTotal;
+}
+
+function calculateOriginalTotal() {
+    if (!currentTable || !orders[currentTable] || !Array.isArray(orders[currentTable])) return 0;
+
+    return orders[currentTable].reduce((sum, item) => {
+        const extrasTotal = (item.extras && Array.isArray(item.extras))
+            ? item.extras.reduce((s, e) => s + e.price, 0)
+            : 0;
+        return sum + ((item.price + extrasTotal) * (item.quantity || 1));
+    }, 0);
+}
+
+function displayQRCode() {
+    const qrCodeImage = document.getElementById('qr-code-image');
+    const qrCodeDialog = document.getElementById('qr-code-dialog');
+
+    if (!qrCodeImage || !qrCodeDialog) {
+        console.error("Error: QR code elements not found!");
+        return;
+    }
+
+    qrCodeImage.src = './images/qr.jpeg';
+    qrCodeDialog.style.display = 'flex';
+}
+
+function closeQRCodeDialog() {
+    const qrCodeDialog = document.getElementById('qr-code-dialog');
+    if (qrCodeDialog) {
+        qrCodeDialog.style.display = 'none';
+    } else {
+        console.error('QR code dialog element not found');
+    }
+}
+
+async function completePayment() {
+    if (paymentAmount > 0) {
+        paymentMethods.push({ method: 'Cash', amount: paymentAmount });
+        paymentAmount = 0;
+        document.getElementById('numeric-input').value = '0';
+        renderPaymentMethods();
+    }
+
+    if (!currentTable || !orders[currentTable] || !orders[currentTable].length) {
+        notifications.show("No order to complete!", 'warning');
+        return;
+    }
+    const total = calculateTotal();
+    const paidSoFar = paymentMethods.reduce((sum, pm) => sum + pm.amount, 0);
+    if (paidSoFar < total && total > 0.01) {
+        notifications.show("Payment amount is insufficient!", 'error');
+        paymentMethods.pop();
+        renderPaymentMethods();
+        return;
+    }
+
+    showLoadingSpinner();
+
+    const orderId = generateOrderId();
+    const sale = {
+        orderNumber: orderId,
+        table: currentTable,
+        items: JSON.parse(JSON.stringify(orders[currentTable])),
+        total,
+        paymentMethods: JSON.parse(JSON.stringify(paymentMethods)),
+        discount: discountCodeApplied || (discount ? `${discount}%` : 'None'),
+        discountAmount: (calculateOriginalTotal() - total).toFixed(2),
+        timestamp: new Date().toISOString(),
+        user: currentUser?.email || 'Guest',
+        status: 'completed',
+        change: Math.max(0, paidSoFar - total),
+        orderType: 'dine-in'
+    };
+
+    salesHistory.push(sale);
+    orderHistory.push(sale);
+    
+    // Update itemsSold for items sold report
+    sale.items.forEach(item => {
+        const itemTotal = (item.price + (item.extras?.reduce((s, e) => s + e.price, 0) || 0)) * item.quantity;
+        // Find existing item entry in itemsSold or create new one
+        let existingItemEntry = itemsSold.find(entry => entry.name === item.name);
+        if (existingItemEntry) {
+            existingItemEntry.quantity += item.quantity;
+            existingItemEntry.totalRevenue += itemTotal;
+        } else {
+            itemsSold.push({
+                name: item.name,
+                quantity: item.quantity,
+                totalRevenue: itemTotal,
+                timestamp: sale.timestamp // Add timestamp for filtering in items sold report
+            });
+        }
+    });
+
+    delete orders[currentTable];
+    if (tableTimers[currentTable]) delete tableTimers[currentTable];
+
+    persistAllData();
+    renderOrderItems();
+    initializeTables();
+    
+    closeCheckoutDialog();
+    notifications.show('Payment completed!', 'success');
+    hideLoadingSpinner();
+}
+
+function updateTotal() {
+    const totalEl = document.getElementById('total-amount');
+    if (totalEl) totalEl.textContent = calculateTotal().toFixed(2);
+}
+
+// =========================================================================
+// =================== ORDER ACTIONS =======================================
+// =========================================================================
+
+function generateKOTNumber() {
+    return `KOT-${Date.now()}`;
+}
+
+async function finalizeOrder() {
+    if (!currentTable || !orders[currentTable]?.length) {
+        notifications.show('No order to finalize!', 'warning');
+        return;
+    }
+
+    const itemsToFinalize = orders[currentTable].filter(item => !item.finalized);
+    if (itemsToFinalize.length === 0) {
+        notifications.show('No new items to send.', 'info');
+        return;
+    }
+
+    showLoadingSpinner();
+    const kotNumberBase = `KOT-${Date.now()}`;
+
+    const kitchenItems = itemsToFinalize.filter(item => item.section === 'Kitchen');
+    const barItems = itemsToFinalize.filter(item => item.section === 'Bar');
+
+    if (kitchenItems.length > 0) {
+        const kitchenKotId = `${kotNumberBase}-KITCHEN`;
+        kotHistory.push({
+            kotId: kitchenKotId,
+            table: currentTable,
+            items: kitchenItems.map(item => ({ ...item, isReady: false })),
+            timestamp: new Date().toISOString(),
+            status: 'pending',
+            type: 'kitchen',
+            kotNumber: kotNumberBase // Add base KOT number for linking
+        });
+    }
+
+    if (barItems.length > 0) {
+        const barKotId = `${kotNumberBase}-BAR`;
+        kotHistory.push({
+            kotId: barKotId,
+            table: currentTable,
+            items: barItems.map(item => ({ ...item, isReady: false })),
+            timestamp: new Date().toISOString(),
+            status: 'pending',
+            type: 'bar',
+            kotNumber: kotNumberBase // Add base KOT number for linking
+        });
+    }
+    
+    orders[currentTable].forEach(item => {
+        if (!item.finalized) {
+            item.finalized = true;
+            item.kotNumber = kotNumberBase;
+        }
+    });
+
+    persistAllData();
+    renderOrderItems();
+    notifications.show(`KOT ${kotNumberBase} sent successfully.`, 'success');
+    hideLoadingSpinner();
+}
+
+async function changeTable() {
+    if (!currentTable || !orders[currentTable]?.length) {
+        notifications.show("No order to move!", 'warning');
+        return;
+    }
+
+    const newTable = await showPromptModal('Change Table', `Move order from Table ${currentTable} to which table?`);
+    if (!newTable || newTable === currentTable || !tableList.includes(newTable)) {
+        notifications.show('Invalid or cancelled table change.', 'warning');
+        return;
+    }
+
+    if (orders[newTable] && orders[newTable].length > 0) {
+        notifications.show(`Table ${newTable} is already occupied. Please checkout or void the existing order first.`, 'error');
+        return;
+    }
+
+    showLoadingSpinner();
+    const oldTable = currentTable;
+
+    const itemsToMove = [...orders[oldTable]];
+    const timerToMove = tableTimers[oldTable] ? { ...tableTimers[oldTable] } : null;
+
+    orders[newTable] = itemsToMove;
+    if (timerToMove) {
+        tableTimers[newTable] = timerToMove;
+    }
+    delete orders[oldTable];
+    delete tableTimers[oldTable];
+    currentTable = newTable;
+
+    persistAllData();
+    document.getElementById('selected-table').textContent = currentTable;
+    document.getElementById('selected-table-checkout').textContent = currentTable;
+    renderOrderItems();
+    initializeTables();
+    notifications.show(`Order moved successfully from Table ${oldTable} to ${newTable}.`, 'success');
+    hideLoadingSpinner();
+}
+
+async function voidItem(index) {
+    if (!orders[currentTable]?.[index]) {
+        notifications.show('Invalid item to void.', 'error');
+        return;
+    }
+
+    const reason = await showPromptModal('Void Item', 'Enter reason for voiding this item:');
+    if (!reason) {
+        notifications.show('Void reason is required.', 'warning');
+        return;
+    }
+
+    showLoadingSpinner();
+    
+    const itemToVoid = { ...orders[currentTable][index] };
+    const voidId = `void_${Date.now()}`;
+    const timestamp = new Date().toISOString();
+    const voidEntry = {
+        voidId,
+        table: currentTable,
+        item: itemToVoid,
+        total: (itemToVoid.price + (itemToVoid.extras?.reduce((s, e) => s + e.price, 0) || 0)) * itemToVoid.quantity,
+        reason,
+        user: currentUser?.email || 'Guest',
+        timestamp: timestamp
+    };
+    
+    voidDetails.push(voidEntry);
+    orders[currentTable].splice(index, 1);
+    
+    const isOrderEmpty = orders[currentTable].length === 0;
+    if (isOrderEmpty) {
+        delete orders[currentTable];
+    }
+    
+    persistAllData();
+    renderOrderItems();
+    initializeTables();
+    notifications.show(`${itemToVoid.name} has been voided.`, 'success');
+    hideLoadingSpinner();
+}
+
+async function voidOrder() {
+    if (!currentTable || !orders[currentTable]?.length) {
+        notifications.show('No order to void!', 'warning');
+        return;
+    }
+
+    const reason = await showPromptModal('Void Entire Order', 'Enter reason for voiding this entire order:');
+    if (!reason) {
+        notifications.show('Void reason is required.', 'warning');
+        return;
+    }
+
+    showLoadingSpinner();
+    const tableToVoid = currentTable;
+    const orderToVoid = { ...orders[tableToVoid] }; // Make a copy for logging
+
+    const kotNumbersInOrder = [...new Set(
+        orders[tableToVoid]
+            .filter(item => item.finalized && item.kotNumber)
+            .map(item => item.kotNumber)
+    )];
+
+    const voidId = `void_${Date.now()}`;
+    const timestamp = new Date().toISOString();
+
+    voidDetails.push({
+        voidId,
+        table: tableToVoid,
+        items: orders[tableToVoid],
+        total: calculateTotal(),
+        reason,
+        user: currentUser?.email || 'Guest',
+        timestamp: timestamp
+    });
+
+    // Remove KOT entries associated with this order
+    kotHistory = kotHistory.filter(kot => !kotNumbersInOrder.includes(kot.kotNumber));
+
+    delete orders[tableToVoid];
+    delete tableTimers[tableToVoid];
+    currentTable = null;
+
+    persistAllData();
+    renderOrderItems();
+    initializeTables();
+    document.getElementById('selected-table').textContent = '-';
+    notifications.show(`Order for Table ${tableToVoid} has been voided.`, 'success');
+    hideLoadingSpinner();
+}
+
+async function voidOrderFromHistory(orderToVoid) {
+    if (!orderToVoid) {
+        notifications.show('Cannot void: Invalid order data.', 'error');
+        return;
+    }
+
+    const reason = await showPromptModal('Void Historical Order', `Enter reason for voiding order #${orderToVoid.orderNumber}:`);
+    if (!reason) {
+        notifications.show('Void reason is required.', 'warning');
+        return;
+    }
+
+    showLoadingSpinner();
+
+    const voidId = `void_${Date.now()}`;
+    const timestamp = new Date().toISOString();
+
+    const orderIndexInHistory = orderHistory.findIndex(o => o.orderNumber === orderToVoid.orderNumber);
+    const saleIndexInHistory = salesHistory.findIndex(s => s.orderNumber === orderToVoid.orderNumber);
+
+    if (orderIndexInHistory === -1) {
+        notifications.show('Order not found in history. Cannot void.', 'error');
+        hideLoadingSpinner();
+        return;
+    }
+    
+    const voidEntry = {
+        voidId,
+        table: orderToVoid.table,
+        items: orderToVoid.items,
+        total: orderToVoid.total,
+        reason: reason,
+        user: currentUser?.email || 'Guest',
+        timestamp: timestamp,
+        originalOrderNumber: orderToVoid.orderNumber
+    };
+    
+    orderHistory[orderIndexInHistory].status = 'voided';
+    if (saleIndexInHistory !== -1) {
+         salesHistory[saleIndexInHistory].status = 'voided';
+    }
+    voidDetails.push(voidEntry);
+
+    persistAllData();
+    renderOrderHistory(currentPage);
+    notifications.show(`Order #${orderToVoid.orderNumber} has been voided.`, 'success');
+    hideLoadingSpinner();
+}
+
+// =========================================================================
+// =================== RECEIPT & PRINTING ==================================
+// =========================================================================
+
+function printReceipt() {
+    if (!currentTable || !orders[currentTable]?.length) {
+        notifications.show('No order to print!', 'warning');
+        return;
+    }
+    
+    const orderForPrinting = {
+        orderNumber: `PREVIEW-${Date.now()}`,
+        table: currentTable,
+        items: orders[currentTable],
+        total: calculateTotal(),
+        discountAmount: (calculateOriginalTotal() - calculateTotal()),
+        timestamp: new Date().toISOString(),
+        user: currentUser?.email || 'Guest',
+        paymentMethods: [],
+        change: 0
+    };
+
+    generateReceipt(orderForPrinting);
+}
+
+function generateReceipt(order) {
+    if (!order || typeof order.total !== 'number') {
+        notifications.show('Error: Invalid data for receipt generation.', 'error');
+        console.error("Invalid order object passed to generateReceipt:", order);
+        return;
+    }
+
+    const SERVICE_CHARGE_PERCENT = 0;
+    const VAT_PERCENT = 0;
+    const RESTAURANT_PAN= "600XXXXXX";
+
+    try {
+        const timestamp = order.timestamp ? new Date(order.timestamp) : new Date();
+
+        const subtotal = order.items.reduce((sum, item) => {
+             const extrasTotal = (item.extras || []).reduce((s, e) => s + (e.price || 0), 0);
+             return sum + (item.price + extrasTotal) * item.quantity;
+        }, 0);
+        
+        const discountAmount = parseFloat(order.discountAmount) || 0;
+        const subtotalAfterDiscount = subtotal - discountAmount;
+        const serviceChargeAmount = subtotalAfterDiscount * (SERVICE_CHARGE_PERCENT / 100);
+        const taxableAmount = subtotalAfterDiscount + serviceChargeAmount;
+        const vatAmount = taxableAmount * (VAT_PERCENT / 100);
+        const grandTotal = taxableAmount + vatAmount;
+
+        const receiptCSS = `
+            <style>
+                @page { margin: 4mm; }
+                body {
+                    font-family: 'ui-sans-serif', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+                    margin: 0;
+                    padding: 0;
+                    background-color: #fff;
+                    color: #000;
+                    font-size: 13px;
+                    line-height: 1.5;
+                }
+                .receipt-container {
+                    width: 284px; /* Strict width for 80mm paper */
+                    margin: 0 auto;
+                }
+                .text-center { text-align: center; }
+                .text-right { text-align: right; }
+                .font-bold { font-weight: bold; }
+
+                .header-section img {
+                    width: 60px;
+                    margin-bottom: 2px;
+                }
+                .header-section h1 {
+                    margin: 0;
+                    font-size: 20px;
+                }
+                .header-section p {
+                    margin: 2px 0;
+                    font-size: 11px;
+                }
+
+                .info-line {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 3px;
+                }
+                
+                .dashed-line {
+                    border-top: 1px dashed #000;
+                    margin: 12px 0;
+                }
+
+                .items-table {
+                    width: 100%;
+                    table-layout: fixed;
+                    border-collapse: collapse;
+                }
+                .items-table thead th {
+                    font-size: 12px;
+                    border-bottom: 1px solid #000;
+                    padding-bottom: 5px;
+                    text-align: left;
+                }
+                .items-table tbody td {
+                    padding: 6px 0;
+                    vertical-align: top;
+                }
+                
+                .items-table .col-item {
+                    width: 52%;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+                .items-table .col-qty { width: 18%; text-align: center; }
+                .items-table .col-price { width: 30%; text-align: right; }
+                
+                .item-extras, .item-notes {
+                    font-size: 11px;
+                    color: #333;
+                    padding-left: 10px;
+                    white-space: normal;
+                }
+
+                .summary-section .summary-line {
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 2px 0;
+                }
+                .summary-section .grand-total {
+                    font-size: 18px;
+                    font-weight: bold;
+                    margin-top: 5px;
+                    padding-top: 5px;
+                    border-top: 1px solid #000;
+                }
+                
+                .footer-section {
+                    margin-top: 15px;
+                }
+
+                @media print {
+                    body { font-family: 'monospace'; font-size: 10pt; }
+                    .print-button { display: none; }
+                }
+            </style>
+        `;
+
+        const itemsHTML = order.items.map(item => {
+            const extrasTotal = (item.extras || []).reduce((sum, e) => sum + (e.price || 0), 0);
+            const itemTotal = (item.price + extrasTotal) * item.quantity;
+            let itemRow = `
+                <tr>
+                    <td class="col-item" title="${item.name}">${item.name}</td>
+                    <td class="col-qty">${item.quantity}</td>
+                    <td class="col-price">${itemTotal.toFixed(2)}</td>
+                </tr>`;
+
+            if (item.extras && item.extras.length > 0) {
+                itemRow += `<tr><td colspan="3" class="item-extras">+ ${item.extras.map(e => e.name).join(', ')}</td></tr>`;
+            }
+            if (item.notes) {
+                itemRow += `<tr><td colspan="3" class="item-notes"><i>Note: ${item.notes}</i></td></tr>`;
+            }
+            return itemRow;
+        }).join('');
+        
+        const receiptHTML = `
+            <div class="receipt-container">
+                <div class="header-section text-center">
+                    <img src="./images/logo-print.png" alt="Logo">
+                    <h1>Taboche Restaurant</h1>
+                    <p>Bhaktapur, Nepal</p>
+                    <p>PAN: ${RESTAURANT_PAN}</p>
+                </div>
+
+                <div class="dashed-line"></div>
+                
+                <div class="info-section">
+                    <div class="info-line"><span>Bill No:</span><span>${order.orderNumber || 'N/A'}</span></div>
+                    <div class="info-line"><span>Table:</span><span>${order.table || 'N/A'}</span></div>
+                    <div class="info-line"><span>Date:</span><span>${timestamp.toLocaleString()}</span></div>
+                    ${order.user ? `<div class="info-line"><span>Server:</span><span>${order.user.split('@')[0]}</span></div>` : ''}
+                </div>
+
+                <div class="dashed-line"></div>
+
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th class="col-item">Item</th>
+                            <th class="col-qty">Qty</th>
+                            <th class="col-price">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itemsHTML}
+                    </tbody>
+                </table>
+                
+                <div class="dashed-line"></div>
+                
+                <div class="summary-section">
+                    <div class="summary-line"><span>Subtotal</span><span class="text-right">Rs ${subtotal.toFixed(2)}</span></div>
+                    ${discountAmount > 0 ? `<div class="summary-line"><span>Discount</span><span class="text-right">-Rs ${discountAmount.toFixed(2)}</span></div>` : ''}
+                    <div class="summary-line"><span>Service Charge (${SERVICE_CHARGE_PERCENT}%)</span><span class="text-right">Rs ${serviceChargeAmount.toFixed(2)}</span></div>
+                    <div class="summary-line"><span>VAT (${VAT_PERCENT}%)</span><span class="text-right">Rs ${vatAmount.toFixed(2)}</span></div>
+                    
+                    <div class="summary-line grand-total">
+                        <span>GRAND TOTAL</span>
+                        <span class="text-right">Rs ${grandTotal.toFixed(2)}</span>
+                    </div>
+                </div>
+
+                ${(order.paymentMethods && order.paymentMethods.length > 0) ? `
+                <div class="dashed-line"></div>
+                <div class="payment-section summary-section">
+                    ${(order.paymentMethods || []).map(pm => `<div class="summary-line"><span>Paid (${pm.method})</span><span class="text-right">Rs ${pm.amount.toFixed(2)}</span></div>`).join('')}
+                    ${order.change > 0 ? `<div class="summary-line font-bold"><span>Change</span><span class="text-right">Rs ${order.change.toFixed(2)}</span></div>` : ''}
+                </div>
+                ` : ''}
+
+                <div class="dashed-line"></div>
+
+                <div class="footer-section text-center">
+                    <p>Thank you for your visit!</p>
+                    <p>Find us on social media @Taboche</p>
+                </div>
+            </div>
+            <div style="text-align:center; margin-top: 20px;">
+                 <button class="print-button" onclick="window.print()" style="padding: 10px 20px; font-size: 16px; cursor: pointer;">Print Receipt</button>
+            </div>
+        `;
+
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                    <head><title>Bill - ${order.orderNumber || ''}</title>${receiptCSS}</head>
+                    <body>${receiptHTML}</body>
+                </html>
+            `);
+            printWindow.document.close();
+            setTimeout(() => {
+                printWindow.focus();
+                printWindow.print();
+            }, 250);
+        } else {
+            notifications.show('Print window blocked. Please enable pop-ups.', 'error');
+        }
+
+    } catch (error) {
+        console.error('Error generating professional receipt:', error);
+        notifications.show('Failed to generate professional receipt. Check console for details.', 'error');
+    }
+}
+
+// NEW: Reset All Data Function
+async function resetAllDataConfirmed() {
+    const confirmed = await showConfirmModal(
+        'Reset All Data',
+        '<p><strong>Are you absolutely sure you want to reset ALL data?</strong></p><p>This will permanently delete all orders, sales history, void details, and KOT history from this device\'s local storage.</p><p>This action cannot be undone!</p>'
+    );
+
+    if (confirmed) {
+        showLoadingSpinner();
+        try {
+            localStorage.clear();
+            // Re-initialize all global state variables to their default empty states
+            currentTable = null;
+            orders = {};
+            tableTimers = {};
+            salesHistory = [];
+            orderHistory = [];
+            voidDetails = [];
+            kotHistory = [];
+            itemsSold = [];
+            removedItems = []; // Not used, but reset for completeness
+
+            // Reset menu navigation state
+            currentMenuLevel = 'topLevelSections'; // Changed initial level
+            activeSection = null; // Clear active section
+            activeCategoryDisplayGroup = null;
+
+            // Update UI
+            initializeTables();
+            renderOrderItems();
+            document.getElementById('selected-table').textContent = '-';
+            updateTotal();
+            renderMenuNavigation(); // Re-render menu to initial state
+            notifications.show('All local data has been reset successfully!', 'success', 5000);
+            closeSidebarContentModal();
+        } catch (error) {
+            console.error('Error resetting all data:', error);
+            notifications.show('Failed to reset data. Please try again or check console.', 'error');
+        } finally {
+            hideLoadingSpinner();
+        }
+    }
+}
+
+
+// =========================================================================
+// =================== INITIALIZATION & EVENT LISTENERS ====================
+// =========================================================================
+
+document.addEventListener("DOMContentLoaded", () => {
+    // Load all data from localStorage on startup
+    loadFromLocalStorage();
+
+    // Set up basic UI elements and intervals
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
+    setInterval(updateTableTimers, 1000);
+
+    initializeTables();
+    renderMenuNavigation(); // Initial render of menu categories/items
+    updateTotal(); // Calculate initial total
+    
+    // Header Buttons
+    document.getElementById("hamburger-menu")?.addEventListener("click", toggleSidebar);
+    document.getElementById("close-sidebar")?.addEventListener("click", toggleSidebar);
+    document.getElementById("theme-toggle")?.addEventListener("click", toggleTheme);
+
+    // NEW: Back button for menu navigation
+    document.getElementById("back-button")?.addEventListener("click", navigateBackMenu);
+
+    // Footer Buttons
+    document.getElementById("finalize-btn")?.addEventListener("click", finalizeOrder);
+    document.getElementById("checkout-btn")?.addEventListener("click", showCheckoutDialog);
+    document.getElementById("change-table-btn")?.addEventListener("click", changeTable);
+    document.getElementById("void-btn")?.addEventListener("click", voidOrder);
+    document.getElementById("print-receipt-btn")?.addEventListener("click", printReceipt);
+
+    // Sidebar Navigation
+    document.getElementById("nav-sales-reports")?.addEventListener("click", showSalesReportsContent);
+    document.getElementById("nav-items-sold")?.addEventListener("click", showItemsSoldContent);
+    document.getElementById("nav-order-history")?.addEventListener("click", showOrderHistoryContent);
+    document.getElementById("nav-void-details")?.addEventListener("click", showVoidDetailsContent);
+    document.getElementById("nav-reset-data")?.addEventListener("click", resetAllDataConfirmed); 
+
+    // Checkout Dialog Listeners
+    document.getElementById('close-checkout-dialog')?.addEventListener('click', closeCheckoutDialog);
+    document.getElementById('clear-input')?.addEventListener('click', clearInput);
+    document.getElementById('apply-discount-code')?.addEventListener('click', applyDiscountCode);
+    document.getElementById('clear-discount')?.addEventListener('click', clearDiscount);
+    document.getElementById('cash-btn')?.addEventListener('click', () => processPayment("Cash"));
+    document.getElementById('mobile-btn')?.addEventListener('click', () => processPayment("Mobile"));
+    document.getElementById('complete-btn')?.addEventListener('click', completePayment);
+
+    // Keypad and Quick Amounts
+    document.querySelectorAll('#keypad button[data-num]').forEach(button => {
+        button.addEventListener('click', () => appendNumber(button.dataset.num));
+    });
+    document.querySelectorAll('#quick-amounts button[data-amount]').forEach(button => {
+        button.addEventListener('click', () => setQuickAmount(parseFloat(button.dataset.amount)));
+    });
+    document.querySelectorAll('#discount-section button[data-discount]').forEach(button => {
+        button.addEventListener('click', () => applyDiscount(parseInt(button.dataset.discount)));
+    });
+
+    // QR Code Dialog
+    document.getElementById('close-qr-code-dialog')?.addEventListener('click', closeQRCodeDialog);
+
+    // Search input debounce
+    const searchInput = document.getElementById('search');
+    if (searchInput) {
+        let searchTimeout;
+        searchInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                searchMenu();
+            }, 300);
+        });
+    }
+
+    // Initialize theme
+    loadTheme();
+
+    // Initial table selection (optional, auto-select first table if none selected)
+    if (!currentTable && tableList.length > 0) {
+        selectTable(tableList[0]);
+    }
+});
+
+// Global event listener for closing modals/sidebars
+document.addEventListener('click', function(e) {
+    const customCloseSelectors = '.close-modal, .close-sidebar, .qr-close-btn';
+    const customCloseBtn = e.target.closest(customCloseSelectors);
+
+    if (customCloseBtn) {
+        e.preventDefault();
+        const containerToClose = customCloseBtn.closest('.modal, .sidebar, #qr-code-dialog');
+        if (containerToClose) {
+            containerToClose.style.display = 'none';
+        }
+    }
+});
+
+function toggleSidebar(e) {
+    e?.preventDefault();
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) {
+        console.warn("Sidebar element not found.");
+        return;
+    }
+    sidebar.classList.toggle('active');
+}
+
+function startBlinking(table) {
+    const tableBtn = document.getElementById(`table-btn-${table}`);
+    if (tableBtn) {
+        tableBtn.classList.add('blinking');
+        // Start timer if not already running
+        if (!tableTimers[table]) {
+            tableTimers[table] = {
+                start: Date.now(),
+                elapsed: 0,
+                lastUpdated: Date.now()
+            };
+            persistAllData();
+        }
+    }
+}
+
+function stopBlinking(table) {
+    const tableBtn = document.getElementById(`table-btn-${table}`);
+    if (tableBtn) {
+        tableBtn.classList.remove('blinking');
+    }
+}
+
+// Modified searchMenu to integrate with the new navigation flow
+function searchMenu() {
+    const searchTerm = document.getElementById('search')?.value.toLowerCase().trim() || '';
+    const menu = document.getElementById('menu');
+    const categoriesContainer = document.getElementById('categories');
+    const backButton = document.getElementById('back-button');
+    const menuSectionTitle = document.getElementById('menu-section-title');
+
+    if (!menu || !categoriesContainer || !backButton || !menuSectionTitle) return;
+
+    if (!searchTerm) {
+        // If search is cleared, revert to normal menu navigation
+        renderMenuNavigation();
+        return;
+    }
+
+    // When searching, bypass the hierarchy and show all matching items
+    categoriesContainer.innerHTML = ''; // Clear category buttons
+    backButton.style.display = 'block'; // Show back button
+    menuSectionTitle.textContent = `Search Results for "${searchTerm}"`;
+
+    const filteredItems = menuItems.filter(item => item.name.toLowerCase().includes(searchTerm));
+
+    menu.innerHTML = '';
+    if (filteredItems.length === 0) {
+        menu.innerHTML = '<p class="text-muted text-center py-4">No items match your search.</p>';
+        return;
+    }
+
+    filteredItems.forEach(item => {
+        const div = document.createElement('div');
+        div.className = `menu-item`;
+        
+        div.innerHTML = `
+            <img src="${item.image}" alt="${item.name}" loading="lazy">
+            <p>${item.name}</p>
+            <div class="price">Rs ${item.price.toFixed(2)}</div>
+        `;
+
+        div.addEventListener('click', () => addToOrder(item));
+        menu.appendChild(div);
+    });
+}
+</script>
+</body>
+</html>
