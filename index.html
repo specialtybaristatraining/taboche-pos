@@ -293,19 +293,20 @@ body.dark-mode .menu-navigation-header #menu-section-title {
 }
 
 .categories button {
-    padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 6px;
-    background-color: #e2e8f0;
-    color: #2d3748; /* Default text color for buttons */
+    padding: 0.65rem 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background-color: #ffffff;
+    color: #111827;
     cursor: pointer;
-    white-space: nowrap; /* Ensures buttons stay in a single line */
-    font-size: 0.875rem;
-    font-weight: 500;
+    white-space: nowrap;
+    font-size: 0.9rem;
+    font-weight: 600;
     user-select: none;
     -webkit-user-select: none;
     touch-action: manipulation;
-    transition: all 0.2s ease;
+    transition: background-color 0.22s ease, border-color 0.22s ease, color 0.22s ease, transform 0.22s ease;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
 }
 
 body.dark-mode .categories button {
@@ -316,6 +317,8 @@ body.dark-mode .categories button {
 .categories button.active {
     background-color: #2563eb;
     color: #ffffff;
+    border-color: #2563eb;
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.16);
 }
 
 .categories button:hover {
@@ -332,89 +335,144 @@ body.dark-mode .categories button:hover {
 
 .menu {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 0.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.75rem;
     touch-action: pan-y;
 }
 
 .menu-item {
-    position: relative; /* Needed for the "LOW STOCK" overlay */
+    position: relative;
     background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
     text-align: center;
-    padding: 0.5rem;
+    padding: 0.8rem;
     cursor: pointer;
     user-select: none;
     -webkit-user-select: none;
     touch-action: manipulation;
-    transition: all 0.3s ease;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .menu-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);
+    border-color: #cbd5e1;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
 }
 
 .menu-item:active {
-    transform: scale(0.98);
+    transform: translateY(-1px) scale(0.99);
 }
 
 .menu-item img {
-    width: 100%;
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
     display: block;
-    aspect-ratio: 1 / 1; /* Creates a perfect square for the image */
-    object-fit: cover; /* Fills the square without stretching */
-    border-radius: 6px;
-    loading: lazy;
-    background-color: #e2e8f0; /* Placeholder color */
+    object-fit: contain;
+    border-radius: 18px;
+    background-color: #f8fafc;
+    padding: 0.5rem;
 }
 body.dark-mode .menu-item img {
-    background-color: #2d3748;
+    background-color: #1e293b;
 }
 
 .menu-item p {
-    margin: 0.5rem 0;
-    font-size: 0.875rem;
-    font-weight: 500;
+    margin: 0.75rem 0 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: #111827;
 }
 
 .menu-item .price, .menu-item .stock {
-    font-size: 0.75rem;
-    color: #6b7280;
+    font-size: 0.85rem;
+    color: #4b5563;
 }
 
-/* ✅ NEW: Class for items with insufficient stock (Logic removed) */
-.menu-item.insufficient-stock {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background-color: #f8f9fa;
-    border-color: #f5c6cb;
-}
-.menu-item.insufficient-stock::after {
-    content: "OUT OF STOCK"; /* Changed from LOW STOCK for clarity */
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    background: #dc3545;
-    color: white;
-    font-size: 0.6rem;
-    padding: 2px 4px;
-    border-radius: 3px;
-    font-weight: bold;
-    z-index: 2;
+.menu-item.category-card {
+    min-height: 190px;
+    padding: 1rem;
 }
 
-/* NEW: Category Card specific styling (reusing menu-item base) */
 .category-card .category-card-name {
-    font-size: 1rem; /* Slightly larger font for category names */
-    font-weight: 600;
-    margin-top: 0.75rem;
-    margin-bottom: 0.25rem;
-    color: #2563eb; /* Highlight category name */
+    font-size: 1rem;
+    font-weight: 700;
+    margin-top: 0.85rem;
+    margin-bottom: 0;
+    color: #1f2937;
+    text-transform: capitalize;
+    letter-spacing: 0.01em;
 }
 body.dark-mode .category-card .category-card-name {
-    color: #93c5fd;
+    color: #e2e8f0;
+}
+
+/* ✅ NEW: Category card subtitle styling */
+.category-card .category-card-subtitle {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+}
+
+/* ✅ NEW: Improved card header spacing */
+.menu-navigation-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    gap: 0.5rem;
+}
+
+.menu-navigation-title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.menu-navigation-header #menu-section-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1d4ed8;
+}
+
+.menu-navigation-subtitle {
+    display: block;
+    font-size: 0.9rem;
+    color: #475569;
+}
+
+.section-card {
+    border-color: #2563eb;
+}
+
+.search-bar {
+    margin-bottom: 0.85rem;
+    padding: 0.85rem 1rem;
+    width: 100%;
+    border: 1px solid #d1d5db;
+    border-radius: 14px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    background-color: #ffffff;
+}
+
+.search-bar:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.08);
+}
+
+body.dark-mode .search-bar {
+    background-color: #1f2937;
+    border-color: #334155;
+    color: #e2e8f0;
 }
 
 /* Order Section */
@@ -1298,7 +1356,10 @@ body.dark-mode .category-card .category-card-name {
                 <!-- NEW: Menu Navigation Header -->
                 <div class="menu-navigation-header">
                     <button id="back-button" class="btn btn-secondary" style="display:none;"><i class="fas fa-arrow-left me-2"></i>Back</button>
-                    <h4 id="menu-section-title">Categories</h4>
+                    <div class="menu-navigation-title-group">
+                        <h4 id="menu-section-title">Select Section or Category</h4>
+                        <span class="menu-navigation-subtitle">Tap a section or category below, sorted alphabetically for fast selection.</span>
+                    </div>
                 </div>
 
                 <div class="categories" id="categories"></div>
@@ -1483,7 +1544,7 @@ let currentPage = 1;
 const itemsPerPage = 10;
 
 // NEW: Menu Navigation State
-let currentMenuLevel = 'topLevelSections'; // 'topLevelSections', 'categoriesOfSection', 'itemsOfCategory'
+let currentMenuLevel = 'topLevelSections'; // 'topLevelSections', 'itemsOfSection', 'itemsOfCategory'
 let activeSection = null; // Stores the top-level section selected (e.g., 'Food')
 let activeCategoryDisplayGroup = null; // Stores the category selected (e.g., 'Burger with fries')
 
@@ -1493,38 +1554,38 @@ let currentUser = { email: 'localuser@example.com', role: 'Staff' };
 // Hardcoded menu and extras
 const menuItems = [
     // ================== FOOD GROUPS ==================
-    { name: "Burger with Fries (Chicken)", price: 370, category: "Burger with fries", section: "Kitchen", type: "food", image: "images/burger_chicken_with_fries.jpg" },
-    { name: "Burger with Fries (Buff)", price: 350, category: "Burger with fries", section: "Kitchen", type: "food", image: "images/burger_buff_with_fries.jpg" },
-    { name: "Burger with Fries (Veg)", price: 295, category: "Burger with fries", section: "Kitchen", type: "food", image: "images/burger_veg_with_fries.jpg" },
+{ name: "Burger with Fries (Chicken)", price: 370, category: "Burger with Fries", section: "Kitchen", type: "food", image: "images/burger_chicken_with_fries.jpg" },
+    { name: "Burger with Fries (Buff)", price: 350, category: "Burger with Fries", section: "Kitchen", type: "food", image: "images/burger_chicken_with_fries.jpg" },
+    { name: "Burger with Fries (Veg)", price: 295, category: "Burger with Fries", section: "Kitchen", type: "food", image: "images/burger_chicken_with_fries.jpg" },
     { name: "Wrap with Fries (Chicken)", price: 350, category: "Wrap with Fries", section: "Kitchen", type: "food", image: "images/wrap_chicken_with_fries.jpg" },
-    { name: "Wrap with Fries (Buff)", price: 330, category: "Wrap with Fries", section: "Kitchen", type: "food", image: "images/wrap_buff_with_fries.jpg" },
-    { name: "Wrap with Fries (Veg)", price: 280, category: "Wrap with Fries", section: "Kitchen", type: "food", image: "images/wrap_veg_with_fries.jpg" },
+    { name: "Wrap with Fries (Buff)", price: 330, category: "Wrap with Fries", section: "Kitchen", type: "food", image: "images/wrap_chicken_with_fries.jpg" },
+    { name: "Wrap with Fries (Veg)", price: 280, category: "Wrap with Fries", section: "Kitchen", type: "food", image: "images/wrap_chicken_with_fries.jpg" },
     
     { name: "Keema Noodles (Chicken)", price: 300, category: "Keema Noodles", section: "Kitchen", type: "food", image: "images/keema_noodles_chicken.jpg" },
-    { name: "Keema Noodles (Buff)", price: 280, category: "Keema Noodles", section: "Kitchen", type: "food", image: "images/keema_noodles_buff.jpg" },
-    { name: "Keema Noodles (Egg)", price: 250, category: "Keema Noodles", section: "Kitchen", type: "food", image: "images/keema_noodles_egg.jpg" },
+    { name: "Keema Noodles (Buff)", price: 280, category: "Keema Noodles", section: "Kitchen", type: "food", image: "images/keema_noodles_chicken.jpg" },
+    { name: "Keema Noodles (Egg)", price: 250, category: "Keema Noodles", section: "Kitchen", type: "food", image: "images/keema_noodles_chicken.jpg" },
 
-    { name: "Stm Mo:Mo (Chicken)", price: 285, category: "Stm Mo:Mo", section: "Kitchen", type: "food", image: "images/momo_chicken.jpg" },
-    { name: "Stm Mo:Mo (Buff)", price: 260, category: "Stm Mo:Mo", section: "Kitchen", type: "food", image: "images/momo_buff.jpg" },
-    { name: "Stm Mo:Mo (Veg)", price: 220, category: "Stm Mo:Mo", section: "Kitchen", type: "food", image: "images/momo_veg.jpg" },
+    { name: "Steam Mo:Mo (Chicken)", price: 285, category: "Steam Mo:Mo", section: "Kitchen", type: "food", image: "images/momo_chicken.jpg" },
+    { name: "Steam Mo:Mo (Buff)", price: 260, category: "Steam Mo:Mo", section: "Kitchen", type: "food", image: "images/momo_chicken.jpg" },
+    { name: "Steam Mo:Mo (Veg)", price: 220, category: "Steam Mo:Mo", section: "Kitchen", type: "food", image: "images/momo_chicken.jpg" },
     
     { name: "Jhol Mo:Mo (Chicken)", price: 320, category: "Jhol Mo:Mo", section: "Kitchen", type: "food", image: "images/jhol_momo_chicken.jpg" },
-    { name: "Jhol Mo:Mo (Buff)", price: 285, category: "Jhol Mo:Mo", section: "Kitchen", type: "food", image: "images/jhol_momo_buff.jpg" },
-    { name: "Jhol Mo:Mo (Veg)", price: 250, category: "Jhol Mo:Mo", section: "Kitchen", type: "food", image: "images/jhol_momo_veg.jpg" },
+    { name: "Jhol Mo:Mo (Buff)", price: 285, category: "Jhol Mo:Mo", section: "Kitchen", type: "food", image: "images/jhol_momo_chicken.jpg" },
+    { name: "Jhol Mo:Mo (Veg)", price: 250, category: "Jhol Mo:Mo", section: "Kitchen", type: "food", image: "images/jhol_momo_chicken.jpg" },
     
     { name: "Chilly (Chicken)", price: 360, category: "Chilly", section: "Kitchen", type: "food", image: "images/chilly_chicken.jpg" },
     { name: "Chilly (Buff)", price: 320, category: "Chilly", section: "Kitchen", type: "food", image: "images/chilly_buff.jpg" },
     
     { name: "Pizza (Cheese)", price: 500, category: "Pizza", section: "Kitchen", type: "food", image: "images/pizza_cheese.jpg" },
-    { name: "Pizza (Chicken)", price: 580, category: "Pizza", section: "Kitchen", type: "food", image: "images/pizza_chicken.jpg" },
-    { name: "Pizza (Mixed)", price: 650, category: "Pizza", section: "Kitchen", type: "food", image: "images/pizza_mixed.jpg" },
+    { name: "Pizza (Chicken)", price: 580, category: "Pizza", section: "Kitchen", type: "food", image: "images/pizza_cheese.jpg" },
+    { name: "Pizza (Mixed)", price: 650, category: "Pizza", section: "Kitchen", type: "food", image: "images/pizza_cheese.jpg" },
     
-    { name: "French Fry", price: 350, category: "French fry", section: "Kitchen", type: "food", image: "images/french_fry.jpg" },
+    { name: "French Fry", price: 350, category: "French Fry", section: "Kitchen", type: "food", image: "images/french_fry.jpg" },
     { name: "Wings", price: 480, category: "Wings", section: "Kitchen", type: "food", image: "images/wings.jpg" },
-    
-    { name: "Fry Rice (Chicken)", price: 360, category: "Fry Rice", section: "Kitchen", type: "food", image: "images/fried_rice_chicken.jpg" },
-    { name: "Fry Rice (Buff)", price: 320, category: "Fry Rice", section: "Kitchen", type: "food", image: "images/fried_rice_buff.jpg" },
-    { name: "Fry Rice (Egg)", price: 285, category: "Fry Rice", section: "Kitchen", type: "food", image: "images/fried_rice_egg.jpg" },
+
+    { name: "Fried Rice (Chicken)", price: 360, category: "Fried Rice", section: "Kitchen", type: "food", image: "images/fried_rice_chicken.jpg" },
+    { name: "Fried Rice (Buff)", price: 320, category: "Fried Rice", section: "Kitchen", type: "food", image: "images/fried_rice_chicken.jpg" },
+    { name: "Fried Rice (Egg)", price: 285, category: "Fried Rice", section: "Kitchen", type: "food", image: "images/fried_rice_chicken.jpg" },
     
     { name: "Sausage (Chicken)", price: 340, category: "Sausage", section: "Kitchen", type: "food", image: "images/sausage_chicken.jpg" },
     { name: "Sausage (Buff)", price: 300, category: "Sausage", section: "Kitchen", type: "food", image: "images/sausage_buff.jpg" },
@@ -1541,29 +1602,28 @@ const menuItems = [
     { name: "Mushroom Pie", price: 100, category: "Bakery", section: "Bar", type: "food", image: "images/mushroom_pie.jpg" },
 
     // ================== DRINK GROUPS (now section "Bar", type "drink") ==================
-    { name: "Americano", price: 150, category: "Hot coffee", section: "Bar", type: "drink", image: "images/americano.jpg" },
-    { name: "Latte", price: 170, category: "Hot coffee", section: "Bar", type: "drink", image: "images/latte.jpg" },
-    { name: "Cappuccino", price: 170, category: "Hot coffee", section: "Bar", type: "drink", image: "images/cappuccino.jpg" },
-    { name: "Vanilla Latte", price: 250, category: "Hot coffee", section: "Bar", type: "drink", image: "images/latte_vanilla.jpg" },
-    { name: "Hazelnut Latte", price: 250, category: "Hot coffee", section: "Bar", type: "drink", image: "images/flavored_latte_hazelnut.jpg" },
-    { name: "Caramel Latte", price: 250, category: "Hot coffee", section: "Bar", type: "drink", image: "images/latte_caramel.jpg" },
-    { name: "Hot Chocolate", price: 250, category: "Hot coffee", section: "Bar", type: "drink", image: "images/hot_chocolate.jpg" },
+    { name: "Americano", price: 150, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/americano.jpg" },
+    { name: "Latte", price: 190, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/latte.jpg" },
+    { name: "Cappuccino", price: 200, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/cappuccino.jpg" },
+    { name: "Vanilla Latte", price: 260, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/latte_vanilla.jpg" },
+    { name: "Hazelnut Latte", price: 260, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/flavored_latte_hazelnut.jpg" },
+    { name: "Caramel Latte", price: 260, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/latte_caramel.jpg" },
+    { name: "Hot Chocolate", price: 260, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/hot_chocolate.jpg" },
 
     // Moved Cold Coffee OUT of "Cold Drinks" section to be a top-level category
-    { name: "Iced Latte", price: 240, category: "Cold coffee", section: "Bar", type: "drink", image: "images/iced_latte.jpg" },
-    { name: "Iced Americano", price: 220, category: "Cold coffee", section: "Bar", type: "drink", image: "images/iced_americano.jpg" },
-    { name: "Iced Cappuccino", price: 260, category: "Cold coffee", section: "Bar", type: "drink", image: "images/iced_cappuccino.jpg" },
-    { name: "Iced Vanilla", price: 270, category: "Cold coffee", section: "Bar", type: "drink", image: "images/iced_vanilla_latte.jpg" },
-    { name: "Iced Caramel", price: 290, category: "Cold coffee", section: "Bar", type: "drink", image: "images/iced_caramel_latte.jpg" },
-    { name: "Iced Mocha", price: 290, category: "Cold coffee", section: "Bar", type: "drink", image: "images/iced_mocha.jpg" },
-    { name: "Iced Hazelnut", price: 290, category: "Cold coffee", section: "Bar", type: "drink", image: "images/iced_hazelnut_latte.jpg" },
+    { name: "Iced Latte", price: 220, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_latte.jpg" },
+    { name: "Iced Americano", price: 200, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_americano.jpg" },
+    { name: "Iced Cappuccino", price: 240, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_cappuccino.jpg" },
+    { name: "Iced Vanilla", price: 290, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_vanilla_latte.jpg" },
+    { name: "Iced Caramel", price: 290, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_caramel_latte.jpg" },
+    { name: "Iced Mocha", price: 290, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_mocha.jpg" },
+    { name: "Iced Hazelnut", price: 290, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_hazelnut_latte.jpg" },
 
-    { name: "Mocha (Frappe)", price: 320, category: "Frappe/Blended", section: "Bar", type: "drink", image: "images/frappe_crushed_mocha.jpg" },
-    { name: "Vanilla (Frappe)", price: 320, category: "Frappe/Blended", section: "Bar", type: "drink", image: "images/frappe_crushed_vanilla.jpg" },
-    { name: "Caramel (Frappe)", price: 320, category: "Frappe/Blended", section: "Bar", type: "drink", image: "images/frappe_crushed_caramel.jpg" },
-    { name: "Hazelnut (Frappe)", price: 320, category: "Frappe/Blended", section: "Bar", type: "drink", image: "images/frappe_crushed_hazelnut.jpg" },
-    { name: "Oreo (Frappe)", price: 320, category: "Frappe/Blended", section: "Bar", type: "drink", image: "images/alternate_oreo.jpg" },
-    { name: "Kitkat (Frappe)", price: 350, category: "Frappe/Blended", section: "Bar", type: "drink", image: "images/alternate_kitkat.jpg" },
+    { name: "Mocha", price: 320, category: "Frappe / Blended", section: "Bar", type: "drink", image: "images/frappe_crushed_mocha.jpg" },
+    { name: "Vanilla", price: 320, category: "Frappe / Blended", section: "Bar", type: "drink", image: "images/frappe_crushed_vanilla.jpg" },
+    { name: "Caramel", price: 320, category: "Frappe / Blended", section: "Bar", type: "drink", image: "images/frappe_crushed_caramel.jpg" },
+    { name: "Hazelnut", price: 320, category: "Frappe / Blended", section: "Bar", type: "drink", image: "images/frappe_crushed_hazelnut.jpg" },
+    { name: "Oreo", price: 320, category: "Frappe / Blended", section: "Bar", type: "drink", image: "images/alternate_oreo.jpg" },
 
     { name: "Virgin Mojito", price: 250, category: "Mojito", section: "Bar", type: "drink", image: "images/virgin_mojito.jpg" },
     { name: "Peach Mojito", price: 280, category: "Mojito", section: "Bar", type: "drink", image: "images/peach_mojito.jpg" },
@@ -1571,28 +1631,21 @@ const menuItems = [
     { name: "Mango Mojito", price: 295, category: "Mojito", section: "Bar", type: "drink", image: "images/mango_mojito.jpg" },
     { name: "Strawberry Mojito", price: 295, category: "Mojito", section: "Bar", type: "drink", image: "images/strawberry_mojito.jpg" },
 
-    { name: "Sparkling Tea (Apple)", price: 320, category: "Sparkling tea", section: "Bar", type: "drink", image: "images/sparkling_apple.jpg" },
-    { name: "Sparkling Tea (Peach)", price: 300, category: "Sparkling tea", section: "Bar", type: "drink", image: "images/sparkling_peach.jpg" },
-    { name: "Sparkling Tea (Lemon)", price: 290, category: "Sparkling tea", section: "Bar", type: "drink", image: "images/sparkling_lemon.jpg" },
+    { name: "Sparkling Iced Tea (Apple)", price: 320, category: "Sparkling Iced Tea", section: "Bar", type: "drink", image: "images/sparkling_apple.jpg" },
+    { name: "Sparkling Iced Tea (Peach)", price: 300, category: "Sparkling Iced Tea", section: "Bar", type: "drink", image: "images/sparkling_peach.jpg" },
+    { name: "Sparkling Iced Tea (Lemon)", price: 300, category: "Sparkling Iced Tea", section: "Bar", type: "drink", image: "images/sparkling_lemon.jpg" },
 
-    { name: "Lemonade (Regular)", price: 230, category: "Lemonade", section: "Bar", type: "drink", image: "images/lemonade.jpg" },
-    { name: "Mint Lemonade", price: 250, category: "Lemonade", section: "Bar", type: "drink", image: "images/mint_lemonade.jpg" },
-    { name: "Peach Lemonade", price: 285, category: "Lemonade", section: "Bar", type: "drink", image: "images/peach_lemonade.jpg" },
-    { name: "Strawberry Lemonade", price: 285, category: "Lemonade", section: "Bar", type: "drink", image: "images/strawberry_lemonade.jpg" },
+    { name: "Lemonade", price: 250, category: "Lemonade", section: "Bar", type: "drink", image: "images/lemonade.jpg" },
+    { name: "Mint Lemonade", price: 280, category: "Lemonade", section: "Bar", type: "drink", image: "images/mint_lemonade.jpg" },
+    { name: "Peach Lemonade", price: 300, category: "Lemonade", section: "Bar", type: "drink", image: "images/peach_lemonade.jpg" },
+    { name: "Strawberry Lemonade", price: 300, category: "Lemonade", section: "Bar", type: "drink", image: "images/strawberry_lemonade.jpg" },
 
-    { name: "Iced Tea (Lemon)", price: 220, category: "Iced Tea", section: "Bar", type: "drink", image: "images/iced_tea_lemon.jpg" },
-    { name: "Iced Tea (Peach)", price: 270, category: "Iced Tea", section: "Bar", type: "drink", image: "images/iced_tea_peach.jpg" },
-    { name: "Iced Tea (Hibiscus)", price: 270, category: "Iced Tea", section: "Bar", type: "drink", image: "images/iced_tea_hibiscus.jpg" },
-    { name: "Iced Tea (Blackberries)", price: 270, category: "Iced Tea", section: "Bar", type: "drink", image: "images/blackberry_iced_tea.jpg" },
+    { name: "Lemon Tea", price: 220, category: "Iced Tea", section: "Bar", type: "drink", image: "images/iced_tea_lemon.jpg" },
+    { name: "Peach Tea", price: 270, category: "Iced Tea", section: "Bar", type: "drink", image: "images/iced_tea_peach.jpg" },
+    { name: "Hibiscus", price: 270, category: "Iced Tea", section: "Bar", type: "drink", image: "images/iced_tea_hibiscus.jpg" },
+    { name: "Black Berries", price: 270, category: "Iced Tea", section: "Bar", type: "drink", image: "images/blackberry_iced_tea.jpg" },
     
-    { name: "Bubble Tea (Mango)", price: 280, category: "Bubble Tea", section: "Bar", type: "drink", image: "images/bubble_tea_mango.jpg" },
-    { name: "Bubble Tea (Vanilla)", price: 280, category: "Bubble Tea", section: "Bar", type: "drink", image: "images/bubble_tea_vanilla.jpg" },
-    { name: "Bubble Tea (Blueberry)", price: 280, category: "Bubble Tea", section: "Bar", type: "drink", image: "images/bubble_tea_blueberry.jpg" },
-    { name: "Bubble Tea (Chocolate)", price: 280, category: "Bubble Tea", section: "Bar", type: "drink", image: "images/bubble_tea_chocolate.jpg" },
-    { name: "Bubble Tea (Strawberry)", price: 280, category: "Bubble Tea", section: "Bar", type: "drink", image: "images/bubble_tea_strawberry.jpg" },
-    { name: "Bubble Tea (Honey Dew)", price: 280, category: "Bubble Tea", section: "Bar", type: "drink", image: "images/bubble_tea_honeydew.jpg" },
-    { name: "Bubble Tea (Mocha)", price: 280, category: "Bubble Tea", section: "Bar", type: "drink", image: "images/bubble_tea_mocha.jpg" },
-    { name: "Bubble Tea (Matcha)", price: 280, category: "Bubble Tea", section: "Bar", type: "drink", image: "images/bubble_tea_matcha.jpg" },
+    { name: "Bubble Tea", price: 280, category: "Bubble Tea", section: "Bar", type: "drink", image: "images/bubble-tea.jpg" },
     
     { name: "Lassi (Sweet)", price: 195, category: "Lassi", section: "Bar", type: "drink", image: "images/lassi_sweet.jpg" },
     { name: "Lassi (Mango)", price: 250, category: "Lassi", section: "Bar", type: "drink", image: "images/lassi_mango.jpg" },
@@ -1678,33 +1731,24 @@ const discountCodes = {
     "FREEDRINK": 15
 };
 
-// MODIFIED: "Cold coffee" is now a top-level category outside of "Cold Drinks" section.
+// MODIFIED: "Cold Coffee" is now a top-level category outside of "Cold Drinks" section.
 const menuSections = {
     "Food": [
         "Bakery",
-        "Burger with fries",
+        "Burger with Fries",
         "Wrap with Fries",
         "Keema Noodles",
-        "Stm Mo:Mo",
+        "Steam Mo:Mo",
         "Jhol Mo:Mo",
         "Chilly",
         "Pizza",
-        "French fry",
+        "French Fry",
         "Wings",
-        "Fry Rice",
+        "Fried Rice",
         "Sausage",
         "Laping"
     ],
-    "Cold Drinks": [ // This section will now contain only these sub-categories
-        "Bubble Tea",
-        "Frappe/Blended",
-        "Iced Tea",
-        "Lassi",
-        "Lemonade",
-        "Mojito",
-        "Soft Drinks",
-        "Sparkling tea"
-    ],
+    // Cold Drinks grouping removed because these categories now show directly on the home screen
     "Retail & Misc": [
         "Retail",
         "Misc"
@@ -2088,7 +2132,7 @@ function getRepresentativeImage(name, isSection = false) {
 
 // MODIFIED: Central function for rendering menu navigation
 function renderMenuNavigation() {
-    const categoriesContainer = document.getElementById('categories'); // This will be empty for grid categories
+    const categoriesContainer = document.getElementById('categories');
     const menuItemsContainer = document.getElementById('menu');
     const backButton = document.getElementById('back-button');
     const menuSectionTitle = document.getElementById('menu-section-title');
@@ -2096,66 +2140,67 @@ function renderMenuNavigation() {
 
     if (!categoriesContainer || !menuItemsContainer || !backButton || !menuSectionTitle || !searchInput) return;
 
-    // Clear previous content
-    categoriesContainer.innerHTML = ''; 
+    categoriesContainer.innerHTML = '';
     menuItemsContainer.innerHTML = '';
-    
-    // Hide back button by default
-    backButton.style.display = 'none'; 
-    
-    // Clear active states for buttons (though they won't be used for top-level categories now)
+    backButton.style.display = 'none';
     document.querySelectorAll('.categories button').forEach(btn => btn.classList.remove('active'));
 
-    // If there's an active search, prioritize showing search results
     if (searchInput.value.trim() !== '') {
-        searchMenu(); // This function will handle rendering and title
-        return; // Exit, as searchMenu handles the display
+        searchMenu();
+        return;
     }
 
     if (currentMenuLevel === 'topLevelSections') {
-        menuSectionTitle.textContent = "Select Section or Category"; // More general title
+        menuSectionTitle.textContent = 'Select Section or Category';
 
-        // Get categories that are explicitly defined as sections
         const sectionNames = Object.keys(menuSections).sort();
-        
-        // Get all unique drink categories from 'Bar' section, excluding those now inside 'Cold Drinks' section
-        const coldDrinkCategoriesInNewSection = menuSections["Cold Drinks"] || [];
-        const topLevelDrinkCategories = [...new Set(
-            menuItems
-                .filter(item => item.section === "Bar" && item.type === "drink" && !coldDrinkCategoriesInNewSection.includes(item.category))
-                .map(item => item.category)
-        )].sort();
+        const topLevelDrinkCategoriesOrder = [
+            "Cold Coffee",
+            "Frappe / Blended",
+            "Iced Tea",
+            "Mojito",
+            "Lassi",
+            "Soft Drinks",
+            "Sparkling Iced Tea"
+        ];
 
-        // Combine traditional sections and direct top-level drink categories for the initial display
-        const allTopLevelDisplayItems = [
-            ...sectionNames, // "Food", "Cold Drinks", "Retail & Misc"
-            ...topLevelDrinkCategories // "Hot coffee", "Tea", "Cold coffee" (now moved out)
-        ].sort(); // Sort the combined list alphabetically
+        const allDirectDrinkCategories = [...new Set(
+            menuItems
+                .filter(item => item.section === 'Bar' && item.type === 'drink')
+                .map(item => item.category)
+        )];
+
+        const orderedDrinkCategories = [
+            ...topLevelDrinkCategoriesOrder.filter(cat => allDirectDrinkCategories.includes(cat)),
+            ...allDirectDrinkCategories.filter(cat => !topLevelDrinkCategoriesOrder.includes(cat))
+        ];
+
+        const allTopLevelDisplayItems = [...new Set([
+            ...orderedDrinkCategories,
+            ...sectionNames
+        ])].sort((a, b) => a.localeCompare(b, 'en', { sensitivity: 'base' }));
 
         allTopLevelDisplayItems.forEach(displayName => {
             const div = document.createElement('div');
-            div.className = `menu-item category-card`; 
+            const isSection = Boolean(menuSections[displayName]);
+            div.className = `menu-item category-card${isSection ? ' section-card' : ''}`;
 
-            let imageUrl;
-            let clickHandler;
+            const imageUrl = isSection
+                ? getRepresentativeImage(displayName, true)
+                : getRepresentativeImage(displayName, false);
 
-            // Check if it's one of the main sections (Food, Cold Drinks, Retail & Misc)
-            if (menuSections[displayName]) { 
-                imageUrl = getRepresentativeImage(displayName, true); // Get section image
-                clickHandler = () => {
+            const clickHandler = () => {
+                if (menuSections[displayName]) {
                     activeSection = displayName;
-                    currentMenuLevel = 'categoriesOfSection'; // Go to categories within this section
-                    renderMenuNavigation();
-                };
-            } else {
-                // It's a direct category (like Hot coffee, Tea, or Cold coffee)
-                imageUrl = getRepresentativeImage(displayName, false); // Get category image
-                clickHandler = () => {
+                    currentMenuLevel = 'itemsOfSection';
+                    activeCategoryDisplayGroup = null;
+                } else {
                     activeCategoryDisplayGroup = displayName;
-                    currentMenuLevel = 'itemsOfCategory'; // Go directly to items for this category
-                    renderMenuNavigation();
-                };
-            }
+                    currentMenuLevel = 'itemsOfCategory';
+                    activeSection = null;
+                }
+                renderMenuNavigation();
+            };
 
             div.innerHTML = `
                 <img src="${imageUrl}" alt="${displayName}" loading="lazy">
@@ -2165,64 +2210,48 @@ function renderMenuNavigation() {
             menuItemsContainer.appendChild(div);
         });
 
-    } else if (currentMenuLevel === 'categoriesOfSection' && activeSection) {
+    } else if (currentMenuLevel === 'itemsOfSection' && activeSection) {
         menuSectionTitle.textContent = activeSection;
-        backButton.style.display = 'block'; 
+        backButton.style.display = 'block';
+        renderMenuItemsForSection(activeSection);
 
-        // Clear menuItemsContainer when showing category buttons
-        menuItemsContainer.innerHTML = ''; 
-
-        // Renders categories specific to the selected section (Food, Cold Drinks, Retail & Misc)
-        if (menuSections[activeSection]) {
-            menuSections[activeSection].sort().forEach(categoryName => {
-                const button = document.createElement('button'); // Use button element
-                button.textContent = categoryName; // Set text content
-
-                button.addEventListener('click', () => {
-                    // Remove 'active' class from previously selected category button
-                    document.querySelectorAll('.categories button').forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active'); // Add 'active' class to the clicked button
-
-                    activeCategoryDisplayGroup = categoryName;
-                    currentMenuLevel = 'itemsOfCategory';
-                    renderMenuNavigation(); // Re-render to show items of selected category
-                });
-                categoriesContainer.appendChild(button); // Append to categories div for horizontal scroll
-            });
-        }
     } else if (currentMenuLevel === 'itemsOfCategory' && activeCategoryDisplayGroup) {
-        // Ensure category buttons are visible and active when showing items
-        categoriesContainer.innerHTML = ''; // Clear existing category buttons if any
         menuSectionTitle.textContent = activeCategoryDisplayGroup;
         backButton.style.display = 'block';
-
-        // Re-render the category buttons for the current activeSection,
-        // and mark the activeCategoryDisplayGroup button as 'active'.
-        if (activeSection && menuSections[activeSection]) {
-             menuSections[activeSection].sort().forEach(categoryName => {
-                const button = document.createElement('button');
-                button.textContent = categoryName;
-                if (categoryName === activeCategoryDisplayGroup) {
-                    button.classList.add('active');
-                }
-                button.addEventListener('click', () => {
-                    document.querySelectorAll('.categories button').forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
-                    activeCategoryDisplayGroup = categoryName;
-                    renderMenuItemsForCategory(activeCategoryDisplayGroup); // Just re-render items, stay on current menu level
-                    menuSectionTitle.textContent = activeCategoryDisplayGroup; // Update title
-                });
-                categoriesContainer.appendChild(button);
-            });
-        } else {
-             // If we are at items of a top-level category (not nested under a section),
-             // then there are no horizontal category buttons to show.
-             // This case is for "Hot coffee", "Tea", and "Cold coffee"
-             categoriesContainer.innerHTML = ''; 
-        }
-
         renderMenuItemsForCategory(activeCategoryDisplayGroup);
     }
+}
+
+function renderMenuItemsForSection(sectionName) {
+    const menu = document.getElementById('menu');
+    if (!menu) return;
+    menu.innerHTML = '';
+
+    const sectionCategories = menuSections[sectionName];
+    let filteredItems;
+
+    if (sectionCategories && Array.isArray(sectionCategories)) {
+        filteredItems = menuItems.filter(item => sectionCategories.includes(item.category));
+    } else {
+        filteredItems = menuItems.filter(item => item.section === sectionName);
+    }
+
+    if (filteredItems.length === 0) {
+        menu.innerHTML = '<p class="text-muted text-center py-4">No items found in this section.</p>';
+        return;
+    }
+
+    filteredItems.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'menu-item';
+        div.innerHTML = `
+            <img src="${item.image}" alt="${item.name}" loading="lazy">
+            <p>${item.name}</p>
+            <div class="price">Rs ${item.price.toFixed(2)}</div>
+        `;
+        div.addEventListener('click', () => addToOrder(item));
+        menu.appendChild(div);
+    });
 }
 
 // MODIFIED: Navigate back function to always go to topLevelSections
