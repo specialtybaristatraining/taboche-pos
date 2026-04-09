@@ -25,24 +25,32 @@
 }
 
 body {
-    background-color: #f5f7fa;
+    background: linear-gradient(135deg, #e0f2fe 0%, #f8fafc 35%, #eff6ff 100%);
+    background-size: 400% 400%;
+    animation: backgroundShift 18s ease infinite;
     color: #2d3748;
     overflow-x: hidden;
     font-size: 16px;
     line-height: 1.6;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
 body.dark-mode {
-    background-color: #1f272e;
+    background: linear-gradient(135deg, #0f172a 0%, #111827 35%, #1f2937 100%);
     color: #e2e8f0;
+}
+
+@keyframes backgroundShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 /* Header Styles */
 header {
-    background-color: #2563eb;
+    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #1d4ed8 100%);
     color: #ffffff;
-    padding: 1rem;
+    padding: 1rem 1.2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -50,8 +58,8 @@ header {
     top: 0;
     z-index: 1000;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    gap: 0.6rem;
+    box-shadow: 0 12px 30px rgba(37, 99, 235, 0.2);
 }
 
 .hamburger-menu {
@@ -152,35 +160,40 @@ header {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
     gap: 0.5rem;
-    padding: 0.5rem;
-    background-color: #ffffff;
-    border-bottom: 1px solid #e2e8f0;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.88);
+    border-bottom: 1px solid rgba(140, 153, 255, 0.2);
+    backdrop-filter: blur(10px);
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     white-space: nowrap;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.7);
 }
 
 
 /* Table Buttons */
 .table-btn {
     position: relative;
-    padding: 0.3rem;
+    padding: 0.4rem 0.45rem;
     border: none;
-    border-radius: 6px;
+    border-radius: 10px;
     cursor: pointer;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     text-align: center;
-    min-height: 40px;
+    min-height: 45px;
     line-height: 1.2;
     touch-action: manipulation;
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+    background: #ecf9f1;
+    color: #0f172a;
 }
 
 .table-btn:after {
     content: '';
     position: absolute;
-    top: 6px;
-    right: 6px;
+    top: 8px;
+    right: 8px;
     width: 10px;
     height: 10px;
     border-radius: 50%;
@@ -234,20 +247,24 @@ header {
 
 .menu-section {
     flex: 1;
-    padding: 0.5rem;
+    padding: 0.75rem;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-y;
+    background: rgba(255, 255, 255, 0.88);
+    border-radius: 24px;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
 }
 
 .search-bar {
-    margin-bottom: 0.5rem;
-    padding: 0.5rem;
+    margin-bottom: 0.75rem;
+    padding: 0.85rem 1rem;
     width: 100%;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    font-size: 0.875rem;
-    transition: border-color 0.2s ease;
+    border: 1px solid rgba(37, 99, 235, 0.24);
+    border-radius: 16px;
+    font-size: 0.95rem;
+    background: rgba(255, 255, 255, 0.96);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .search-bar:focus {
@@ -259,17 +276,21 @@ header {
 .menu-navigation-header {
     display: flex;
     align-items: center;
-    margin-bottom: 0.5rem;
+    justify-content: space-between;
+    margin-bottom: 0.45rem;
+    gap: 0.35rem;
 }
 .menu-navigation-header #back-button {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.875rem;
+    padding: 0.45rem 0.7rem;
+    font-size: 0.85rem;
 }
 .menu-navigation-header #menu-section-title {
     margin: 0;
     margin-left: 0.5rem;
-    font-size: 1.1rem;
-    color: #2d3748;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #1e3a8a;
+    letter-spacing: 0.015em;
 }
 body.dark-mode .menu-navigation-header #menu-section-title {
     color: #e2e8f0;
@@ -293,20 +314,36 @@ body.dark-mode .menu-navigation-header #menu-section-title {
 }
 
 .categories button {
-    padding: 0.65rem 1rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    background-color: #ffffff;
-    color: #111827;
+    padding: 0.7rem 1rem;
+    border: 1px solid rgba(37, 99, 235, 0.16);
+    border-radius: 18px;
+    background-color: rgba(255, 255, 255, 0.95);
+    color: #1e293b;
     cursor: pointer;
     white-space: nowrap;
     font-size: 0.9rem;
-    font-weight: 600;
+    font-weight: 700;
+    letter-spacing: 0.02em;
     user-select: none;
     -webkit-user-select: none;
     touch-action: manipulation;
-    transition: background-color 0.22s ease, border-color 0.22s ease, color 0.22s ease, transform 0.22s ease;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    transition: background-color 0.22s ease, border-color 0.22s ease, color 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+}
+
+@media (max-width: 1024px) {
+    .categories {
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        overflow-x: hidden;
+        justify-content: flex-start;
+    }
+
+    .categories button {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.82rem;
+        border-radius: 12px;
+    }
 }
 
 body.dark-mode .categories button {
@@ -315,10 +352,10 @@ body.dark-mode .categories button {
 }
 
 .categories button.active {
-    background-color: #2563eb;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
     color: #ffffff;
-    border-color: #2563eb;
-    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.16);
+    border-color: transparent;
+    box-shadow: 0 14px 30px rgba(37, 99, 235, 0.24);
 }
 
 .categories button:hover {
@@ -336,26 +373,28 @@ body.dark-mode .categories button:hover {
 .menu {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 0.75rem;
+    gap: 0.5rem;
     touch-action: pan-y;
 }
 
 .menu-item {
     position: relative;
-    background-color: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 16px;
+    background-color: rgba(255, 255, 255, 0.98);
+    border: 1px solid rgba(148, 163, 184, 0.26);
+    border-radius: 22px;
     text-align: center;
-    padding: 0.8rem;
+    padding: 0.55rem;
     cursor: pointer;
     user-select: none;
     -webkit-user-select: none;
     touch-action: manipulation;
     transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-    min-height: 180px;
+    min-height: 145px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
+    gap: 0.35rem;
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
 }
 
 .menu-item:hover {
@@ -369,24 +408,24 @@ body.dark-mode .categories button:hover {
 }
 
 .menu-item img {
-    width: 80px;
-    height: 80px;
+    width: 64px;
+    height: 64px;
     margin: 0 auto;
     display: block;
     object-fit: contain;
-    border-radius: 18px;
+    border-radius: 14px;
     background-color: #f8fafc;
-    padding: 0.5rem;
+    padding: 0.35rem;
 }
 body.dark-mode .menu-item img {
     background-color: #1e293b;
 }
 
 .menu-item p {
-    margin: 0.75rem 0 0.5rem;
-    font-size: 0.95rem;
+    margin: 0.4rem 0 0.3rem;
+    font-size: 0.9rem;
     font-weight: 600;
-    line-height: 1.2;
+    line-height: 1.15;
     color: #111827;
 }
 
@@ -396,14 +435,28 @@ body.dark-mode .menu-item img {
 }
 
 .menu-item.category-card {
-    min-height: 190px;
-    padding: 1rem;
+    min-height: 155px;
+    padding: 0.75rem;
+    background-color: #f8fafc;
 }
 
+.menu-item.category-card.color-sky { border-color: #38bdf8; background-color: rgba(56, 189, 248, 0.12); }
+.menu-item.category-card.color-amber { border-color: #f59e0b; background-color: rgba(245, 158, 11, 0.12); }
+.menu-item.category-card.color-lime { border-color: #84cc16; background-color: rgba(132, 204, 22, 0.12); }
+.menu-item.category-card.color-fuchsia { border-color: #c026d3; background-color: rgba(192, 38, 211, 0.12); }
+.menu-item.category-card.color-orange { border-color: #f97316; background-color: rgba(249, 115, 22, 0.12); }
+.menu-item.category-card.color-teal { border-color: #14b8a6; background-color: rgba(20, 184, 166, 0.12); }
+.menu-item.category-card.color-pink { border-color: #ec4899; background-color: rgba(236, 72, 153, 0.12); }
+.menu-item.category-card.color-emerald { border-color: #10b981; background-color: rgba(16, 185, 129, 0.12); }
+.menu-item.category-card.color-cyan { border-color: #06b6d4; background-color: rgba(6, 182, 212, 0.12); }
+.menu-item.category-card.color-purple { border-color: #8b5cf6; background-color: rgba(139, 92, 246, 0.12); }
+.menu-item.category-card.color-slate { border-color: #64748b; background-color: rgba(100, 116, 139, 0.1); }
+.menu-item.category-card.color-gray { border-color: #94a3b8; background-color: rgba(148, 163, 184, 0.1); }
+
 .category-card .category-card-name {
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 700;
-    margin-top: 0.85rem;
+    margin-top: 0.5rem;
     margin-bottom: 0;
     color: #1f2937;
     text-transform: capitalize;
@@ -425,27 +478,34 @@ body.dark-mode .category-card .category-card-name {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 0.75rem;
-    gap: 0.5rem;
+    margin-bottom: 0.45rem;
+    gap: 0.35rem;
 }
 
 .menu-navigation-title-group {
     display: flex;
     flex-direction: column;
-    gap: 0.15rem;
+    gap: 0.08rem;
 }
 
 .menu-navigation-header #menu-section-title {
     margin: 0;
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #1d4ed8;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #1e3a8a;
+    letter-spacing: 0.015em;
 }
 
 .menu-navigation-subtitle {
-    display: block;
-    font-size: 0.9rem;
-    color: #475569;
+    display: none;
+}
+
+.menu-section {
+    padding: 0.4rem;
+}
+
+.categories {
+    margin-bottom: 0.35rem;
 }
 
 .section-card {
@@ -478,17 +538,19 @@ body.dark-mode .search-bar {
 /* Order Section */
 .order-section {
     flex: 1;
-    background-color: #ffffff;
-    border-left: 1px solid #e2e8f0;
+    background: rgba(255, 255, 255, 0.92);
+    border-left: 1px solid rgba(148, 163, 184, 0.18);
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    border-radius: 0 24px 24px 0;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
 }
 
 .order-header {
-    padding: 0.3rem;
-    border-bottom: 1px solid #e2e8f0;
-    background-color: #f9fafb;
+    padding: 0.75rem 0.85rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+    background: linear-gradient(90deg, rgba(37, 99, 235, 0.08), rgba(59, 130, 246, 0.05));
 }
 
 .order-items {
@@ -581,24 +643,38 @@ body.dark-mode .search-bar {
 }
 
 .order-footer-buttons button {
-    padding: 0.3rem;
+    padding: 0.5rem 0.65rem;
     border: none;
-    border-radius: 5px;
+    border-radius: 14px;
     cursor: pointer;
-    font-size: 0.75rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
+    font-size: 0.82rem;
+    font-weight: 600;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
 .order-footer-buttons button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.14);
+    opacity: 0.98;
 }
-.finalize-btn { background-color: #22c55e; color: #ffffff; }
-.checkout-btn { background-color: #2563eb; color: #ffffff; }
-.change-table-btn { background-color: #f59e0b; color: #ffffff; }
-.void-btn { background-color: #ef4444; color: #ffffff; }
-.print-receipt-btn { background-color: #6b7280; color: #ffffff; }
+.finalize-btn {
+    background: linear-gradient(135deg, #22c55e 0%, #14b8a6 100%);
+}
+.checkout-btn {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+}
+.change-table-btn {
+    background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+}
+.void-btn {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+.print-receipt-btn {
+    background: linear-gradient(135deg, #334155 0%, #475569 100%);
+}
 
 
 /* Sidebar */
@@ -1041,6 +1117,51 @@ body.dark-mode .search-bar {
 @keyframes blink { 50% { opacity: 0.5; } }
 
 /* Media Queries */
+@media (max-width: 1024px) {
+    .menu {
+        grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+        grid-auto-rows: minmax(110px, auto);
+        gap: 0.3rem;
+    }
+    .menu-item {
+        min-height: 125px;
+        padding: 0.4rem;
+        gap: 0.3rem;
+    }
+    .menu-item img {
+        width: 48px;
+        height: 48px;
+        padding: 0.25rem;
+    }
+    .menu-item p {
+        font-size: 0.76rem;
+        margin: 0.3rem 0 0.2rem;
+    }
+    .menu-item .price, .menu-item .stock {
+        font-size: 0.68rem;
+    }
+    .menu-item.category-card {
+        min-height: 130px;
+        padding: 0.6rem;
+    }
+    .category-card .category-card-name {
+        font-size: 0.78rem;
+        margin-top: 0.35rem;
+    }
+    .category-card .category-card-subtitle {
+        font-size: 0.7rem;
+    }
+    .categories {
+        gap: 0.16rem;
+        margin-bottom: 0.25rem;
+    }
+    .categories button {
+        padding: 0.28rem 0.5rem;
+        font-size: 0.7rem;
+        min-width: 55px;
+    }
+}
+
 @media (max-width: 768px) {
     header { padding: 0.75rem; gap: 0.5rem; }
     .restaurant-logo { height: 2rem; }
@@ -1053,6 +1174,21 @@ body.dark-mode .search-bar {
     .menu-section { border-right: none; border-bottom: 1px solid #e2e8f0; }
     .order-section { border-left: none; }
     .menu { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
+    .menu-navigation-header { flex-wrap: wrap; gap: 0.35rem; }
+    .menu-navigation-header #menu-section-title { font-size: 1rem; }
+    .categories {
+        flex-wrap: wrap;
+        overflow-x: hidden;
+        justify-content: flex-start;
+        gap: 0.35rem;
+    }
+    .categories button {
+        padding: 0.45rem 0.75rem;
+        font-size: 0.8rem;
+        min-width: 90px;
+        white-space: normal;
+        text-align: center;
+    }
     .modal-content { margin: 15% auto; width: 95%; max-height: 80vh; }
 }
 
@@ -1358,7 +1494,6 @@ body.dark-mode .search-bar {
                     <button id="back-button" class="btn btn-secondary" style="display:none;"><i class="fas fa-arrow-left me-2"></i>Back</button>
                     <div class="menu-navigation-title-group">
                         <h4 id="menu-section-title">Select Section or Category</h4>
-                        <span class="menu-navigation-subtitle">Tap a section or category below, sorted alphabetically for fast selection.</span>
                     </div>
                 </div>
 
@@ -2175,6 +2310,26 @@ function renderMenuNavigation() {
             ...allDirectDrinkCategories.filter(cat => !topLevelDrinkCategoriesOrder.includes(cat))
         ];
 
+        const categoryColorMap = {
+            'bubble tea': 'color-sky',
+            'cold coffee': 'color-amber',
+            'food': 'color-lime',
+            'frappe / blended': 'color-fuchsia',
+            'hot coffee': 'color-orange',
+            'iced tea': 'color-teal',
+            'lassi': 'color-pink',
+            'lemonade': 'color-emerald',
+            'mojito': 'color-emerald',
+            'retail & misc': 'color-slate',
+            'soft drinks': 'color-cyan',
+            'sparkling iced tea': 'color-purple'
+        };
+
+        const getCategoryColorClass = (name) => {
+            const key = name.toLowerCase().trim();
+            return categoryColorMap[key] || 'color-gray';
+        };
+
         const allTopLevelDisplayItems = [...new Set([
             ...orderedDrinkCategories,
             ...sectionNames
@@ -2183,7 +2338,8 @@ function renderMenuNavigation() {
         allTopLevelDisplayItems.forEach(displayName => {
             const div = document.createElement('div');
             const isSection = Boolean(menuSections[displayName]);
-            div.className = `menu-item category-card${isSection ? ' section-card' : ''}`;
+            const colorClass = isSection ? '' : getCategoryColorClass(displayName);
+            div.className = `menu-item category-card${isSection ? ' section-card' : ''}${colorClass ? ' ' + colorClass : ''}`;
 
             const imageUrl = isSection
                 ? getRepresentativeImage(displayName, true)
