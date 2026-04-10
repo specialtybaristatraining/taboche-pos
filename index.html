@@ -9,6 +9,7 @@
     <meta name="description" content="A fast, organized, and modern POS system.">
     <meta name="theme-color" content="#1976d2">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="manifest" href="manifest.json">
     <link rel="preload" href="styles.css" as="style">
     <!-- POS and Analytics Libraries -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -1941,6 +1942,10 @@ function persistAllData() {
     saveToLocalStorage('voidDetails', voidDetails);
     saveToLocalStorage('kotHistory', kotHistory);
     saveToLocalStorage('itemsSold', itemsSold);
+    
+    // Notify other tabs of data change
+    const channel = new BroadcastChannel('pos-sync');
+    channel.postMessage('data-changed');
 }
 
 // =========================================================================
@@ -4600,6 +4605,37 @@ document.addEventListener("DOMContentLoaded", () => {
     // Load all data from localStorage on startup
     loadFromLocalStorage();
 
+    // Set up BroadcastChannel for real-time sync across tabs
+    const channel = new BroadcastChannel('pos-sync');
+    channel.onmessage = (event) => {
+        if (event.data === 'data-changed') {
+            loadFromLocalStorage();
+            renderOrderItems();
+            updateTotal();
+            initializeTables();
+            renderSalesHistory();
+            renderOrderHistory();
+            renderVoidDetails();
+            renderKotHistory();
+            updateDashboard();
+        }
+    };
+
+    // Listen for changes in localStorage from other tabs/windows
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'orders' || e.key === 'tableTimers' || e.key === 'salesHistory' || e.key === 'orderHistory' || e.key === 'voidDetails' || e.key === 'kotHistory' || e.key === 'itemsSold') {
+            loadFromLocalStorage();
+            renderOrderItems();
+            updateTotal();
+            initializeTables();
+            renderSalesHistory();
+            renderOrderHistory();
+            renderVoidDetails();
+            renderKotHistory();
+            updateDashboard();
+        }
+    });
+
     // Set up basic UI elements and intervals
     updateDateTime();
     setInterval(updateDateTime, 1000);
@@ -4763,6 +4799,15 @@ function searchMenu() {
 
         div.addEventListener('click', () => addToOrder(item));
         menu.appendChild(div);
+    });
+}
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then(registration => console.log('SW registered'))
+            .catch(error => console.log('SW registration failed'));
     });
 }
 </script>
