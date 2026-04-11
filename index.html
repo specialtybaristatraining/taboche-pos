@@ -1780,16 +1780,21 @@ const menuItems = [
     
     { name: "Sausage (Chicken)", price: 340, category: "Sausage", section: "Kitchen", type: "food", image: "images/sausage_chicken.jpg" },
     { name: "Sausage (Buff)", price: 300, category: "Sausage", section: "Kitchen", type: "food", image: "images/sausage_buff.jpg" },
-    
+
+    // ================== BREAKFAST ITEMS ==================
+    { name: "Toast", price: 150, category: "Breakfast", section: "Kitchen", type: "food", image: "images/chi_toasty_salsa.jpg" },
+    { name: "Omelette", price: 120, category: "Breakfast", section: "Kitchen", type: "food", image: "images/omelet_plain.jpg" },
+    { name: "Sausage (2pcs)", price: 120, category: "Breakfast", section: "Kitchen", type: "food", image: "images/sausage.jpg" },
+
     { name: "Laping (Noodles)", price: 95, category: "Laping", section: "Kitchen", type: "food", image: "images/laping_noodles.jpg" },
     { name: "Laping (Chips)", price: 120, category: "Laping", section: "Kitchen", type: "food", image: "images/laping_chips.jpg" },
     { name: "Laping (Mix)", price: 140, category: "Laping", section: "Kitchen", type: "food", image: "images/laping_mix.jpg" },
 
-    { name: "Banana Muffin", price: 150, category: "Bakery", section: "Retail", type: "food", image: "images/banana_muffin.jpg" },
-    { name: "Brownie Walnut", price: 200, category: "Bakery", section: "Retail", type: "food", image: "images/brownie_walnut.jpg" },
-    { name: "Chicken Patty", price: 150, category: "Bakery", section: "Retail", type: "food", image: "images/chicken_pie.jpg" },
+    { name: "Banana Muffin", price: 150, category: "Breakfast", section: "Kitchen", type: "food", image: "images/banana_muffin.jpg" },
+    { name: "Brownie Walnut", price: 200, category: "Breakfast", section: "Kitchen", type: "food", image: "images/brownie_walnut.jpg" },
+    { name: "Chicken Patty", price: 150, category: "Breakfast", section: "Kitchen", type: "food", image: "images/chicken_pie.jpg" },
     { name: "Chicken Pie", price: 100, category: "Bakery", section: "Retail", type: "food", image: "images/chicken_pie.jpg" },
-    { name: "Chocolate Muffin", price: 150, category: "Bakery", section: "Retail", type: "food", image: "images/chocolate_muffin.jpg" },
+    { name: "Chocolate Muffin", price: 150, category: "Breakfast", section: "Kitchen", type: "food", image: "images/chocolate_muffin.jpg" },
 
     // ================== DRINK GROUPS (now section "Bar", type "drink") ==================
     { name: "Americano", price: 150, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/americano.jpg" },
@@ -1904,7 +1909,7 @@ const extras = [
     { name: "Extra Buff", price: 100, image: "images/extra_buff.jpg", type: "food" },
     { name: "Egg", price: 50, image: "images/egg.jpg", type: "food" },
     { name: "Salad", price: 75, image: "images/salad.jpg", type: "food" },
-    { name: "Toast", price: 50, image: "images/toast.jpg", type: "food" },
+    { name: "Toast", price: 50, image: "images/chi_toasty_salsa.jpg", type: "food" },
 
     // Drink Extras
     { name: "Boba", price: 50, image: "images/boba.jpg", type: "drink" },
@@ -1938,6 +1943,9 @@ const menuSections = {
         "Fried Rice",
         "Sausage",
         "Laping"
+    ],
+    "Breakfast": [
+        "Breakfast"
     ],
     // Cold Drinks grouping removed because these categories now show directly on the home screen
     // Retail and Misc are now separate top-level sections for premium sorting
@@ -2395,6 +2403,7 @@ function renderMenuNavigation() {
             'mojito': 'color-emerald',
             'retail': 'color-cyan',
             'misc': 'color-purple',
+            'breakfast': 'color-lime',
             'soft drinks': 'color-sky',
             'sparkling iced tea': 'color-purple'
         };
