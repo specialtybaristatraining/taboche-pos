@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Taboche POS</title>
     <meta name="description" content="A fast, organized, and modern POS system.">
@@ -1827,9 +1829,9 @@ const menuItems = [
     { name: "Mango Mojito", price: 295, category: "Mojito", section: "Bar", type: "drink", image: "images/mango_mojito.jpg" },
     { name: "Strawberry Mojito", price: 295, category: "Mojito", section: "Bar", type: "drink", image: "images/strawberry_mojito.jpg" },
 
-    { name: "Sparkling Iced Tea (Apple)", price: 320, category: "Sparkling Iced Tea", section: "Bar", type: "drink", image: "images/sparkling_apple.jpg" },
-    { name: "Sparkling Iced Tea (Peach)", price: 300, category: "Sparkling Iced Tea", section: "Bar", type: "drink", image: "images/sparkling_peach.jpg" },
-    { name: "Sparkling Iced Tea (Lemon)", price: 300, category: "Sparkling Iced Tea", section: "Bar", type: "drink", image: "images/sparkling_lemon.jpg" },
+    { name: "Sparkling Iced Tea (Apple)", price: 320, category: "Iced Tea", section: "Bar", type: "drink", image: "images/sparkling_apple.jpg" },
+    { name: "Sparkling Iced Tea (Peach)", price: 300, category: "Iced Tea", section: "Bar", type: "drink", image: "images/sparkling_peach.jpg" },
+    { name: "Sparkling Iced Tea (Lemon)", price: 300, category: "Iced Tea", section: "Bar", type: "drink", image: "images/sparkling_lemon.jpg" },
 
     { name: "Lemonade", price: 250, category: "Lemonade", section: "Bar", type: "drink", image: "images/lemonade.jpg" },
     { name: "Mint Lemonade", price: 280, category: "Lemonade", section: "Bar", type: "drink", image: "images/mint_lemonade.jpg" },
@@ -2376,8 +2378,7 @@ function renderMenuNavigation() {
             "Iced Tea",
             "Mojito",
             "Lassi",
-            "Soft Drinks",
-            "Sparkling Iced Tea"
+            "Soft Drinks"
         ];
 
         const allDirectDrinkCategories = [...new Set(
@@ -2404,8 +2405,7 @@ function renderMenuNavigation() {
             'retail': 'color-cyan',
             'misc': 'color-purple',
             'breakfast': 'color-lime',
-            'soft drinks': 'color-sky',
-            'sparkling iced tea': 'color-purple'
+            'soft drinks': 'color-sky'
         };
 
         const getCategoryColorClass = (name) => {
