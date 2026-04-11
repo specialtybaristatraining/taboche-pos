@@ -2287,6 +2287,16 @@ function updateTableTimers() {
 }
 
 async function selectTable(tableNumber) {
+    // Auto-finalize pending items on the current table before switching to another table
+    if (currentTable && currentTable !== tableNumber && orders[currentTable]?.length) {
+        orders[currentTable].forEach(item => {
+            if (!item.finalized) {
+                item.finalized = true;
+            }
+        });
+        persistAllData();
+    }
+
     showLoadingSpinner();
     currentTable = tableNumber;
     document.getElementById('selected-table').textContent = tableNumber;
@@ -4200,6 +4210,8 @@ async function changeTable() {
     const oldTable = currentTable;
 
     const itemsToMove = [...orders[oldTable]];
+    // Auto-finalize all items when changing tables
+    itemsToMove.forEach(item => item.finalized = true);
     const timerToMove = tableTimers[oldTable] ? { ...tableTimers[oldTable] } : null;
 
     orders[newTable] = itemsToMove;
