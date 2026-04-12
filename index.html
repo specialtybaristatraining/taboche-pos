@@ -1940,7 +1940,7 @@ const menuItems = [
     { name: "Mango Mojito", price: 295, category: "Mojito", section: "Bar", type: "drink", image: "images/mango_mojito.jpg" },
     { name: "Strawberry Mojito", price: 295, category: "Mojito", section: "Bar", type: "drink", image: "images/strawberry_mojito.jpg" },
 
-    { name: "Sparkling Iced Tea (Apple)", price: 320, category: "Iced Tea", section: "Bar", type: "drink", image: "images/apple_pie.jpg" },
+    { name: "Sparkling Iced Tea (Apple)", price: 320, category: "Iced Tea", section: "Bar", type: "drink", image: "images/iced_tea_lemon.jpg" },
     { name: "Sparkling Iced Tea (Peach)", price: 300, category: "Iced Tea", section: "Bar", type: "drink", image: "images/sparkling_peach.jpg" },
     { name: "Sparkling Iced Tea (Lemon)", price: 300, category: "Iced Tea", section: "Bar", type: "drink", image: "images/sparkling_lemon.jpg" },
 
@@ -3651,13 +3651,23 @@ function showOrderHistoryContent(e) {
             });
         }
 
-        currentPage = 1; 
+        const today = new Date();
+        const earliestHistoryDate = orderHistory.length
+            ? new Date(Math.min(...orderHistory.map(order => new Date(order.timestamp).getTime())))
+            : today;
+        const startDateEl = document.getElementById('history-start-date');
+        const endDateEl = document.getElementById('history-end-date');
+        if (startDateEl) startDateEl.valueAsDate = earliestHistoryDate;
+        if (endDateEl) endDateEl.valueAsDate = today;
+
+        currentPage = 1;
         renderOrderHistory(currentPage);
     });
 }
 
 function renderOrderHistory(pageToShow) {
-    currentPage = pageToShow;
+    const requestedPage = Number.isInteger(pageToShow) && pageToShow > 0 ? pageToShow : 1;
+    currentPage = requestedPage;
 
     const startDateElement = document.getElementById('history-start-date');
     const endDateElement = document.getElementById('history-end-date');
@@ -4353,6 +4363,11 @@ async function completePayment() {
 
     delete orders[currentTable];
     if (tableTimers[currentTable]) delete tableTimers[currentTable];
+    currentTable = null;
+    const selectedTableEl = document.getElementById('selected-table');
+    const selectedTableCheckoutEl = document.getElementById('selected-table-checkout');
+    if (selectedTableEl) selectedTableEl.textContent = '-';
+    if (selectedTableCheckoutEl) selectedTableCheckoutEl.textContent = '-';
 
     persistAllData();
     renderOrderItems();
