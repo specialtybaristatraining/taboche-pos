@@ -1759,7 +1759,7 @@ body.dark-mode .search-bar {
                         <span id="change-amount" class="text-success">Rs 0.00</span>
                     </div>
 
-<button id="complete-btn" class="btn-primary btn-lg w-100 mt-3" disabled>Complete Payment</button>
+<button id="complete-btn" data-sound="confirm" class="btn-primary btn-lg w-100 mt-3" disabled>Complete Payment</button>
                 </div>
             </div>
         </div>
@@ -3726,11 +3726,12 @@ function renderOrderHistoryItem(order) {
         `).join('');
     }
 
+    const tableLabel = order.table ? `Table ${order.table}` : 'Table N/A';
     return `
         <div class="order-history-item">
             <div class="order-history-header">
                 <span class="order-history-status ${statusClass}">${(order.status || 'pending').replace(/_/g, ' ')}</span>
-                <span>Order #${order.orderNumber || ''}</span>
+                <span>${tableLabel}</span>
             </div>
             <div class="order-history-items">
                 <h5>Items:</h5>
