@@ -1,11 +1,11 @@
 const CACHE_NAME = 'taboche-pos-v2'; // Incremented version
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/images/logo.png',
-  '/images/logo-print.png',
-  '/images/qr.jpeg',
+  './',
+  './index.html',
+  './manifest.json',
+  './images/logo.png',
+  './images/logo-print.png',
+  './images/qr.jpeg',
   // Add CSS and JS if they become external files
 ];
 
@@ -89,7 +89,7 @@ self.addEventListener('fetch', event => {
         })
         .catch(() => {
           // Return a fallback image if available
-          return caches.match('/images/placeholder.jpg');
+          return caches.match('./images/logo.png');
         })
     );
     return;
@@ -147,8 +147,8 @@ async function syncOrders() {
 self.addEventListener('push', event => {
   const options = {
     body: event.data.text(),
-    icon: '/images/logo-192.png',
-    badge: '/images/logo-96.png',
+    icon: './images/logo.png',
+    badge: './images/logo.png',
     vibrate: [200, 100, 200],
     requireInteraction: true
   };
@@ -161,6 +161,6 @@ self.addEventListener('push', event => {
 self.addEventListener('notificationclick', event => {
   event.notification.close();
   event.waitUntil(
-    clients.openWindow('/')
+    clients.openWindow('./')
   );
 });

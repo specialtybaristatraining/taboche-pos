@@ -11,6 +11,10 @@
     <meta name="description" content="A fast, organized, and modern POS system.">
     <meta name="theme-color" content="#1976d2">
     <link rel="icon" href="images/logo.png" type="image/png">
+    <link rel="apple-touch-icon" href="images/logo.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="images/logo.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="images/logo.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="images/logo.png">
     <link rel="manifest" href="manifest.json">
     <!-- POS and Analytics Libraries -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -5204,7 +5208,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Service Worker registration (only on web servers, not file://)
     if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-        navigator.serviceWorker.register('/sw.js')
+        navigator.serviceWorker.register('./sw.js')
             .then(registration => {
                 console.log('Service Worker registered with scope:', registration.scope);
 
