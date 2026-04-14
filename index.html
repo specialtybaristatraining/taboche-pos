@@ -60,7 +60,7 @@ header {
     align-items: center;
     position: sticky;
     top: 0;
-    z-index: 1000;
+    z-index: 1001;
     flex-wrap: wrap;
     gap: 0.6rem;
     box-shadow: 0 12px 30px rgba(37, 99, 235, 0.2);
@@ -120,6 +120,33 @@ header {
     color: #d1fae5;
 }
 
+#offline-queue-badge {
+    background: #f59e0b;
+    color: #ffffff;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.topbar-storage-indicator {
+    font-size: 0.78rem;
+    padding: 0.35rem 0.65rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.15);
+    color: #eef2ff;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.topbar-storage-indicator:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
 #theme-toggle {
     cursor: pointer;
     font-size: 1.25rem;
@@ -172,6 +199,24 @@ header {
     display: none;
     z-index: 1051;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.skeleton-loader {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 8px;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.skeleton-menu-item {
+    height: 120px;
+    margin: 0.5rem;
+    border-radius: 8px;
 }
 
 /* POS Container */
@@ -1665,6 +1710,10 @@ body.dark-mode .search-bar {
         </div>
         <div class="datetime" id="datetime" aria-live="polite"></div>
         <div id="network-status" class="offline" aria-live="polite">Offline</div>
+        <div id="storage-indicator" class="topbar-storage-indicator">💾 0.0MB / 10MB</div>
+        <div id="offline-queue-badge" style="display:none;">
+            <i class="fas fa-clock"></i> <span id="pending-count">0</span> pending
+        </div>
         <i class="fas fa-moon" id="theme-toggle" aria-label="Toggle theme"></i>
     </header>
 
@@ -1729,6 +1778,7 @@ body.dark-mode .search-bar {
             <h6 class="text-muted mb-2">Reports & Utilities</h6>
             <a href="#" id="nav-backup-data"><i class="fas fa-download me-2"></i>Backup Data</a>
             <a href="#" id="nav-restore-data"><i class="fas fa-upload me-2"></i>Restore Data</a>
+            <a href="#" id="nav-storage-manager" style="background: #2563eb; color: white; margin-top: 10px; border-radius: 8px;"><i class="fas fa-database me-2"></i>📊 Storage Manager</a>
             <a href="#" id="nav-reset-data"><i class="fas fa-trash-restore me-2"></i>Reset All Data</a>
         </div>
     </div>
@@ -1851,11 +1901,109 @@ body.dark-mode .search-bar {
         </div>
     </div>
 
-</script> 
 <script type="module">
 // =========================================================================
 // ===================== POS SYSTEM SCRIPT (In-memory with LocalStorage) ======================
 // =========================================================================
+
+// ========== STORAGE MONITORING SYSTEM ==========
+function checkStorageAndWarn() {
+    let total = 0;
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        const value = localStorage.getItem(key);
+        total += (key.length + value.length) * 2;
+    }
+    const usedMB = total / (1024 * 1024);
+    const percentUsed = (usedMB / 10 * 100);
+    
+    // Update topbar indicator text and color
+    let indicator = document.getElementById('storage-indicator');
+    if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'storage-indicator';
+        indicator.className = 'topbar-storage-indicator';
+        indicator.onclick = () => showQuickBackup();
+        const header = document.querySelector('header');
+        if (header) header.appendChild(indicator);
+        else document.body.appendChild(indicator);
+    }
+    indicator.innerHTML = `💾 ${usedMB.toFixed(1)}MB / 10MB`;
+    indicator.style.background = percentUsed > 80 ? '#dc2626' : 'rgba(255, 255, 255, 0.15)';
+    indicator.style.color = percentUsed > 80 ? '#ffffff' : '#eef2ff';
+    
+    // Show warning if near full
+    if (percentUsed > 85) {
+        const warning = document.createElement('div');
+        warning.id = 'storage-warning';
+        warning.style.cssText = 'position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#dc2626; color:white; padding:20px; border-radius:12px; z-index:10000; text-align:center; box-shadow:0 4px 20px black; min-width:280px;';
+        warning.innerHTML = `
+            <h3>⚠️ STORAGE ${Math.floor(percentUsed)}% FULL!</h3>
+            <p>You have ${salesHistory.length} sales records.</p>
+            <p style="font-size:14px;">Estimated ${Math.floor((10 - usedMB) / 0.0008)} more sales before data loss.</p>
+            <button onclick="quickBackupNow()" style="background:white; color:black; padding:10px 20px; margin:10px; border:none; border-radius:8px; cursor:pointer;">📥 BACKUP NOW</button>
+            <button onclick="document.getElementById('storage-warning').remove()" style="background:transparent; color:white; padding:10px 20px; border:1px solid white; border-radius:8px; cursor:pointer;">Dismiss</button>
+        `;
+        if (!document.getElementById('storage-warning')) document.body.appendChild(warning);
+    }
+}
+
+function quickBackupNow() {
+    const data = {
+        salesHistory: salesHistory,
+        orderHistory: orderHistory,
+        voidDetails: voidDetails,
+        backupDate: new Date().toISOString(),
+        totalSales: salesHistory.length,
+        totalRevenue: salesHistory.reduce((sum, s) => sum + (s.total || 0), 0)
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `pos_backup_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(blob);
+    alert('✅ Backup saved to Downloads/Files! Save this to iCloud or email to yourself.');
+    const warning = document.getElementById('storage-warning');
+    if (warning) warning.remove();
+}
+
+function showQuickBackup() {
+    let total = 0;
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        const value = localStorage.getItem(key);
+        total += (key.length + value.length) * 2;
+    }
+    const usedMB = total / (1024 * 1024);
+    
+    if (confirm(`📊 Storage: ${usedMB.toFixed(1)}MB / 10MB used\n\nClick OK to backup your data now.`)) {
+        quickBackupNow();
+    }
+}
+
+// Make functions globally available for onclick handlers
+window.quickBackupNow = quickBackupNow;
+window.showQuickBackup = showQuickBackup;
+
+// Run the storage monitor immediately and refresh hourly
+checkStorageAndWarn();
+setInterval(checkStorageAndWarn, 60 * 60 * 1000);
+
+// Utility functions
+function escapeHtml(text) {
+    if (text === null || text === undefined) return '';
+    return String(text).replace(/[&<>"']/g, (char) => {
+        switch (char) {
+            case '&': return '&amp;';
+            case '<': return '&lt;';
+            case '>': return '&gt;';
+            case '"': return '&quot;';
+            case "'": return '&#39;';
+            default: return char;
+        }
+    });
+}
 
 // Global state variables, loaded from localStorage or initialized empty
 let currentTable = null;
@@ -2184,16 +2332,6 @@ function trimHistoryIfNeeded() {
     }
 }
 
-function escapeHtml(str) {
-    if (!str) return '';
-    return String(str).replace(/[&<>]/g, (m) => {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
-    });
-}
-
 function validateNumericInput(value, min = 0, max = Infinity) {
     const num = parseFloat(value);
     if (Number.isNaN(num)) return min;
@@ -2227,6 +2365,24 @@ function restoreData(file) {
     reader.onload = (e) => {
         try {
             const data = JSON.parse(e.target.result);
+            
+            // Validate backup data structure
+            const requiredFields = ['orders', 'salesHistory', 'orderHistory', 'voidDetails', 'kotHistory', 'itemsSold'];
+            const hasRequiredFields = requiredFields.every(field => data.hasOwnProperty(field));
+            
+            if (!hasRequiredFields) {
+                notifications.show('Invalid backup file: missing required data fields', 'error');
+                return;
+            }
+            
+            // Additional validation for data types
+            if (!Array.isArray(data.salesHistory) || !Array.isArray(data.orderHistory) || 
+                !Array.isArray(data.voidDetails) || !Array.isArray(data.kotHistory) || 
+                !Array.isArray(data.itemsSold) || typeof data.orders !== 'object') {
+                notifications.show('Invalid backup file: incorrect data types', 'error');
+                return;
+            }
+            
             if (data.orders) orders = data.orders;
             if (data.salesHistory) salesHistory = data.salesHistory;
             if (data.orderHistory) orderHistory = data.orderHistory;
@@ -2238,7 +2394,7 @@ function restoreData(file) {
             renderTables();
             notifications.show('Data restored successfully', 'success');
         } catch (error) {
-            notifications.show('Invalid backup file', 'error');
+            notifications.show('Invalid backup file format', 'error');
         }
     };
     reader.readAsText(file);
@@ -3922,11 +4078,11 @@ function renderOrderHistoryItem(order) {
         `).join('');
     }
 
-    const tableLabel = order.table ? `Table ${order.table}` : 'Table N/A';
+    const tableLabel = order.table ? `Table ${escapeHtml(String(order.table))}` : 'Table N/A';
     return `
         <div class="order-history-item">
             <div class="order-history-header">
-                <span class="order-history-status ${statusClass}">${(order.status || 'pending').replace(/_/g, ' ')}</span>
+                <span class="order-history-status ${statusClass}">${escapeHtml((order.status || 'pending').replace(/_/g, ' '))}</span>
                 <span>${tableLabel}</span>
             </div>
             <div class="order-history-items">
@@ -4388,9 +4544,14 @@ function renderPaymentMethods() {
 }
 
 function removePayment(index) {
+    if (index < 0 || index >= paymentMethods.length) {
+        console.error("Invalid payment method index:", index);
+        return;
+    }
+    
     paymentMethods.splice(index, 1);
     renderPaymentMethods();
-    updateChange();
+    updateChange(); // Recalculates remaining due, change amount, and button states
 }
 
 function updateChange() {
@@ -4409,11 +4570,12 @@ function updateChange() {
     if (changeAmountEl) changeAmountEl.textContent = `Rs ${changeAmount.toFixed(2)}`;
     
     if (completeBtn) {
-        completeBtn.disabled = remainingDue > 0.01;
+        // Enable complete button if total is zero (fully discounted) or payment covers the total
+        completeBtn.disabled = total > 0.01 && remainingDue > 0.01;
     }
     
     if (insufficientMsgEl) {
-        if (remainingDue > 0.01) {
+        if (remainingDue > 0.01 && total > 0.01) {
             insufficientMsgEl.textContent = `Payment is insufficient.`;
             insufficientMsgEl.style.display = 'block';
         } else {
@@ -4434,6 +4596,8 @@ function calculateTotal() {
             : 0;
         const itemTotal = (item.price + extrasTotal) * item.quantity;
 
+        // Finalized items (sent to kitchen/bar) are still subject to discounts
+        // They just cannot be modified (quantity changes, removals, etc.)
         const isDiscountable = item.discountable !== false;
 
         if (isDiscountable) {
@@ -4612,6 +4776,7 @@ async function finalizeOrder() {
             type: 'kitchen',
             kotNumber: kotNumberBase // Add base KOT number for linking
         });
+        printKOT(kitchenItems, 'kitchen');
     }
 
     if (barItems.length > 0) {
@@ -4625,6 +4790,7 @@ async function finalizeOrder() {
             type: 'bar',
             kotNumber: kotNumberBase // Add base KOT number for linking
         });
+        printKOT(barItems, 'bar');
     }
     
     orders[currentTable].forEach(item => {
@@ -4708,6 +4874,12 @@ async function changeTable() {
     if (timerToMove) {
         tableTimers[newTable] = timerToMove;
     }
+    // Reset timer for new table
+    tableTimers[newTable] = {
+        start: Date.now(),
+        elapsed: 0,
+        lastUpdated: Date.now()
+    };
     delete orders[oldTable];
     delete tableTimers[oldTable];
     currentTable = newTable;
@@ -5109,10 +5281,10 @@ function generateReceipt(order) {
                 </html>
             `);
             printWindow.document.close();
-            setTimeout(() => {
+            printWindow.addEventListener('load', () => {
                 printWindow.focus();
                 printWindow.print();
-            }, 250);
+            });
         } else {
             notifications.show('Print window blocked. Please enable pop-ups.', 'error');
         }
@@ -5280,6 +5452,10 @@ document.addEventListener("DOMContentLoaded", () => {
         input.accept = '.json';
         input.onchange = (e) => restoreData(e.target.files[0]);
         input.click();
+    });
+    document.getElementById("nav-storage-manager")?.addEventListener("click", (e) => {
+        e.preventDefault();
+        showQuickBackup();
     });
     document.getElementById("nav-reset-data")?.addEventListener("click", resetAllDataConfirmed); 
 
@@ -5462,7 +5638,6 @@ function searchMenu() {
         menu.appendChild(div);
     });
 }
-</script>
 </script>
 </body>
 </html>
