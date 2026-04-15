@@ -15,7 +15,15 @@
     <link rel="apple-touch-icon" sizes="180x180" href="images/logo.png">
     <link rel="apple-touch-icon" sizes="192x192" href="images/logo.png">
     <link rel="apple-touch-icon" sizes="512x512" href="images/logo.png">
-    <link rel="manifest" href="manifest.json">
+    <!-- Conditionally load manifest for PWA (only works over HTTP/HTTPS) -->
+    <script>
+        if (location.protocol !== 'file:') {
+            const manifestLink = document.createElement('link');
+            manifestLink.rel = 'manifest';
+            manifestLink.href = 'manifest.json';
+            document.head.appendChild(manifestLink);
+        }
+    </script>
     <!-- POS and Analytics Libraries -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -1618,6 +1626,23 @@ body.dark-mode .search-bar {
     transition: background-color 0.2s ease;
 }
 
+.kot-info-badge {
+    background: #8b5cf6;
+    padding: 2px 6px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+}
+
+.non-discountable {
+    opacity: 0.7;
+    font-style: italic;
+}
+
+.pro-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
 .export-btn:hover {
     background-color: #16a34a;
 }
@@ -1689,7 +1714,39 @@ body.dark-mode .search-bar {
     color: #1a73e8;
 }
 
+/* Keyboard shortcut styling */
+kbd {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 3px;
+    padding: 2px 6px;
+    font-family: monospace;
+    font-size: 0.85em;
+}
+
+/* Kitchen view cards */
+.kot-card {
+    background: #fff;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    transition: box-shadow 0.2s;
+}
+
+.kot-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Settings panel */
+.settings-panel {
+    padding: 15px;
+}
+
+.settings-panel .form-check-label {
+    margin-left: 8px;
+}
+
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
     
@@ -1774,6 +1831,8 @@ body.dark-mode .search-bar {
             <a href="#" id="nav-items-sold">Items Sold Report</a>
             <a href="#" id="nav-order-history">Order History</a>
             <a href="#" id="nav-void-details">Void Details</a>
+            <a href="#" id="nav-kitchen-view">🍳 Kitchen Display</a>
+            <a href="#" id="nav-settings">⚙️ Settings</a>
             <hr>
             <h6 class="text-muted mb-2">Reports & Utilities</h6>
             <a href="#" id="nav-backup-data"><i class="fas fa-download me-2"></i>Backup Data</a>
@@ -2101,7 +2160,7 @@ const menuItems = [
 
     // ================== DRINK GROUPS (now section "Bar", type "drink") ==================
     { name: "Americano", price: 150, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/americano.jpg" },
-    { name: "Eapresso", price: 140, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/espresso.jpg" },
+    { name: "Espresso", price: 140, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/espresso.jpg" },
     { name: "Latte", price: 190, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/latte.jpg" },
     { name: "Cappuccino", price: 200, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/cappuccino.jpg" },
     { name: "Vanilla Latte", price: 260, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/latte_vanilla.jpg" },
@@ -2274,48 +2333,172 @@ function saveToLocalStorage(key, data) {
     }
 }
 
+const IDB_DB_NAME = 'taboche-pos-db';
+const IDB_STORE_NAME = 'largeState';
+const IDB_VERSION = 1;
+const BACKUP_SCHEMA_VERSION = 2;
+const ORDER_HISTORY_RETENTION_DAYS = 3;
+
+// Settings
+let soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
+let speechEnabled = localStorage.getItem('speechEnabled') !== 'false';
+const VOID_DETAILS_RETENTION_DAYS = 3;
+const SALES_HISTORY_RETENTION_DAYS = 90;
+const KOT_HISTORY_RETENTION_DAYS = 30;
+
+function handleCriticalError(context, error) {
+    console.error(`${context} failed:`, error);
+    notifications.show(`${context} failed. Check console for details.`, 'error');
+}
+
 function getFromLocalStorage(key) {
     try {
         const data = localStorage.getItem(key);
         return data ? JSON.parse(data) : null;
     } catch (error) {
-        console.error(`Error reading '${key}' from localStorage:`, error);
-        notifications.show(`Error loading data locally for '${key}'.`, 'error');
+        handleCriticalError(`Reading '${key}' from localStorage`, error);
         return null;
     }
 }
 
-function loadFromLocalStorage() {
-    orders = getFromLocalStorage('orders') || {};
-    tableTimers = getFromLocalStorage('tableTimers') || {};
-    salesHistory = getFromLocalStorage('salesHistory') || [];
-    orderHistory = getFromLocalStorage('orderHistory') || [];
-    voidDetails = getFromLocalStorage('voidDetails') || [];
-    kotHistory = getFromLocalStorage('kotHistory') || [];
-    itemsSold = getFromLocalStorage('itemsSold') || []; // Load aggregated items
-    
-    // Ensure data structures are correct types on load
-    if (!Array.isArray(salesHistory)) salesHistory = [];
-    if (!Array.isArray(orderHistory)) orderHistory = [];
-    if (!Array.isArray(voidDetails)) voidDetails = [];
-    if (!Array.isArray(kotHistory)) kotHistory = [];
-    if (!Array.isArray(itemsSold)) itemsSold = [];
+function openIndexedDB() {
+    return new Promise((resolve, reject) => {
+        if (!window.indexedDB) {
+            reject(new Error('IndexedDB is not supported in this browser.'));
+            return;
+        }
+
+        const request = indexedDB.open(IDB_DB_NAME, IDB_VERSION);
+
+        request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+            if (!db.objectStoreNames.contains(IDB_STORE_NAME)) {
+                db.createObjectStore(IDB_STORE_NAME, { keyPath: 'key' });
+            }
+        };
+
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
 }
 
-// Automatically save all main state variables to localStorage
+async function saveLargeStateToIndexedDB() {
+    try {
+        const db = await openIndexedDB();
+        const tx = db.transaction(IDB_STORE_NAME, 'readwrite');
+        const store = tx.objectStore(IDB_STORE_NAME);
+        const records = [
+            { key: 'salesHistory', value: salesHistory },
+            { key: 'orderHistory', value: orderHistory },
+            { key: 'voidDetails', value: voidDetails },
+            { key: 'kotHistory', value: kotHistory },
+            { key: 'itemsSold', value: itemsSold }
+        ];
+        records.forEach(record => store.put(record));
+        await new Promise((resolve, reject) => {
+            tx.oncomplete = resolve;
+            tx.onerror = () => reject(tx.error);
+            tx.onabort = () => reject(tx.error);
+        });
+        db.close();
+    } catch (error) {
+        console.warn('IndexedDB save failed, falling back to localStorage.', error);
+    }
+}
+
+async function loadLargeStateFromIndexedDB() {
+    try {
+        const db = await openIndexedDB();
+        const tx = db.transaction(IDB_STORE_NAME, 'readonly');
+        const store = tx.objectStore(IDB_STORE_NAME);
+        const keys = ['salesHistory', 'orderHistory', 'voidDetails', 'kotHistory', 'itemsSold'];
+        await Promise.all(keys.map(async (key) => {
+            const request = store.get(key);
+            await new Promise((resolve, reject) => {
+                request.onsuccess = () => {
+                    if (request.result && request.result.value !== undefined) {
+                        switch (key) {
+                            case 'salesHistory': salesHistory = request.result.value; break;
+                            case 'orderHistory': orderHistory = request.result.value; break;
+                            case 'voidDetails': voidDetails = request.result.value; break;
+                            case 'kotHistory': kotHistory = request.result.value; break;
+                            case 'itemsSold': itemsSold = request.result.value; break;
+                        }
+                    }
+                    resolve();
+                };
+                request.onerror = () => reject(request.error);
+            });
+        }));
+        db.close();
+    } catch (error) {
+        console.warn('IndexedDB load failed, staying on localStorage.', error);
+    }
+}
+
+function validateBackupData(data) {
+    if (!data || typeof data !== 'object') return false;
+    if (data.schemaVersion !== BACKUP_SCHEMA_VERSION && data.schemaVersion !== 1) {
+        console.warn('Backup schema version mismatch:', data.schemaVersion);
+        return false;
+    }
+    const requiredFields = ['orders', 'salesHistory', 'orderHistory', 'voidDetails', 'kotHistory', 'itemsSold'];
+    const hasRequiredFields = requiredFields.every(field => data.hasOwnProperty(field));
+    if (!hasRequiredFields) return false;
+    if (typeof data.orders !== 'object') return false;
+    if (!Array.isArray(data.salesHistory)) return false;
+    if (!Array.isArray(data.orderHistory)) return false;
+    if (!Array.isArray(data.voidDetails)) return false;
+    if (!Array.isArray(data.kotHistory)) return false;
+    if (!Array.isArray(data.itemsSold)) return false;
+    return true;
+}
+
+function loadFromLocalStorage() {
+    try {
+        orders = getFromLocalStorage('orders') || {};
+        tableTimers = getFromLocalStorage('tableTimers') || {};
+        salesHistory = getFromLocalStorage('salesHistory') || [];
+        orderHistory = getFromLocalStorage('orderHistory') || [];
+        voidDetails = getFromLocalStorage('voidDetails') || [];
+        kotHistory = getFromLocalStorage('kotHistory') || [];
+        itemsSold = getFromLocalStorage('itemsSold') || [];
+
+        if (!Array.isArray(salesHistory)) salesHistory = [];
+        if (!Array.isArray(orderHistory)) orderHistory = [];
+        if (!Array.isArray(voidDetails)) voidDetails = [];
+        if (!Array.isArray(kotHistory)) kotHistory = [];
+        if (!Array.isArray(itemsSold)) itemsSold = [];
+    } catch (error) {
+        handleCriticalError('Loading state from localStorage', error);
+        orders = {};
+        tableTimers = {};
+        salesHistory = [];
+        orderHistory = [];
+        voidDetails = [];
+        kotHistory = [];
+        itemsSold = [];
+    }
+}
+
+// Automatically save all main state variables
 function persistAllData() {
-    trimHistoryIfNeeded();
-    saveToLocalStorage('orders', orders);
-    saveToLocalStorage('tableTimers', tableTimers);
-    saveToLocalStorage('salesHistory', salesHistory);
-    saveToLocalStorage('orderHistory', orderHistory);
-    saveToLocalStorage('voidDetails', voidDetails);
-    saveToLocalStorage('kotHistory', kotHistory);
-    saveToLocalStorage('itemsSold', itemsSold);
-    
-    // Notify other tabs of data change
-    const channel = new BroadcastChannel('pos-sync');
-    channel.postMessage('data-changed');
+    try {
+        trimHistoryIfNeeded();
+        saveToLocalStorage('orders', orders);
+        saveToLocalStorage('tableTimers', tableTimers);
+        saveToLocalStorage('salesHistory', salesHistory);
+        saveToLocalStorage('orderHistory', orderHistory);
+        saveToLocalStorage('voidDetails', voidDetails);
+        saveToLocalStorage('kotHistory', kotHistory);
+        saveToLocalStorage('itemsSold', itemsSold);
+        saveLargeStateToIndexedDB();
+
+        const channel = new BroadcastChannel('pos-sync');
+        channel.postMessage('data-changed');
+    } catch (error) {
+        handleCriticalError('Persisting all data', error);
+    }
 }
 
 function debouncedPersistAllData() {
@@ -2324,6 +2507,28 @@ function debouncedPersistAllData() {
 }
 
 function trimHistoryIfNeeded() {
+    const orderRetentionDate = Date.now() - ORDER_HISTORY_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+    const voidRetentionDate = Date.now() - VOID_DETAILS_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+    const salesRetentionDate = Date.now() - SALES_HISTORY_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+    const kotRetentionDate = Date.now() - KOT_HISTORY_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+
+    orderHistory = orderHistory.filter(order => {
+        const created = order?.timestamp ? new Date(order.timestamp).getTime() : Date.now();
+        return created >= orderRetentionDate;
+    });
+    salesHistory = salesHistory.filter(sale => {
+        const created = sale?.timestamp ? new Date(sale.timestamp).getTime() : Date.now();
+        return created >= salesRetentionDate;
+    });
+    voidDetails = voidDetails.filter(voidEntry => {
+        const created = voidEntry?.timestamp ? new Date(voidEntry.timestamp).getTime() : Date.now();
+        return created >= voidRetentionDate;
+    });
+    kotHistory = kotHistory.filter(kot => {
+        const created = kot?.timestamp ? new Date(kot.timestamp).getTime() : Date.now();
+        return created >= kotRetentionDate;
+    });
+
     if (orderHistory.length > MAX_HISTORY_ITEMS) {
         orderHistory = orderHistory.slice(-MAX_HISTORY_ITEMS);
     }
@@ -2344,20 +2549,27 @@ function handleImageError(img) {
 }
 
 async function backupData() {
-    const data = {
-        orders, salesHistory, orderHistory, voidDetails, kotHistory, itemsSold,
-        exportDate: new Date().toISOString()
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `pos-backup-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    notifications.show('Data backup downloaded successfully', 'success');
+    try {
+        const data = {
+            schemaVersion: BACKUP_SCHEMA_VERSION,
+            timestamp: new Date().toISOString(),
+            orders, salesHistory, orderHistory, voidDetails, kotHistory, itemsSold,
+            menuItems, extras, discountCodes,
+            exportDate: new Date().toISOString()
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `pos-backup-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        notifications.show('Full data backup downloaded successfully', 'success');
+    } catch (error) {
+        handleCriticalError('Backing up data', error);
+    }
 }
 
 function restoreData(file) {
@@ -2365,36 +2577,29 @@ function restoreData(file) {
     reader.onload = (e) => {
         try {
             const data = JSON.parse(e.target.result);
-            
-            // Validate backup data structure
-            const requiredFields = ['orders', 'salesHistory', 'orderHistory', 'voidDetails', 'kotHistory', 'itemsSold'];
-            const hasRequiredFields = requiredFields.every(field => data.hasOwnProperty(field));
-            
-            if (!hasRequiredFields) {
-                notifications.show('Invalid backup file: missing required data fields', 'error');
+
+            if (!validateBackupData(data)) {
+                notifications.show('Invalid backup file: incompatible schema or missing fields', 'error');
                 return;
             }
+
+            orders = data.orders || {};
+            salesHistory = data.salesHistory || [];
+            orderHistory = data.orderHistory || [];
+            voidDetails = data.voidDetails || [];
+            kotHistory = data.kotHistory || [];
+            itemsSold = data.itemsSold || [];
+            menuItems = data.menuItems || menuItems;
+            extras = data.extras || extras;
+            discountCodes = data.discountCodes || discountCodes;
             
-            // Additional validation for data types
-            if (!Array.isArray(data.salesHistory) || !Array.isArray(data.orderHistory) || 
-                !Array.isArray(data.voidDetails) || !Array.isArray(data.kotHistory) || 
-                !Array.isArray(data.itemsSold) || typeof data.orders !== 'object') {
-                notifications.show('Invalid backup file: incorrect data types', 'error');
-                return;
-            }
-            
-            if (data.orders) orders = data.orders;
-            if (data.salesHistory) salesHistory = data.salesHistory;
-            if (data.orderHistory) orderHistory = data.orderHistory;
-            if (data.voidDetails) voidDetails = data.voidDetails;
-            if (data.kotHistory) kotHistory = data.kotHistory;
-            if (data.itemsSold) itemsSold = data.itemsSold;
+            trimHistoryIfNeeded();
             persistAllData();
             renderOrderItems();
-            renderTables();
+            initializeTables();
             notifications.show('Data restored successfully', 'success');
         } catch (error) {
-            notifications.show('Invalid backup file format', 'error');
+            handleCriticalError('Restoring backup data', error);
         }
     };
     reader.readAsText(file);
@@ -2696,6 +2901,8 @@ function playSoundPreset(presetName) {
 }
 
 function playButtonClickSound(button = null) {
+    if (!soundEnabled) return;
+    
     try {
         const ctx = getClickAudioContext();
         if (ctx.state === 'suspended') {
@@ -2829,19 +3036,21 @@ function formatTime(seconds) {
 }
 
 function updateTableTimers() {
-    if (timerUpdateQueued) return;
-    timerUpdateQueued = true;
+    try {
+        if (timerUpdateQueued) return;
+        timerUpdateQueued = true;
 
-    requestAnimationFrame(() => {
-        timerUpdateQueued = false;
-        const now = Date.now();
-        let changed = false;
+        requestAnimationFrame(() => {
+            timerUpdateQueued = false;
+            const now = Date.now();
+            let changed = false;
 
         Object.entries(tableTimers).forEach(([table, timer]) => {
             if (orders[table] && orders[table].length > 0) {
                 const lastUpdated = timer.lastUpdated || now;
-                const elapsed = (timer.elapsed || 0) + (now - lastUpdated);
-                tableTimers[table] = { ...timer, elapsed, lastUpdated: now };
+                const previousElapsed = isNaN(timer.elapsed) ? 0 : (timer.elapsed || 0);
+                const elapsed = previousElapsed + (now - lastUpdated);
+                tableTimers[table] = { ...timer, elapsed: isNaN(elapsed) ? 0 : elapsed, lastUpdated: now };
                 changed = true;
                 const timerElement = document.getElementById(`timer-${table}`);
                 if (timerElement) {
@@ -2864,6 +3073,9 @@ function updateTableTimers() {
             persistAllData();
         }
     });
+    } catch (error) {
+        handleCriticalError('Updating table timers', error);
+    }
 }
 
 async function selectTable(tableNumber) {
@@ -2943,12 +3155,16 @@ function renderMenuNavigation() {
 
         const sectionNames = Object.keys(menuSections).sort();
         const topLevelDrinkCategoriesOrder = [
+            "Hot Coffee",
             "Cold Coffee",
             "Frappe / Blended",
-            "Iced Tea",
             "Mojito",
+            "Iced Tea",
+            "Lemonade",
             "Lassi",
-            "Soft Drinks"
+            "Tea",
+            "Soft Drinks",
+            "Bubble Tea"
         ];
 
         const allDirectDrinkCategories = [...new Set(
@@ -3077,13 +3293,18 @@ function renderMenuItemsForSection(sectionName) {
 function navigateBackMenu() {
     const searchInput = document.getElementById('search');
     
-    // Always reset to topLevelSections
+    if (searchInput.value.trim() !== '') {
+        // If we're in search mode, just clear search and return to main menu
+        searchInput.value = '';
+        renderMenuNavigation();
+        return;
+    }
+    
+    // Normal navigation back
     currentMenuLevel = 'topLevelSections';
     activeSection = null;
     activeCategoryDisplayGroup = null;
-    searchInput.value = ''; // Clear search term if it was active
-
-    renderMenuNavigation(); // Re-render to show main page
+    renderMenuNavigation();
 }
 
 // Renamed from renderMenuItemsForGroup to be more explicit
@@ -3158,6 +3379,13 @@ async function addToOrder(item) {
     startBlinking(currentTable);
     initializeTables(); // Update table status visual
     notifications.show(`${item.name} added to Table ${currentTable}`, 'success');
+}
+
+// Debounced renderOrderItems for performance
+let renderTimeout;
+function debouncedRenderOrderItems() {
+    clearTimeout(renderTimeout);
+    renderTimeout = setTimeout(() => renderOrderItems(), 100);
 }
 
 function renderOrderItems() {
@@ -3622,10 +3850,12 @@ function showSalesReportsContent(e) {
                 <p class="text-muted">Select a date range and click "Generate Report" to view sales data.</p>
             </div>
             <button id="export-sales-csv" class="export-btn" style="display:none; margin-top:10px;">Export to CSV</button>
+            <button id="export-sales-pdf" class="export-btn" style="display:none; margin-top:10px; margin-left:10px;">Export to PDF</button>
         </div>
     `, () => {
         document.getElementById('generate-report')?.addEventListener('click', generateSalesReport);
         document.getElementById('export-sales-csv')?.addEventListener('click', exportSalesReport);
+        document.getElementById('export-sales-pdf')?.addEventListener('click', () => exportToPDF('sales-report-content', 'sales-report'));
     });
 }
 
@@ -3633,12 +3863,14 @@ function generateSalesReport() {
     showLoadingSpinner();
     const reportContentEl = document.getElementById('sales-report-content');
     const exportButton = document.getElementById('export-sales-csv');
+    const exportPDFButton = document.getElementById('export-sales-pdf');
     if (!reportContentEl || !exportButton) {
         hideLoadingSpinner();
         return;
     }
     reportContentEl.innerHTML = `<p>Loading report...</p>`;
     exportButton.style.display = 'none';
+    exportPDFButton.style.display = 'none';
 
     const startDate = new Date(document.getElementById('start-date').value);
     const endDate = new Date(document.getElementById('end-date').value);
@@ -3666,6 +3898,7 @@ function generateSalesReport() {
     `;
     if (filteredSales.length > 0) {
         exportButton.style.display = 'block';
+        exportPDFButton.style.display = 'block';
     }
     hideLoadingSpinner();
 }
@@ -4277,7 +4510,15 @@ function renderVoidDetails() {
     list.innerHTML = filteredVoids.map(voidItem => {
         const date = voidItem.timestamp ? new Date(voidItem.timestamp).toLocaleString() : 'Unknown date';
         const total = voidItem.total ? `Rs ${voidItem.total.toFixed(2)}` : 'Rs 0.00';
-        const itemsList = voidItem.items?.map(i => `${escapeHtml(i.name)} x${i.quantity}`).join(', ') || 'No items';
+        
+        let itemsList = '';
+        if (voidItem.items && Array.isArray(voidItem.items)) {
+            itemsList = voidItem.items.map(i => `${escapeHtml(i.name)} x${i.quantity}`).join(', ');
+        } else if (voidItem.item) {
+            itemsList = `${escapeHtml(voidItem.item.name)} x${voidItem.item.quantity}`;
+        } else {
+            itemsList = 'No items information';
+        }
         
         return `
             <div class="void-item">
@@ -4650,6 +4891,16 @@ async function completePayment() {
     if (isProcessingPayment) return;
     isProcessingPayment = true;
     try {
+        const total = calculateTotal();
+        const itemCount = orders[currentTable]?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
+        if (total > 5000 || itemCount > 12) {
+            const confirmed = confirm(`Large checkout detected: Rs ${total.toFixed(2)} for ${itemCount} item(s). Proceed?`);
+            if (!confirmed) {
+                isProcessingPayment = false;
+                return;
+            }
+        }
+
         if (paymentAmount > 0) {
             paymentMethods.push({ method: 'Cash', amount: paymentAmount });
             paymentAmount = 0;
@@ -4659,14 +4910,15 @@ async function completePayment() {
 
         if (!currentTable || !orders[currentTable] || !orders[currentTable].length) {
             notifications.show("No order to complete!", 'warning');
+            isProcessingPayment = false;
             return;
         }
-        const total = calculateTotal();
         const paidSoFar = paymentMethods.reduce((sum, pm) => sum + pm.amount, 0);
         if (paidSoFar < total - 0.01 && total > 0.01) {
             notifications.show("Payment amount is insufficient!", 'error');
             paymentMethods.pop();
             renderPaymentMethods();
+            isProcessingPayment = false;
             return;
         }
 
@@ -4748,12 +5000,13 @@ function generateKOTNumber() {
 }
 
 async function finalizeOrder() {
-    if (!currentTable || !orders[currentTable]?.length) {
-        notifications.show('No order to finalize!', 'warning');
-        return;
-    }
+    try {
+        if (!currentTable || !orders[currentTable]?.length) {
+            notifications.show('No order to finalize!', 'warning');
+            return;
+        }
 
-    const itemsToFinalize = orders[currentTable].filter(item => !item.finalized);
+        const itemsToFinalize = orders[currentTable].filter(item => !item.finalized);
     if (itemsToFinalize.length === 0) {
         notifications.show('No new items to send.', 'info');
         return;
@@ -4776,7 +5029,6 @@ async function finalizeOrder() {
             type: 'kitchen',
             kotNumber: kotNumberBase // Add base KOT number for linking
         });
-        printKOT(kitchenItems, 'kitchen');
     }
 
     if (barItems.length > 0) {
@@ -4790,7 +5042,6 @@ async function finalizeOrder() {
             type: 'bar',
             kotNumber: kotNumberBase // Add base KOT number for linking
         });
-        printKOT(barItems, 'bar');
     }
     
     orders[currentTable].forEach(item => {
@@ -4804,10 +5055,13 @@ async function finalizeOrder() {
     renderOrderItems();
     notifications.show(`KOT ${kotNumberBase} sent successfully.`, 'success');
     hideLoadingSpinner();
+    } catch (error) {
+        handleCriticalError('Finalizing order', error);
+        hideLoadingSpinner();
+    }
 }
 
 function printKOT(kotItems, type) {
-    const kotWindow = window.open('', '_blank', 'width=400,height=600');
     const kotHTML = `
         <!DOCTYPE html>
         <html>
@@ -4840,9 +5094,38 @@ function printKOT(kotItems, type) {
         </body>
         </html>
     `;
-    kotWindow.document.write(kotHTML);
-    kotWindow.document.close();
-    kotWindow.print();
+
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.visibility = 'hidden';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+
+    const iframeDoc = iframe.contentWindow?.document;
+    if (!iframeDoc) {
+        console.error('Unable to create hidden print frame for KOT.');
+        document.body.removeChild(iframe);
+        return;
+    }
+
+    iframeDoc.open();
+    iframeDoc.write(kotHTML);
+    iframeDoc.close();
+    iframe.contentWindow.focus();
+
+    try {
+        iframe.contentWindow.print();
+    } catch (error) {
+        console.warn('KOT print dialog could not be opened:', error);
+    }
+
+    setTimeout(() => {
+        if (document.body.contains(iframe)) {
+            document.body.removeChild(iframe);
+        }
+    }, 1000);
 }
 
 async function changeTable() {
@@ -5347,6 +5630,15 @@ async function resetAllDataConfirmed() {
 document.addEventListener("DOMContentLoaded", () => {
     // Load all data from localStorage on startup
     loadFromLocalStorage();
+    loadLargeStateFromIndexedDB().then(() => {
+        trimHistoryIfNeeded();
+        renderOrderItems();
+        initializeTables();
+        renderOrderHistory();
+        renderVoidDetails();
+    }).catch((error) => {
+        console.warn('IndexedDB data load skipped:', error);
+    });
 
     // Set up BroadcastChannel for real-time sync across tabs
     const channel = new BroadcastChannel('pos-sync');
@@ -5375,8 +5667,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Set up basic UI elements and intervals
     updateDateTime();
-    setInterval(updateDateTime, 1000);
-    setInterval(updateTableTimers, 1000);
+    const dateTimeInterval = setInterval(updateDateTime, 1000);
+    const tableTimerInterval = setInterval(updateTableTimers, 1000);
+
+    // Cleanup intervals on page unload
+    window.addEventListener('beforeunload', () => {
+        clearInterval(dateTimeInterval);
+        clearInterval(tableTimerInterval);
+    });
 
     // Service Worker registration (only on web servers, not file://)
     if ('serviceWorker' in navigator && location.protocol !== 'file:') {
@@ -5441,6 +5739,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("nav-items-sold")?.addEventListener("click", showItemsSoldContent);
     document.getElementById("nav-order-history")?.addEventListener("click", showOrderHistoryContent);
     document.getElementById("nav-void-details")?.addEventListener("click", showVoidDetailsContent);
+    document.getElementById("nav-kitchen-view")?.addEventListener("click", showKitchenView);
+    document.getElementById("nav-settings")?.addEventListener("click", showSettings);
     document.getElementById("nav-backup-data")?.addEventListener("click", (e) => {
         e.preventDefault();
         backupData();
@@ -5461,6 +5761,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Checkout Dialog Listeners
     document.getElementById('close-checkout-dialog')?.addEventListener('click', closeCheckoutDialog);
+    document.getElementById('close-extras-modal')?.addEventListener('click', closeExtrasModal);
     document.getElementById('clear-input')?.addEventListener('click', clearInput);
     document.getElementById('apply-discount-code')?.addEventListener('click', applyDiscountCode);
     document.getElementById('clear-discount')?.addEventListener('click', clearDiscount);
@@ -5572,19 +5873,22 @@ function toggleSidebar(e) {
     sidebar.classList.toggle('active');
 }
 
+function initializeTableTimer(table) {
+    if (!tableTimers[table]) {
+        tableTimers[table] = {
+            start: Date.now(),
+            elapsed: 0,
+            lastUpdated: Date.now()
+        };
+        persistAllData();
+    }
+}
+
 function startBlinking(table) {
     const tableBtn = document.getElementById(`table-btn-${table}`);
     if (tableBtn) {
         tableBtn.classList.add('blinking');
-        // Start timer if not already running
-        if (!tableTimers[table]) {
-            tableTimers[table] = {
-                start: Date.now(),
-                elapsed: 0,
-                lastUpdated: Date.now()
-            };
-            persistAllData();
-        }
+        initializeTableTimer(table);
     }
 }
 
@@ -5636,6 +5940,242 @@ function searchMenu() {
 
         div.addEventListener('click', () => addToOrder(item));
         menu.appendChild(div);
+    });
+}
+
+// Kitchen Display View
+function showKitchenView() {
+    const pendingKOTs = kotHistory.filter(k => k.status === 'pending');
+    const content = `
+        <div class="kitchen-view">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4>Pending Orders</h4>
+                <input type="text" id="kitchen-search" placeholder="Search table..." class="form-control" style="max-width: 200px;">
+            </div>
+            <div id="kitchen-orders">
+                ${pendingKOTs.length === 0 ? '<p>No pending orders</p>' : 
+                    pendingKOTs.map(kot => `
+                        <div class="kot-card mb-3 p-3 border rounded">
+                            <h5>Table ${kot.table} - ${kot.type}</h5>
+                            <p><strong>KOT:</strong> ${kot.kotNumber}</p>
+                            <p><strong>Items:</strong></p>
+                            <ul>
+                                ${kot.items.map(item => `<li>${item.name} x${item.quantity}</li>`).join('')}
+                            </ul>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-success btn-sm" onclick="markKOTReady('${kot.kotId}')">Mark Ready</button>
+                                <button class="btn btn-primary btn-sm" onclick="printKOTFromView('${kot.kotId}')">Print KOT</button>
+                            </div>
+                        </div>
+                    `).join('')
+                }
+            </div>
+        </div>
+    `;
+    
+    showSidebarContentModal('Kitchen Display', content, () => {
+        // Add search functionality
+        const searchInput = document.getElementById('kitchen-search');
+        const ordersContainer = document.getElementById('kitchen-orders');
+        
+        if (searchInput && ordersContainer) {
+            searchInput.addEventListener('input', () => {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                const cards = ordersContainer.querySelectorAll('.kot-card');
+                
+                cards.forEach(card => {
+                    const tableText = card.querySelector('h5').textContent.toLowerCase();
+                    const itemsText = Array.from(card.querySelectorAll('li')).map(li => li.textContent.toLowerCase()).join(' ');
+                    const isVisible = !searchTerm || tableText.includes(searchTerm) || itemsText.includes(searchTerm);
+                    card.style.display = isVisible ? 'block' : 'none';
+                });
+            });
+        }
+    });
+}
+
+function markKOTReady(kotId) {
+    const kot = kotHistory.find(k => k.kotId === kotId);
+    if (kot) {
+        kot.status = 'ready';
+        persistAllData();
+        showKitchenView(); // Refresh the view
+        notifications.show(`KOT ${kot.kotNumber} marked as ready`, 'success');
+    }
+}
+
+// Make function globally accessible for onclick handlers
+window.markKOTReady = markKOTReady;
+
+// Print KOT from Kitchen View
+function printKOTFromView(kotId) {
+    const kot = kotHistory.find(k => k.kotId === kotId);
+    if (kot) {
+        printKOT(kot.items, kot.type);
+    }
+}
+
+// Make function globally accessible
+window.printKOTFromView = printKOTFromView;
+
+// Settings Panel
+function showSettings() {
+    const content = `
+        <div class="settings-panel">
+            <h4>Settings</h4>
+            <div class="mb-3">
+                <label class="form-check-label">
+                    <input type="checkbox" class="form-check-input" id="sound-toggle" ${soundEnabled ? 'checked' : ''}>
+                    Enable Sound Effects
+                </label>
+            </div>
+            <div class="mb-3">
+                <label class="form-check-label">
+                    <input type="checkbox" class="form-check-input" id="speech-toggle" ${speechEnabled ? 'checked' : ''}>
+                    Enable Voice Feedback
+                </label>
+            </div>
+            <button id="save-settings" class="btn btn-primary">Save Settings</button>
+        </div>
+    `;
+    
+    showSidebarContentModal('Settings', content, () => {
+        document.getElementById('sound-toggle')?.addEventListener('change', (e) => {
+            soundEnabled = e.target.checked;
+        });
+        document.getElementById('speech-toggle')?.addEventListener('change', (e) => {
+            speechEnabled = e.target.checked;
+        });
+        document.getElementById('save-settings')?.addEventListener('click', () => {
+            localStorage.setItem('soundEnabled', soundEnabled);
+            localStorage.setItem('speechEnabled', speechEnabled);
+            notifications.show('Settings saved', 'success');
+            closeSidebarContentModal();
+        });
+    });
+}
+
+// Table Merge Feature
+async function mergeTables() {
+    const confirmed = await showConfirmModal('Merge Tables', 
+        'Merging tables will combine orders. This action cannot be undone. Continue?');
+    if (!confirmed) return;
+    
+    const sourceTable = await showPromptModal('Merge Tables', 'Enter source table number to merge from:');
+    if (!sourceTable || !tableList.includes(sourceTable)) {
+        notifications.show('Invalid source table', 'error');
+        return;
+    }
+    
+    const targetTable = await showPromptModal('Merge Tables', `Merge Table ${sourceTable} into which table?`);
+    if (!targetTable || !tableList.includes(targetTable)) {
+        notifications.show('Invalid target table', 'error');
+        return;
+    }
+    
+    if (!orders[sourceTable]?.length) {
+        notifications.show(`Table ${sourceTable} has no order to merge`, 'warning');
+        return;
+    }
+    
+    // Merge items
+    orders[targetTable] = orders[targetTable] || [];
+    orders[sourceTable].forEach(item => {
+        const existing = orders[targetTable].find(i => i.name === item.name && i.price === item.price);
+        if (existing) {
+            existing.quantity += item.quantity;
+        } else {
+            orders[targetTable].push({...item});
+        }
+    });
+    
+    delete orders[sourceTable];
+    delete tableTimers[sourceTable];
+    persistAllData();
+    renderOrderItems();
+    initializeTables();
+    updateTotal();
+    notifications.show(`Table ${sourceTable} merged into ${targetTable}`, 'success');
+}
+
+// Keyboard Shortcuts
+document.addEventListener('keydown', (e) => {
+    // Ctrl+F for search focus
+    if (e.ctrlKey && e.key === 'f') {
+        e.preventDefault();
+        document.getElementById('search')?.focus();
+    }
+    // F1 for help
+    if (e.key === 'F1') {
+        e.preventDefault();
+        showHelpModal();
+    }
+    // Ctrl+Shift+C for checkout
+    if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+        e.preventDefault();
+        showCheckoutDialog();
+    }
+    // Ctrl+Shift+M for merge tables
+    if (e.ctrlKey && e.shiftKey && e.key === 'M') {
+        e.preventDefault();
+        mergeTables();
+    }
+});
+
+// Helper function for prompts - REMOVED: Using existing showPromptModal instead
+
+function showHelpModal() {
+    const content = `
+        <div class="help-modal">
+            <h4>Keyboard Shortcuts</h4>
+            <ul>
+                <li><kbd>Ctrl+F</kbd> - Focus search bar</li>
+                <li><kbd>F1</kbd> - Show this help</li>
+                <li><kbd>Ctrl+Shift+C</kbd> - Open checkout</li>
+                <li><kbd>Ctrl+Shift+M</kbd> - Merge tables</li>
+            </ul>
+            <h4>Tips</h4>
+            <ul>
+                <li>Use the sidebar for reports and utilities</li>
+                <li>Search works across all menu items</li>
+                <li>Tables show timers when occupied</li>
+                <li>Use extras for item customization</li>
+            </ul>
+        </div>
+    `;
+    showSidebarContentModal('Help', content);
+}
+
+// Export to PDF function
+function exportToPDF(elementId, filename) {
+    if (typeof html2pdf === 'undefined') {
+        notifications.show('PDF library not loaded. Please check your internet connection.', 'error');
+        return;
+    }
+    
+    const element = document.getElementById(elementId);
+    if (!element) {
+        notifications.show('Element not found for PDF export', 'error');
+        return;
+    }
+    
+    showLoadingSpinner();
+    
+    const opt = {
+        margin: [0.5, 0.5, 0.5, 0.5],
+        filename: `${filename}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+    
+    html2pdf().set(opt).from(element).save().then(() => {
+        notifications.show('PDF exported successfully', 'success');
+    }).catch(error => {
+        console.error('PDF export failed:', error);
+        notifications.show('PDF export failed', 'error');
+    }).finally(() => {
+        hideLoadingSpinner();
     });
 }
 </script>
