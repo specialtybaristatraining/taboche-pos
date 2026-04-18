@@ -3357,7 +3357,7 @@ async function addToOrder(item) {
     orders[currentTable] ??= [];
     const existingItem = orders[currentTable].find(i =>
         i.name === item.name &&
-        JSON.stringify(i.extras || []) === JSON.stringify(i.extras || []) &&
+        JSON.stringify(i.extras || []) === JSON.stringify(item.extras || []) &&
         (i.notes || '') === (item.notes || '')
     );
 
