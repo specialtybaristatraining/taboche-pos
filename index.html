@@ -3721,12 +3721,30 @@ async function saveExtras() {
             price: parseFloat(cb.dataset.price)
         }));
 
-    orders[currentTable][currentItemIndex].extras = selectedExtras;
+    const currentItem = orders[currentTable][currentItemIndex];
+    const currentExtras = currentItem.extras || [];
+    const extrasChanged = JSON.stringify(selectedExtras.sort((a,b)=>a.name.localeCompare(b.name))) !== JSON.stringify(currentExtras.sort((a,b)=>a.name.localeCompare(b.name)));
+
+    if (currentItem.quantity > 1 && extrasChanged) {
+        // Split: create a new item with quantity 1 and the new extras
+        const newItem = {
+            ...currentItem,
+            quantity: 1,
+            extras: selectedExtras
+        };
+        orders[currentTable].push(newItem);
+        currentItem.quantity -= 1;
+        notifications.show("Extras added to one item. Quantity split.", "success");
+    } else {
+        // Update the existing item
+        currentItem.extras = selectedExtras;
+        notifications.show("Extras updated successfully!", "success");
+    }
+
     persistAllData();
     renderOrderItems();
     updateTotal();
     closeExtrasModal();
-    notifications.show("Extras updated successfully!", "success");
     hideLoadingSpinner();
 }
 
@@ -3770,11 +3788,29 @@ async function saveNotes() {
         return;
     }
 
-    orders[currentTable][currentItemIndex].notes = notesValue;
+    const currentItem = orders[currentTable][currentItemIndex];
+    const currentNotes = currentItem.notes || '';
+    const notesChanged = notesValue !== currentNotes;
+
+    if (currentItem.quantity > 1 && notesChanged) {
+        // Split: create a new item with quantity 1 and the new notes
+        const newItem = {
+            ...currentItem,
+            quantity: 1,
+            notes: notesValue
+        };
+        orders[currentTable].push(newItem);
+        currentItem.quantity -= 1;
+        notifications.show("Note added to one item. Quantity split.", "success");
+    } else {
+        // Update the existing item
+        currentItem.notes = notesValue;
+        notifications.show("Note saved successfully.", "success");
+    }
+
     persistAllData();
     renderOrderItems();
     closeNotesModal();
-    notifications.show("Note saved successfully.", "success");
 }
 
 async function removeOrderItem(index) {
