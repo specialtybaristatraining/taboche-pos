@@ -1320,6 +1320,142 @@ body.dark-mode .search-bar {
 .void-item p { margin: 0.5rem 0; }
 .void-item strong { color: #2563eb; }
 
+#void-details-list {
+    display: block;
+    max-height: 60vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Professional Void Report Table Styles */
+.void-report-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.void-report-table thead {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: #ffffff;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.void-report-table th {
+    padding: 1rem 0.75rem;
+    text-align: left;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    white-space: nowrap;
+}
+
+.void-report-table th:last-child {
+    border-right: none;
+}
+
+.void-report-table tbody tr {
+    border-bottom: 1px solid #e2e8f0;
+    transition: background-color 0.2s ease;
+}
+
+.void-report-table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+.void-report-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.void-report-table td {
+    padding: 0.875rem 0.75rem;
+    vertical-align: top;
+}
+
+.date-cell {
+    font-family: 'Courier New', monospace;
+    color: #64748b;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.table-cell {
+    color: #2563eb;
+    font-weight: 600;
+    min-width: 50px;
+}
+
+.items-cell {
+    max-width: 250px;
+}
+
+.item-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.25rem;
+    padding: 0.25rem 0;
+}
+
+.item-line:last-child {
+    margin-bottom: 0;
+}
+
+.item-line .qty {
+    background-color: #ecf9f1;
+    color: #065f46;
+    padding: 0.125rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 600;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+    font-size: 0.85em;
+}
+
+.amount-cell {
+    color: #dc2626;
+    font-weight: 700;
+    min-width: 100px;
+    text-align: right;
+}
+
+.reason-cell {
+    color: #6b7280;
+    font-size: 0.85rem;
+    max-width: 200px;
+    word-break: break-word;
+}
+
+.user-cell {
+    color: #6b7280;
+    font-size: 0.85rem;
+    max-width: 200px;
+    word-break: break-word;
+}
+
+.dark-mode .void-report-table {
+    background-color: #1f2937;
+    border-color: #374151;
+}
+
+.dark-mode .void-report-table tbody tr {
+    border-bottom-color: #374151;
+}
+
+.dark-mode .void-report-table tbody tr:hover {
+    background-color: #374151;
+}
+
+.dark-mode .date-cell,
+.dark-mode .reason-cell,
+.dark-mode .user-cell {
+    color: #9ca3af;
+}
+
 /* Blinking Animation */
 .table-btn.blinking { animation: blink 1s linear infinite; }
 @keyframes blink { 50% { opacity: 0.5; } }
@@ -2084,6 +2220,7 @@ let currentPage = 1;
 const itemsPerPage = 10;
 const MAX_HISTORY_ITEMS = 1000;
 let saveTimeout;
+let appendNumberTimeout; // Debounce timeout for number input
 let isProcessingPayment = false;
 let timerUpdateQueued = false;
 
@@ -4500,7 +4637,7 @@ function renderOrderHistoryPagination(totalOrders, page) {
 
 
 function showVoidDetailsContent(e) {
-    e.preventDefault();
+    if (e) e.preventDefault();
     
     showSidebarContentModal('Void Details', `
         <div class="report-container">
@@ -4511,64 +4648,151 @@ function showVoidDetailsContent(e) {
                 <button id="filter-voids" class="export-btn">Filter</button>
                 <button id="export-voids" class="export-btn">Export</button>
             </div>
-            <div id="void-details-list"></div>
+            <div id="void-details-list">
+                <p class="text-center text-muted mt-4">Loading void records...</p>
+            </div>
         </div>
     `, () => {
-        document.getElementById('void-start-date').valueAsDate = new Date();
-        document.getElementById('void-end-date').valueAsDate = new Date();
+        try {
+            // Set dates to today
+            const today = new Date().toISOString().split('T')[0];
+            const startDateEl = document.getElementById('void-start-date');
+            const endDateEl = document.getElementById('void-end-date');
+            
+            if (startDateEl) startDateEl.value = today;
+            if (endDateEl) endDateEl.value = today;
 
-        renderVoidDetails();
-        
-        document.getElementById('filter-voids')?.addEventListener('click', filterVoidDetails);
-        document.getElementById('export-voids')?.addEventListener('click', exportVoidDetails);
+            // Render void details
+            renderVoidDetails();
+            
+            // Attach event listeners
+            const filterBtn = document.getElementById('filter-voids');
+            const exportBtn = document.getElementById('export-voids');
+            
+            if (filterBtn) {
+                filterBtn.removeEventListener('click', filterVoidDetails);
+                filterBtn.addEventListener('click', filterVoidDetails);
+            }
+            
+            if (exportBtn) {
+                exportBtn.removeEventListener('click', exportVoidDetails);
+                exportBtn.addEventListener('click', exportVoidDetails);
+            }
+            
+            console.log('Void Details modal initialized. Total records:', voidDetails.length);
+        } catch (error) {
+            console.error('Error initializing Void Details modal:', error);
+            notifications.show('Error initializing Void Details: ' + error.message, 'error');
+        }
     });
 }
 
 function renderVoidDetails() {
     try {
         const list = document.getElementById('void-details-list');
-        if (!list) return;
-        
-        const startDate = new Date(document.getElementById('void-start-date').value);
-        const endDate = new Date(document.getElementById('void-end-date').value);
-        endDate.setHours(23, 59, 59, 999);
-
-    const filteredVoids = voidDetails.filter(item => {
-        const itemDate = new Date(item.timestamp);
-        return itemDate >= startDate && itemDate <= endDate;
-    });
-
-    if (filteredVoids.length === 0) {
-        list.innerHTML = '<p class="text-center text-muted mt-4">No void records found for the selected dates.</p>';
-        return;
-    }
-
-    list.innerHTML = filteredVoids.map(voidItem => {
-        const date = voidItem.timestamp ? new Date(voidItem.timestamp).toLocaleString() : 'Unknown date';
-        const total = voidItem.total ? `Rs ${voidItem.total.toFixed(2)}` : 'Rs 0.00';
-        
-        let itemsList = '';
-        if (voidItem.items && Array.isArray(voidItem.items)) {
-            itemsList = voidItem.items.map(i => `${escapeHtml(i.name)} x${i.quantity}`).join(', ');
-        } else if (voidItem.item) {
-            itemsList = `${escapeHtml(voidItem.item.name)} x${voidItem.item.quantity}`;
-        } else {
-            itemsList = 'No items information';
+        if (!list) {
+            console.error('void-details-list element not found');
+            return;
         }
         
-        return `
-            <div class="void-item">
-                <p><strong>Table ${escapeHtml(String(voidItem.table || 'Unknown'))}</strong> - ${date}</p>
-                <p>Items: ${itemsList}</p>
-                <p>Total: ${total}</p>
-                <p>Reason: ${escapeHtml(voidItem.reason || 'No reason provided')}</p>
-                <p>Voided by: ${escapeHtml(voidItem.user || 'Unknown user')}</p>
-            </div>
+        // Get date inputs
+        const startDateInput = document.getElementById('void-start-date');
+        const endDateInput = document.getElementById('void-end-date');
+        
+        if (!startDateInput || !endDateInput) {
+            console.error('Date input elements not found');
+            return;
+        }
+        
+        const startDate = new Date(startDateInput.value);
+        const endDate = new Date(endDateInput.value);
+        endDate.setHours(23, 59, 59, 999);
+        
+        console.log('Filtering void details. Start:', startDate, 'End:', endDate, 'Total records:', voidDetails.length);
+
+        const filteredVoids = voidDetails.filter(item => {
+            if (!item.timestamp) return false;
+            const itemDate = new Date(item.timestamp);
+            return itemDate >= startDate && itemDate <= endDate;
+        });
+
+        console.log('Filtered void records:', filteredVoids.length);
+
+        if (filteredVoids.length === 0) {
+            list.innerHTML = '<p class="text-center text-muted mt-4">No void records found for the selected dates.</p>';
+            return;
+        }
+
+        // Create professional table format
+        let tableHTML = `
+            <table class="void-report-table">
+                <thead>
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>Table</th>
+                        <th>Items</th>
+                        <th>Amount</th>
+                        <th>Reason</th>
+                        <th>Voided By</th>
+                    </tr>
+                </thead>
+                <tbody>
         `;
-    }).join('');
+
+        filteredVoids.forEach(voidItem => {
+            const date = voidItem.timestamp 
+                ? new Date(voidItem.timestamp).toLocaleString('en-IN', { 
+                    year: 'numeric', 
+                    month: '2-digit', 
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                })
+                : 'Unknown';
+            
+            const total = voidItem.total ? `Rs ${voidItem.total.toFixed(2)}` : 'Rs 0.00';
+            
+            let itemsList = '';
+            if (voidItem.items && Array.isArray(voidItem.items)) {
+                itemsList = voidItem.items
+                    .map(i => `<div class="item-line">${escapeHtml(i.name || 'Unknown')} <span class="qty">x${i.quantity || 1}</span></div>`)
+                    .join('');
+            } else if (voidItem.item) {
+                itemsList = `<div class="item-line">${escapeHtml(voidItem.item.name || 'Unknown')} <span class="qty">x${voidItem.item.quantity || 1}</span></div>`;
+            } else {
+                itemsList = '<div class="item-line text-muted">No items</div>';
+            }
+            
+            const table = escapeHtml(String(voidItem.table || 'Unknown'));
+            const reason = escapeHtml(voidItem.reason || 'No reason');
+            const user = escapeHtml(voidItem.user || 'Unknown');
+
+            tableHTML += `
+                <tr>
+                    <td class="date-cell">${date}</td>
+                    <td class="table-cell"><strong>${table}</strong></td>
+                    <td class="items-cell">${itemsList}</td>
+                    <td class="amount-cell"><strong>${total}</strong></td>
+                    <td class="reason-cell">${reason}</td>
+                    <td class="user-cell">${user}</td>
+                </tr>
+            `;
+        });
+
+        tableHTML += `
+                </tbody>
+            </table>
+        `;
+
+        list.innerHTML = tableHTML;
     } catch (error) {
         console.error('Error rendering void details:', error);
-        notifications.show('Unable to render void records.', 'error');
+        const list = document.getElementById('void-details-list');
+        if (list) {
+            list.innerHTML = '<p class="text-center text-danger mt-4">Error loading void records: ' + error.message + '</p>';
+        }
+        notifications.show('Unable to render void records: ' + error.message, 'error');
     }
 }
 
@@ -4577,27 +4801,52 @@ function filterVoidDetails() {
 }
 
 function exportVoidDetails() {
-    const startDate = document.getElementById('void-start-date').value;
-    const endDate = document.getElementById('void-end-date').value;
-    const filteredVoids = voidDetails.filter(item => {
-        const itemDate = new Date(item.timestamp);
-        return itemDate >= new Date(startDate) && itemDate <= new Date(endDate);
-    });
+    try {
+        const startDateInput = document.getElementById('void-start-date');
+        const endDateInput = document.getElementById('void-end-date');
+        
+        if (!startDateInput || !endDateInput) {
+            notifications.show('Date inputs not found', 'error');
+            return;
+        }
+        
+        const startDate = startDateInput.value;
+        const endDate = endDateInput.value;
+        
+        const filteredVoids = voidDetails.filter(item => {
+            if (!item.timestamp) return false;
+            const itemDate = new Date(item.timestamp);
+            return itemDate >= new Date(startDate) && itemDate <= new Date(endDate);
+        });
 
-    const csvContent = "data:text/csv;charset=utf-8," +
-        "Table,Items,Total,Reason,User,Timestamp\n" +
-        filteredVoids.map(e => 
-            `"${e.table}","${e.items.map(i => `${i.name} x${i.quantity}`).join('; ')}",${e.total},"${e.reason}","${e.user}","${new Date(e.timestamp).toLocaleString()}"`
-        ).join("\n");
-    
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `void_details_${startDate}_to_${endDate}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    notifications.show('Void details exported to CSV.', 'success');
+        if (filteredVoids.length === 0) {
+            notifications.show('No void records to export for the selected dates.', 'warning');
+            return;
+        }
+
+        const csvContent = "data:text/csv;charset=utf-8," +
+            "Table,Items,Total,Reason,User,Timestamp\n" +
+            filteredVoids.map(e => {
+                const itemsStr = e.items && Array.isArray(e.items) 
+                    ? e.items.map(i => `${i.name || 'Unknown'} x${i.quantity || 1}`).join('; ')
+                    : 'No items';
+                const total = e.total ? e.total.toFixed(2) : '0.00';
+                const timestamp = e.timestamp ? new Date(e.timestamp).toLocaleString() : 'Unknown';
+                return `"${e.table}","${itemsStr}",${total},"${e.reason || 'No reason'}","${e.user || 'Unknown'}","${timestamp}"`;
+            }).join("\n");
+        
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `void_details_${startDate}_to_${endDate}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        notifications.show('Void details exported to CSV.', 'success');
+    } catch (error) {
+        console.error('Error exporting void details:', error);
+        notifications.show('Error exporting void details: ' + error.message, 'error');
+    }
 }
 
 
@@ -4644,12 +4893,20 @@ function appendNumber(num) {
     const input = document.getElementById('numeric-input');
     if (!input) return;
     let value = input.value;
+    
+    // Prevent multiple decimal points
     if (num === '.' && value.includes('.')) return;
+    
+    // Replace '0' with first digit (unless adding decimal)
     if (value === '0' && num !== '.') value = num;
     else value += num;
+    
     input.value = value;
     paymentAmount = validateNumericInput(value, 0);
-    updateChange();
+    
+    // Debounce updateChange to reduce DOM updates
+    clearTimeout(appendNumberTimeout);
+    appendNumberTimeout = setTimeout(updateChange, 50);
 }
 
 function clearInput() {
@@ -4800,23 +5057,34 @@ function renderPaymentMethods() {
         </li>
     `).join('');
 
-    document.querySelectorAll('.remove-payment-btn').forEach(button => {
-        button.addEventListener('click', () => {
-            const index = parseInt(button.dataset.index);
-            removePayment(index);
-        });
-        button.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            const index = parseInt(button.dataset.index);
-            removePayment(index);
-        });
-    });
+    // Use event delegation instead of attaching individual listeners
+    paymentList.addEventListener('click', handlePaymentListClick);
+    paymentList.addEventListener('touchstart', handlePaymentListTouch);
 
     const hasMobilePayment = paymentMethods.some(pm => pm.method === 'Mobile');
     if (hasMobilePayment) {
         displayQRCode();
     } else {
         closeQRCodeDialog();
+    }
+}
+
+// Event delegation handler for payment list clicks
+function handlePaymentListClick(event) {
+    const button = event.target.closest('.remove-payment-btn');
+    if (button) {
+        const index = parseInt(button.dataset.index);
+        removePayment(index);
+    }
+}
+
+// Event delegation handler for payment list touches
+function handlePaymentListTouch(event) {
+    const button = event.target.closest('.remove-payment-btn');
+    if (button) {
+        event.preventDefault();
+        const index = parseInt(button.dataset.index);
+        removePayment(index);
     }
 }
 
@@ -5805,16 +6073,33 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('mobile-btn')?.addEventListener('click', () => processPayment("Mobile"));
     document.getElementById('complete-btn')?.addEventListener('click', completePayment);
 
-    // Keypad and Quick Amounts
-    document.querySelectorAll('#keypad button[data-num]').forEach(button => {
-        button.addEventListener('click', () => appendNumber(button.dataset.num));
-    });
-    document.querySelectorAll('#quick-amounts button[data-amount]').forEach(button => {
-        button.addEventListener('click', () => setQuickAmount(parseFloat(button.dataset.amount)));
-    });
-    document.querySelectorAll('#discount-section button[data-discount]').forEach(button => {
-        button.addEventListener('click', () => applyDiscount(parseInt(button.dataset.discount)));
-    });
+    // Keypad and Quick Amounts - Use event delegation for better performance
+    const keypad = document.getElementById('keypad');
+    if (keypad) {
+        keypad.addEventListener('click', (e) => {
+            const button = e.target.closest('button[data-num]');
+            if (button) appendNumber(button.dataset.num);
+            
+            const clearBtn = e.target.closest('#clear-input');
+            if (clearBtn) clearInput();
+        });
+    }
+
+    const quickAmounts = document.getElementById('quick-amounts');
+    if (quickAmounts) {
+        quickAmounts.addEventListener('click', (e) => {
+            const button = e.target.closest('button[data-amount]');
+            if (button) setQuickAmount(parseFloat(button.dataset.amount));
+        });
+    }
+
+    const discountSection = document.getElementById('discount-section');
+    if (discountSection) {
+        discountSection.addEventListener('click', (e) => {
+            const button = e.target.closest('button[data-discount]');
+            if (button) applyDiscount(parseInt(button.dataset.discount));
+        });
+    }
 
     // QR Code Dialog
     document.getElementById('close-qr-code-dialog')?.addEventListener('click', closeQRCodeDialog);
