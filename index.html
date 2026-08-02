@@ -2467,7 +2467,7 @@ const menuSections = {
     "Breakfast": [
         "Breakfast"
     ],
-    "Bar": [
+    "Coffee": [
         "Hot Coffee",
         "Cold Coffee",
         "Frappe / Blended",
@@ -5582,14 +5582,17 @@ async function changeTable() {
 
     orders[newTable] = itemsToMove;
     if (timerToMove) {
-        tableTimers[newTable] = timerToMove;
+        tableTimers[newTable] = {
+            ...timerToMove,
+            lastUpdated: Date.now()
+        };
+    } else {
+        tableTimers[newTable] = {
+            start: Date.now(),
+            elapsed: 0,
+            lastUpdated: Date.now()
+        };
     }
-    // Reset timer for new table
-    tableTimers[newTable] = {
-        start: Date.now(),
-        elapsed: 0,
-        lastUpdated: Date.now()
-    };
     delete orders[oldTable];
     delete tableTimers[oldTable];
     currentTable = newTable;
