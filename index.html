@@ -140,6 +140,32 @@ header {
     gap: 0.25rem;
 }
 
+.offline-queue-badge.hidden,
+.hidden {
+    display: none !important;
+}
+
+.auto-save-status {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    font-size: 12px;
+    opacity: 0.7;
+    z-index: 1000;
+}
+
+.sidebar-storage-link {
+    background: #2563eb;
+    color: white;
+    margin-top: 10px;
+    border-radius: 8px;
+}
+
+.modal-content-wide {
+    max-width: 800px;
+    width: min(92vw, 800px);
+}
+
 .topbar-storage-indicator {
     font-size: 0.78rem;
     padding: 0.35rem 0.65rem;
@@ -713,10 +739,11 @@ body.dark-mode .search-bar {
     overflow: hidden;
     border-radius: 0 24px 24px 0;
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+    min-height: 0;
 }
 
 .order-header {
-    padding: 0.75rem 0.85rem;
+    padding: 0.6rem 0.75rem;
     border-bottom: 1px solid rgba(148, 163, 184, 0.18);
     background: linear-gradient(90deg, rgba(37, 99, 235, 0.08), rgba(59, 130, 246, 0.05));
 }
@@ -725,18 +752,19 @@ body.dark-mode .search-bar {
     flex: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 0.3rem;
+    padding: 0.25rem;
+    min-height: 0;
 }
 
 .order-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px;
+    padding: 10px 10px;
     border-bottom: 1px solid #e5e7eb;
-    font-size: 0.8rem;
+    font-size: 0.72rem;
     border-radius: 8px;
-    margin-bottom: 12px;
+    margin-bottom: 7px;
     background: #ffffff;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     transition: box-shadow 0.2s ease, transform 0.2s ease;
@@ -752,12 +780,12 @@ body.dark-mode .search-bar {
 }
 
 .order-item-details p {
-    margin: 0.2rem 0;
-    font-size: 0.75rem;
+    margin: 0.12rem 0;
+    font-size: 0.68rem;
 }
 
 .order-item-details .notes {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     color: #6b7280;
     font-style: italic;
 }
@@ -780,26 +808,28 @@ body.dark-mode .search-bar {
 .order-item-controls {
     display: flex;
     align-items: center;
-    gap: 0.3rem;
+    gap: 0.2rem;
     flex-wrap: wrap;
 }
 
 .order-item-controls input {
-    width: 40px;
-    padding: 0.2rem;
+    width: 34px;
+    padding: 0.12rem;
     border: 1px solid #e2e8f0;
     border-radius: 5px;
-    font-size: 0.75rem;
+    font-size: 0.68rem;
 }
 
 .order-item-controls button {
-    padding: 6px 10px;
+    padding: 6px 8px;
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    font-size: 0.7rem;
+    font-size: 0.62rem;
     font-weight: 500;
     transition: all 0.2s ease;
+    min-width: 44px;
+    min-height: 44px;
 }
 
 .order-item-controls button:active {
@@ -807,28 +837,34 @@ body.dark-mode .search-bar {
 }
 
 .order-footer {
-    padding: 1rem;
+    padding: 0.55rem 0.6rem;
     border-top: 1px solid #e5e7eb;
     background-color: #f9fafb;
 }
 
 .order-footer-buttons {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-    gap: 0.75rem;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.35rem;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .order-footer-buttons button {
-    padding: 12px 8px;
+    padding: 6px 5px;
     border: none;
-    border-radius: 40px;
+    border-radius: 999px;
     cursor: pointer;
-    font-size: 0.75rem;
+    font-size: 0.58rem;
     font-weight: 600;
     transition: transform 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease;
     color: #ffffff;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.03em;
+    line-height: 1.1;
+    min-height: 44px;
+    flex: 1 1 0;
+    white-space: nowrap;
 }
 
 .order-footer-buttons button:hover {
@@ -1507,6 +1543,51 @@ body.dark-mode .search-bar {
     }
 }
 
+@media (min-width: 769px) and (max-width: 1366px) {
+    .order-section {
+        min-width: 300px;
+        max-width: 340px;
+    }
+
+    .order-item {
+        padding: 8px 8px;
+        margin-bottom: 6px;
+        font-size: 0.68rem;
+    }
+
+    .order-item-details p {
+        font-size: 0.64rem;
+    }
+
+    .order-item-details .notes {
+        font-size: 0.56rem;
+    }
+
+    .order-item-controls input {
+        width: 32px;
+        font-size: 0.64rem;
+    }
+
+    .order-item-controls button {
+        padding: 3px 6px;
+        font-size: 0.58rem;
+    }
+
+    .order-footer {
+        padding: 0.5rem 0.55rem;
+    }
+
+    .order-footer-buttons {
+        gap: 0.28rem;
+    }
+
+    .order-footer-buttons button {
+        padding: 5px 4px;
+        font-size: 0.54rem;
+        min-height: 32px;
+    }
+}
+
 @media (max-width: 768px) {
     header { padding: 0.75rem; gap: 0.5rem; }
     .restaurant-logo { height: 2rem; }
@@ -1891,7 +1972,7 @@ kbd {
     <!-- ======================= CORE UI STRUCTURE ======================= -->
     <!-- =================================================================== -->
     <header>
-        <div class="hamburger-menu" id="hamburger-menu">
+        <div class="hamburger-menu" id="hamburger-menu" role="button" tabindex="0" aria-label="Open menu">
             <i class="fas fa-bars"></i>
         </div>
         <div class="restaurant-logo-container">
@@ -1905,10 +1986,10 @@ kbd {
         <div class="datetime" id="datetime" aria-live="polite"></div>
         <div id="network-status" class="offline" aria-live="polite">Offline</div>
         <div id="storage-indicator" class="topbar-storage-indicator">💾 0.0MB / 10MB</div>
-        <div id="offline-queue-badge" style="display:none;">
+        <div id="offline-queue-badge" class="offline-queue-badge hidden">
             <i class="fas fa-clock"></i> <span id="pending-count">0</span> pending
         </div>
-        <i class="fas fa-moon" id="theme-toggle" aria-label="Toggle theme"></i>
+        <i class="fas fa-moon" id="theme-toggle" role="button" tabindex="0" aria-label="Toggle theme"></i>
     </header>
 
     <div class="notification-toast" id="notification-toast"></div>
@@ -1917,7 +1998,7 @@ kbd {
         <i class="fas fa-spinner fa-spin"></i>
     </div>
 
-    <div id="auto-save-status" style="position: fixed; bottom: 10px; left: 10px; font-size: 12px; opacity: 0.7;">
+    <div id="auto-save-status" class="auto-save-status">
         <i class="fas fa-save"></i> All changes saved
     </div>
 
@@ -1930,7 +2011,7 @@ kbd {
                 
                 <!-- NEW: Menu Navigation Header -->
                 <div class="menu-navigation-header">
-                    <button id="back-button" class="btn btn-secondary" style="display:none;"><i class="fas fa-arrow-left me-2"></i>Back</button>
+                    <button id="back-button" class="btn btn-secondary" style="display:none"><i class="fas fa-arrow-left me-2"></i>Back</button>
                     <div class="menu-navigation-title-group">
                         <h4 id="menu-section-title"></h4>
                     </div>
@@ -1947,7 +2028,7 @@ kbd {
                 <div class="order-footer">
                     <p>Total: Rs <span id="total-amount">0.00</span></p>
                     <div class="order-footer-buttons">
-                        <button class="finalize-btn" id="finalize-btn">Send to Kitchen (KOT)</button>
+                        <button class="finalize-btn" id="finalize-btn">Send to Kitchen</button>
                         <button class="checkout-btn" id="checkout-btn">Checkout</button>
                         <button class="change-table-btn" id="change-table-btn">Change Table</button>
                         <button class="void-btn" id="void-btn">Void Entire Order</button>
@@ -1974,7 +2055,7 @@ kbd {
             <h6 class="text-muted mb-2">Reports & Utilities</h6>
             <a href="#" id="nav-backup-data"><i class="fas fa-download me-2"></i>Backup Data</a>
             <a href="#" id="nav-restore-data"><i class="fas fa-upload me-2"></i>Restore Data</a>
-            <a href="#" id="nav-storage-manager" style="background: #2563eb; color: white; margin-top: 10px; border-radius: 8px;"><i class="fas fa-database me-2"></i>📊 Storage Manager</a>
+            <a href="#" id="nav-storage-manager" class="sidebar-storage-link"><i class="fas fa-database me-2"></i>📊 Storage Manager</a>
             <a href="#" id="nav-reset-data"><i class="fas fa-trash-restore me-2"></i>Reset All Data</a>
         </div>
     </div>
@@ -1993,7 +2074,7 @@ kbd {
 
     <!-- Checkout Dialog -->
     <div class="modal" id="checkout-dialog">
-        <div class="modal-content" style="max-width: 800px;">
+        <div class="modal-content modal-content-wide">
             <span class="close-modal" id="close-checkout-dialog">×</span>
             <h3>Checkout - Table <span id="selected-table-checkout">-</span></h3>
             <div class="row">
@@ -2008,7 +2089,7 @@ kbd {
                         <button data-num="0">0</button><button data-num=".">.</button><button id="clear-input">C</button>
                     </div>
                     <div id="quick-amounts" class="mt-2">
-                         <button data-amount="exact">Exact</button><button data-amount="500">500</button><button data-amount="1000">1000</button><button data-amount="2000">2000</button>
+                         <button data-amount="exact" title="Fills the remaining due amount">Exact</button><button data-amount="500" title="Adds 500">500</button><button data-amount="1000" title="Adds 1000">1000</button><button data-amount="2000" title="Adds 2000">2000</button>
                     </div>
                     <div class="payment-buttons mt-3">
                         <button id="cash-btn" class="btn-lg"><i class="fas fa-money-bill-wave me-2"></i>Add Cash</button>
@@ -2040,8 +2121,8 @@ kbd {
                         <span>Change:</span> 
                         <span id="change-amount" class="text-success">Rs 0.00</span>
                     </div>
-
-<button id="complete-btn" data-sound="confirm" class="btn-primary btn-lg w-100 mt-3" disabled>Complete Payment</button>
+                    <div id="insufficient-message" class="text-danger" style="display:none; font-size: 0.95rem; margin-top: 0.5rem;"></div>
+                    <button id="complete-btn" data-sound="confirm" class="btn-primary btn-lg w-100 mt-3" disabled>Complete Payment</button>
                 </div>
             </div>
         </div>
@@ -2083,8 +2164,8 @@ kbd {
     </div>
 
     <!-- Generic Prompt/Confirm Modal (Used by showPromptModal, showConfirmModal) -->
-    <div class="generic-modal-overlay" id="generic-prompt-modal">
-        <div class="generic-modal-content">
+    <div class="generic-modal-overlay" id="generic-prompt-modal" role="dialog" aria-modal="true" aria-labelledby="generic-prompt-title" aria-hidden="true">
+        <div class="generic-modal-content" tabindex="-1">
             <h3 id="generic-prompt-title"></h3>
             <p id="generic-prompt-message"></p>
             <div id="generic-prompt-input-container">
@@ -2097,10 +2178,104 @@ kbd {
         </div>
     </div>
 
-<script type="module">
+<script>
+
 // =========================================================================
 // ===================== POS SYSTEM SCRIPT (In-memory with LocalStorage) ======================
 // =========================================================================
+
+function migrateStoredData(data = {}) {
+    const next = {
+        orders: {},
+        tableTimers: {},
+        salesHistory: [],
+        orderHistory: [],
+        voidDetails: [],
+        kotHistory: [],
+        itemsSold: [],
+        ...data
+    };
+
+    if (!next.orders || typeof next.orders !== 'object' || Array.isArray(next.orders)) {
+        next.orders = {};
+    }
+
+    const normalizedOrders = {};
+    Object.entries(next.orders).forEach(([table, items]) => {
+        if (!Array.isArray(items)) {
+            normalizedOrders[table] = [];
+            return;
+        }
+        normalizedOrders[table] = items.filter(Boolean).map(item => ({
+            ...item,
+            quantity: Number(item.quantity) > 0 ? Number(item.quantity) : 1,
+            price: Number(item.price) || 0,
+            extras: Array.isArray(item.extras) ? item.extras : [],
+            notes: typeof item.notes === 'string' ? item.notes : ''
+        }));
+    });
+    next.orders = normalizedOrders;
+
+    next.tableTimers = next.tableTimers && typeof next.tableTimers === 'object' && !Array.isArray(next.tableTimers) ? next.tableTimers : {};
+    next.salesHistory = Array.isArray(next.salesHistory) ? next.salesHistory : [];
+    next.orderHistory = Array.isArray(next.orderHistory) ? next.orderHistory : [];
+    next.voidDetails = Array.isArray(next.voidDetails) ? next.voidDetails : [];
+    next.kotHistory = Array.isArray(next.kotHistory) ? next.kotHistory : [];
+    next.itemsSold = Array.isArray(next.itemsSold) ? next.itemsSold : [];
+
+    if (!next.schemaVersion || next.schemaVersion < 2) {
+        next.schemaVersion = 2;
+    }
+
+    return next;
+}
+
+function compressDataState(data = {}) {
+    const next = migrateStoredData(data);
+
+    next.voidDetails = (next.voidDetails || []).filter(entry => entry && typeof entry === 'object');
+    next.kotHistory = (next.kotHistory || []).filter(entry => entry && typeof entry === 'object');
+    next.orderHistory = (next.orderHistory || []).filter(entry => entry && typeof entry === 'object');
+    next.salesHistory = (next.salesHistory || []).filter(entry => entry && typeof entry === 'object');
+
+    const itemsSoldMap = new Map();
+    (next.itemsSold || []).forEach(entry => {
+        if (!entry || typeof entry.name !== 'string') return;
+        const key = entry.name.toLowerCase();
+        if (!itemsSoldMap.has(key)) {
+            itemsSoldMap.set(key, { ...entry, quantity: Number(entry.quantity) || 0, totalRevenue: Number(entry.totalRevenue) || 0 });
+            return;
+        }
+        const target = itemsSoldMap.get(key);
+        target.quantity += Number(entry.quantity) || 0;
+        target.totalRevenue += Number(entry.totalRevenue) || 0;
+    });
+    next.itemsSold = Array.from(itemsSoldMap.values()).filter(item => item.quantity > 0);
+
+    return next;
+}
+
+function saveCheckoutState(state, storage = globalThis.sessionStorage) {
+    if (!storage) return;
+    storage.setItem('pos-checkout-state', JSON.stringify(state));
+}
+
+function restoreCheckoutState(storage = globalThis.sessionStorage) {
+    if (!storage) return null;
+    try {
+        const raw = storage.getItem('pos-checkout-state');
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === 'object' ? parsed : null;
+    } catch {
+        return null;
+    }
+}
+
+function clearCheckoutState(storage = globalThis.sessionStorage) {
+    if (!storage) return;
+    storage.removeItem('pos-checkout-state');
+}
 
 // ========== STORAGE MONITORING SYSTEM ==========
 function checkStorageAndWarn() {
@@ -2164,7 +2339,7 @@ function quickBackupNow() {
     if (warning) warning.remove();
 }
 
-function showQuickBackup() {
+async function showQuickBackup() {
     let total = 0;
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
@@ -2172,8 +2347,8 @@ function showQuickBackup() {
         total += (key.length + value.length) * 2;
     }
     const usedMB = total / (1024 * 1024);
-    
-    if (confirm(`📊 Storage: ${usedMB.toFixed(1)}MB / 10MB used\n\nClick OK to backup your data now.`)) {
+    const confirmed = await showConfirmModal('Backup data', `📊 Storage: ${usedMB.toFixed(1)}MB / 10MB used\n\nCreate a backup now?`);
+    if (confirmed) {
         quickBackupNow();
     }
 }
@@ -2224,12 +2399,51 @@ const MAX_HISTORY_ITEMS = 1000;
 let saveTimeout;
 let appendNumberTimeout; // Debounce timeout for number input
 let isProcessingPayment = false;
+let paymentResetTimer = null;
+let cachedTotal = 0;
+let cachedTotalVersion = 0;
 let timerUpdateQueued = false;
+let isFinalizingOrder = false;
+let orderHistoryShowAll = false;
+let offlineActionQueue = [];
 
 // NEW: Menu Navigation State
 let currentMenuLevel = 'topLevelSections'; // 'topLevelSections', 'itemsOfSection', 'itemsOfCategory'
 let activeSection = null; // Stores the top-level section selected (e.g., 'Food')
 let activeCategoryDisplayGroup = null; // Stores the category selected (e.g., 'Burger with fries')
+let menuNavigationHistory = [];
+
+function pushMenuNavigationState() {
+    const searchInput = document.getElementById('search');
+    menuNavigationHistory.push({
+        level: currentMenuLevel,
+        activeSection,
+        activeCategoryDisplayGroup,
+        searchValue: searchInput?.value || ''
+    });
+}
+
+function restoreMenuNavigationState() {
+    const previousState = menuNavigationHistory.pop();
+    const searchInput = document.getElementById('search');
+
+    if (!previousState) {
+        currentMenuLevel = 'topLevelSections';
+        activeSection = null;
+        activeCategoryDisplayGroup = null;
+        if (searchInput) {
+            searchInput.value = '';
+        }
+        return;
+    }
+
+    currentMenuLevel = previousState.level;
+    activeSection = previousState.activeSection;
+    activeCategoryDisplayGroup = previousState.activeCategoryDisplayGroup;
+    if (searchInput) {
+        searchInput.value = previousState.searchValue || '';
+    }
+}
 
 // Dummy current user for local-only mode
 let currentUser = { email: 'localuser@example.com', role: 'Staff' }; 
@@ -2385,6 +2599,7 @@ const menuItems = [
     { name: "Peppermint", price: 150, category: "Tea", section: "Bar", type: "drink", image: "images/peppermint.jpg", recipe: [{ materialId: 'tea-bag-peppermint', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
     { name: "Spearmint", price: 150, category: "Tea", section: "Bar", type: "drink", image: "images/spearmint.jpg", recipe: [{ materialId: 'tea-bag-spearmint', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
     
+    
     // ================== NEW SOFT DRINKS ==================
     { name: "Sprite", price: 95, category: "Soft Drinks", section: "Bar", type: "drink", image: "images/sprite.jpg" },
     { name: "Coke", price: 95, category: "Soft Drinks", section: "Bar", type: "drink", image: "images/coke.jpg" },
@@ -2407,6 +2622,8 @@ const menuItems = [
     { name: "Floral Delight PKT", price: 490, category: "Retail", section: "Retail", type: "food", image: "images/floral_delight_PKT.jpg" },
     { name: "Herbal Tea PKT", price: 400, category: "Retail", section: "Retail", type: "food", image: "images/herbal_tea.jpg" },
     { name: "Jasmine PKT", price: 380, category: "Retail", section: "Retail", type: "food", image: "images/jasmine.jpg" },
+     { name: "Lavender Rose  PKT", price: 400, category: "Retail", section: "Retail", type: "food", image: "images/lavender_PKT.jpg" },
+      { name: "Himalayan herbal PKT", price: 350, category: "Retail", section: "Retail", type: "food", image: "images/lavender_PKT.jpg" },
 
     { name: "Artice Brust", price: 30, category: "Misc", section: "Misc", type: "misc", image: "images/artice_brust.jpg", discountable: false },
     { name: "Hukka", price: 550, category: "Misc", section: "Misc", type: "misc", image: "images/hukka.jpg", discountable: false },
@@ -2610,38 +2827,59 @@ async function loadLargeStateFromIndexedDB() {
 }
 
 function validateBackupData(data) {
-    if (!data || typeof data !== 'object') return false;
+    if (!data || typeof data !== 'object' || Array.isArray(data)) return false;
     if (data.schemaVersion !== BACKUP_SCHEMA_VERSION && data.schemaVersion !== 1) {
         console.warn('Backup schema version mismatch:', data.schemaVersion);
         return false;
     }
+
     const requiredFields = ['orders', 'salesHistory', 'orderHistory', 'voidDetails', 'kotHistory', 'itemsSold'];
-    const hasRequiredFields = requiredFields.every(field => data.hasOwnProperty(field));
+    const hasRequiredFields = requiredFields.every(field => Object.prototype.hasOwnProperty.call(data, field));
     if (!hasRequiredFields) return false;
-    if (typeof data.orders !== 'object') return false;
+
+    if (typeof data.orders !== 'object' || data.orders === null || Array.isArray(data.orders)) return false;
     if (!Array.isArray(data.salesHistory)) return false;
     if (!Array.isArray(data.orderHistory)) return false;
     if (!Array.isArray(data.voidDetails)) return false;
     if (!Array.isArray(data.kotHistory)) return false;
     if (!Array.isArray(data.itemsSold)) return false;
+
+    const isPlainObject = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
+    if (!isPlainObject(data.orders)) return false;
+
+    for (const [table, items] of Object.entries(data.orders)) {
+        if (typeof table !== 'string') return false;
+        if (!Array.isArray(items)) return false;
+        for (const item of items) {
+            if (!isPlainObject(item)) return false;
+            if (typeof item.name !== 'string') return false;
+            if (typeof item.price !== 'number' || Number.isNaN(item.price)) return false;
+            if (typeof item.quantity !== 'number' || Number.isNaN(item.quantity) || item.quantity < 1) return false;
+        }
+    }
+
     return true;
 }
 
 function loadFromLocalStorage() {
     try {
-        orders = getFromLocalStorage('orders') || {};
-        tableTimers = getFromLocalStorage('tableTimers') || {};
-        salesHistory = getFromLocalStorage('salesHistory') || [];
-        orderHistory = getFromLocalStorage('orderHistory') || [];
-        voidDetails = getFromLocalStorage('voidDetails') || [];
-        kotHistory = getFromLocalStorage('kotHistory') || [];
-        itemsSold = getFromLocalStorage('itemsSold') || [];
+        const normalized = migrateStoredData({
+            orders: getFromLocalStorage('orders') || {},
+            tableTimers: getFromLocalStorage('tableTimers') || {},
+            salesHistory: getFromLocalStorage('salesHistory') || [],
+            orderHistory: getFromLocalStorage('orderHistory') || [],
+            voidDetails: getFromLocalStorage('voidDetails') || [],
+            kotHistory: getFromLocalStorage('kotHistory') || [],
+            itemsSold: getFromLocalStorage('itemsSold') || []
+        });
 
-        if (!Array.isArray(salesHistory)) salesHistory = [];
-        if (!Array.isArray(orderHistory)) orderHistory = [];
-        if (!Array.isArray(voidDetails)) voidDetails = [];
-        if (!Array.isArray(kotHistory)) kotHistory = [];
-        if (!Array.isArray(itemsSold)) itemsSold = [];
+        orders = normalized.orders || {};
+        tableTimers = normalized.tableTimers || {};
+        salesHistory = normalized.salesHistory || [];
+        orderHistory = normalized.orderHistory || [];
+        voidDetails = normalized.voidDetails || [];
+        kotHistory = normalized.kotHistory || [];
+        itemsSold = normalized.itemsSold || [];
     } catch (error) {
         handleCriticalError('Loading state from localStorage', error);
         orders = {};
@@ -2658,13 +2896,27 @@ function loadFromLocalStorage() {
 function persistAllData() {
     try {
         trimHistoryIfNeeded();
-        saveToLocalStorage('orders', orders);
-        saveToLocalStorage('tableTimers', tableTimers);
-        saveToLocalStorage('salesHistory', salesHistory);
-        saveToLocalStorage('orderHistory', orderHistory);
-        saveToLocalStorage('voidDetails', voidDetails);
-        saveToLocalStorage('kotHistory', kotHistory);
-        saveToLocalStorage('itemsSold', itemsSold);
+        if (!navigator.onLine) {
+            enqueueOfflineAction('local-state-sync', { orderCount: Object.keys(orders).length });
+        }
+        const normalized = compressDataState({ orders, tableTimers, salesHistory, orderHistory, voidDetails, kotHistory, itemsSold });
+
+        saveToLocalStorage('orders', normalized.orders);
+        saveToLocalStorage('tableTimers', normalized.tableTimers);
+        saveToLocalStorage('salesHistory', normalized.salesHistory);
+        saveToLocalStorage('orderHistory', normalized.orderHistory);
+        saveToLocalStorage('voidDetails', normalized.voidDetails);
+        saveToLocalStorage('kotHistory', normalized.kotHistory);
+        saveToLocalStorage('itemsSold', normalized.itemsSold);
+
+        orders = normalized.orders;
+        tableTimers = normalized.tableTimers;
+        salesHistory = normalized.salesHistory;
+        orderHistory = normalized.orderHistory;
+        voidDetails = normalized.voidDetails;
+        kotHistory = normalized.kotHistory;
+        itemsSold = normalized.itemsSold;
+
         saveLargeStateToIndexedDB();
 
         const channel = new BroadcastChannel('pos-sync');
@@ -2776,25 +3028,41 @@ async function backupData() {
 }
 
 function restoreData(file) {
+    if (!file || !file.name.toLowerCase().endsWith('.json')) {
+        notifications.show('Please select a valid backup JSON file.', 'error');
+        return;
+    }
+
     const reader = new FileReader();
     reader.onload = (e) => {
         try {
             const data = JSON.parse(e.target.result);
 
             if (!validateBackupData(data)) {
-                notifications.show('Invalid backup file: incompatible schema or missing fields', 'error');
+                notifications.show('Invalid backup file: incompatible schema or malformed data.', 'error');
                 return;
             }
 
-            orders = data.orders || {};
-            salesHistory = data.salesHistory || [];
-            orderHistory = data.orderHistory || [];
-            voidDetails = data.voidDetails || [];
-            kotHistory = data.kotHistory || [];
-            itemsSold = data.itemsSold || [];
-            menuItems = data.menuItems || menuItems;
-            extras = data.extras || extras;
-            discountCodes = data.discountCodes || discountCodes;
+            const normalized = compressDataState({
+                orders: data.orders || {},
+                tableTimers: data.tableTimers || {},
+                salesHistory: data.salesHistory || [],
+                orderHistory: data.orderHistory || [],
+                voidDetails: data.voidDetails || [],
+                kotHistory: data.kotHistory || [],
+                itemsSold: data.itemsSold || []
+            });
+
+            orders = normalized.orders || {};
+            tableTimers = normalized.tableTimers || {};
+            salesHistory = normalized.salesHistory || [];
+            orderHistory = normalized.orderHistory || [];
+            voidDetails = normalized.voidDetails || [];
+            kotHistory = normalized.kotHistory || [];
+            itemsSold = normalized.itemsSold || [];
+            if (Array.isArray(data.menuItems)) menuItems = data.menuItems;
+            if (Array.isArray(data.extras)) extras = data.extras;
+            if (data.discountCodes && typeof data.discountCodes === 'object') discountCodes = data.discountCodes;
             
             trimHistoryIfNeeded();
             persistAllData();
@@ -2804,6 +3072,9 @@ function restoreData(file) {
         } catch (error) {
             handleCriticalError('Restoring backup data', error);
         }
+    };
+    reader.onerror = () => {
+        notifications.show('The backup file could not be read.', 'error');
     };
     reader.readAsText(file);
 }
@@ -2823,6 +3094,67 @@ function updateNetworkStatusIndicator() {
     indicator.textContent = online ? 'Online' : 'Offline';
     indicator.classList.toggle('online', online);
     indicator.classList.toggle('offline', !online);
+}
+
+function updateOfflineQueueBadge() {
+    const badge = document.getElementById('offline-queue-badge');
+    const pendingCountEl = document.getElementById('pending-count');
+    if (!badge || !pendingCountEl) return;
+    const count = offlineActionQueue.length;
+    pendingCountEl.textContent = count;
+    badge.classList.toggle('hidden', count === 0);
+}
+
+function loadOfflineQueue() {
+    try {
+        const stored = getFromLocalStorage('offlineActionQueue');
+        offlineActionQueue = Array.isArray(stored) ? stored : [];
+    } catch (error) {
+        console.warn('Unable to load offline queue:', error);
+        offlineActionQueue = [];
+    }
+    updateOfflineQueueBadge();
+}
+
+function persistOfflineQueue() {
+    try {
+        saveToLocalStorage('offlineActionQueue', offlineActionQueue);
+    } catch (error) {
+        console.warn('Unable to persist offline queue:', error);
+    }
+}
+
+function enqueueOfflineAction(actionType, payload = {}) {
+    if (navigator.onLine) return;
+
+    const lastEntry = offlineActionQueue[offlineActionQueue.length - 1];
+    const now = Date.now();
+    const lastTimestamp = lastEntry?.timestamp ? new Date(lastEntry.timestamp).getTime() : 0;
+    if (lastEntry && lastEntry.actionType === actionType && now - lastTimestamp < 5000) {
+        return;
+    }
+
+    offlineActionQueue.push({
+        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        actionType,
+        payload,
+        timestamp: new Date().toISOString()
+    });
+
+    persistOfflineQueue();
+    updateOfflineQueueBadge();
+}
+
+function flushOfflineQueue() {
+    if (navigator.onLine && offlineActionQueue.length > 0) {
+        const count = offlineActionQueue.length;
+        offlineActionQueue = [];
+        persistOfflineQueue();
+        updateOfflineQueueBadge();
+        if (count > 0) {
+            notifications.show(`${count} pending action${count === 1 ? '' : 's'} cleared.`, 'success', 4000);
+        }
+    }
 }
 
 // =========================================================================
@@ -2858,11 +3190,12 @@ function showPromptModal(title, message, options = {}) {
         const inputContainer = document.getElementById('generic-prompt-input-container');
         const confirmBtn = document.getElementById('generic-prompt-confirm-btn');
         const cancelBtn = document.getElementById('generic-prompt-cancel-btn');
+        const previousActiveElement = document.activeElement;
 
-        titleEl.textContent = title;
-        messageEl.textContent = message;
+        titleEl.textContent = escapeHtml(title || '');
+        messageEl.textContent = escapeHtml(String(message || ''));
 
-        inputContainer.innerHTML = ''; // Clear previous input
+        inputContainer.innerHTML = '';
         const inputType = options.inputType || 'text';
         const inputEl = inputType === 'textarea'
             ? document.createElement('textarea')
@@ -2876,17 +3209,36 @@ function showPromptModal(title, message, options = {}) {
         if (inputType === 'textarea') inputEl.rows = 4;
         
         inputContainer.appendChild(inputEl);
-        inputContainer.style.display = 'block'; // Ensure input is visible
+        inputContainer.style.display = 'block';
         
         modal.style.display = 'flex';
+        modal.setAttribute('aria-hidden', 'false');
+        const modalContent = modal.querySelector('.generic-modal-content');
+        if (modalContent) {
+            modalContent.focus();
+        }
         inputEl.focus();
+
+        const handleKeydown = (event) => {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                cleanupAndResolve(null);
+            }
+        };
+
+        modal.addEventListener('keydown', handleKeydown);
 
         const cleanupAndResolve = (value) => {
             modal.style.display = 'none';
-            // Use .replaceWith to remove event listeners cleanly
+            modal.setAttribute('aria-hidden', 'true');
+            modal.removeEventListener('keydown', handleKeydown);
+            inputContainer.style.display = 'block';
             confirmBtn.replaceWith(confirmBtn.cloneNode(true));
             cancelBtn.replaceWith(cancelBtn.cloneNode(true));
-            resolve(value);
+            if (previousActiveElement && typeof previousActiveElement.focus === 'function') {
+                previousActiveElement.focus();
+            }
+            resolve(value == null ? null : String(value).trim());
         };
 
         const newConfirmBtn = confirmBtn.cloneNode(true);
@@ -2914,18 +3266,38 @@ function showConfirmModal(title, message) {
         const inputContainer = document.getElementById('generic-prompt-input-container');
         const confirmBtn = document.getElementById('generic-prompt-confirm-btn');
         const cancelBtn = document.getElementById('generic-prompt-cancel-btn');
+        const previousActiveElement = document.activeElement;
 
-        titleEl.textContent = title;
-        messageEl.innerHTML = message;
+        titleEl.textContent = escapeHtml(title || '');
+        messageEl.textContent = escapeHtml(String(message || ''));
         inputContainer.style.display = 'none'; // Hide the input field
         
         modal.style.display = 'flex';
+        modal.setAttribute('aria-hidden', 'false');
+        const modalContent = modal.querySelector('.generic-modal-content');
+        if (modalContent) {
+            modalContent.focus();
+        }
+
+        const handleKeydown = (event) => {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                cleanupAndResolve(false);
+            }
+        };
+
+        modal.addEventListener('keydown', handleKeydown);
 
         const cleanupAndResolve = (value) => {
             modal.style.display = 'none';
+            modal.setAttribute('aria-hidden', 'true');
+            modal.removeEventListener('keydown', handleKeydown);
             inputContainer.style.display = 'block'; // Show input field again for next use
             confirmBtn.replaceWith(confirmBtn.cloneNode(true));
             cancelBtn.replaceWith(cancelBtn.cloneNode(true));
+            if (previousActiveElement && typeof previousActiveElement.focus === 'function') {
+                previousActiveElement.focus();
+            }
             resolve(value);
         };
         
@@ -2969,10 +3341,18 @@ class NotificationSystem {
 
         toast.className = 'notification-toast'; // Reset classes
         toast.classList.add(`notification-${type}`);
-        toast.innerHTML = `
-            <div class="notification-icon">${this.getIconForType(type)}</div>
-            <div class="notification-message">${message}</div>
-        `;
+        toast.innerHTML = '';
+
+        const icon = document.createElement('div');
+        icon.className = 'notification-icon';
+        icon.innerHTML = this.getIconForType(type);
+
+        const messageEl = document.createElement('div');
+        messageEl.className = 'notification-message';
+        messageEl.textContent = String(message || '');
+
+        toast.appendChild(icon);
+        toast.appendChild(messageEl);
         toast.style.display = 'flex';
         
         requestAnimationFrame(() => {
@@ -3245,45 +3625,48 @@ function updateTableTimers() {
 
         requestAnimationFrame(() => {
             timerUpdateQueued = false;
-            const now = Date.now();
+            const now = performance.now();
             let changed = false;
 
-        Object.entries(tableTimers).forEach(([table, timer]) => {
-            if (orders[table] && orders[table].length > 0) {
-                const lastUpdated = timer.lastUpdated || now;
-                const previousElapsed = isNaN(timer.elapsed) ? 0 : (timer.elapsed || 0);
-                const elapsed = previousElapsed + (now - lastUpdated);
-                tableTimers[table] = { ...timer, elapsed: isNaN(elapsed) ? 0 : elapsed, lastUpdated: now };
-                changed = true;
-                const timerElement = document.getElementById(`timer-${table}`);
-                if (timerElement) {
-                    timerElement.textContent = formatTime(Math.floor(elapsed / 1000));
+            Object.entries(tableTimers).forEach(([table, timer]) => {
+                const orderItems = orders[table] && Array.isArray(orders[table]) ? orders[table] : [];
+                if (orderItems.length > 0) {
+                    const lastUpdated = Number(timer?.lastUpdated) || now;
+                    const previousElapsed = Number(timer?.elapsed) || 0;
+                    const elapsed = previousElapsed + Math.max(0, now - lastUpdated);
+                    tableTimers[table] = { ...timer, elapsed, lastUpdated: now };
+                    changed = true;
+                    const timerElement = document.getElementById(`timer-${table}`);
+                    if (timerElement) {
+                        timerElement.textContent = formatTime(Math.floor(elapsed / 1000));
+                    }
+                } else {
+                    delete tableTimers[table];
+                    changed = true;
+                    const tableBtn = document.getElementById(`table-btn-${table}`);
+                    if (tableBtn) {
+                        tableBtn.classList.remove('occupied', 'blinking');
+                        tableBtn.classList.add('available');
+                        const timerElement = tableBtn.querySelector('.timer');
+                        if (timerElement) timerElement.textContent = '00:00';
+                    }
                 }
-            } else {
-                delete tableTimers[table];
-                changed = true;
-                const tableBtn = document.getElementById(`table-btn-${table}`);
-                if (tableBtn) {
-                    tableBtn.classList.remove('occupied', 'blinking');
-                    tableBtn.classList.add('available');
-                    const timerElement = tableBtn.querySelector('.timer');
-                    if (timerElement) timerElement.textContent = '00:00';
-                }
+            });
+
+            if (changed) {
+                persistAllData();
             }
         });
-
-        if (changed) {
-            persistAllData();
-        }
-    });
     } catch (error) {
         handleCriticalError('Updating table timers', error);
     }
 }
 
 async function selectTable(tableNumber) {
+    orders[tableNumber] = orders[tableNumber] || [];
+
     // Auto-finalize pending items on the current table before switching to another table
-    if (currentTable && currentTable !== tableNumber && orders[currentTable]?.length) {
+    if (currentTable && currentTable !== tableNumber && Array.isArray(orders[currentTable]) && orders[currentTable].length) {
         orders[currentTable].forEach(item => {
             if (!item.finalized) {
                 item.finalized = true;
@@ -3354,6 +3737,7 @@ function renderMenuNavigation() {
     }
 
     if (currentMenuLevel === 'topLevelSections') {
+        backButton.style.display = 'none';
         menuSectionTitle.textContent = 'Select Section or Category';
 
         const sectionNames = Object.keys(menuSections).sort();
@@ -3419,6 +3803,7 @@ function renderMenuNavigation() {
                 : getRepresentativeImage(displayName, false);
 
             const clickHandler = () => {
+                pushMenuNavigationState();
                 if (menuSections[displayName]) {
                     activeSection = displayName;
                     currentMenuLevel = 'itemsOfSection';
@@ -3496,17 +3881,14 @@ function renderMenuItemsForSection(sectionName) {
 function navigateBackMenu() {
     const searchInput = document.getElementById('search');
     
-    if (searchInput.value.trim() !== '') {
-        // If we're in search mode, just clear search and return to main menu
+    if (searchInput?.value.trim() !== '') {
         searchInput.value = '';
+        restoreMenuNavigationState();
         renderMenuNavigation();
         return;
     }
-    
-    // Normal navigation back
-    currentMenuLevel = 'topLevelSections';
-    activeSection = null;
-    activeCategoryDisplayGroup = null;
+     
+    restoreMenuNavigationState();
     renderMenuNavigation();
 }
 
@@ -4516,6 +4898,7 @@ function renderOrderHistory(pageToShow, showAll = false) {
         const requestedPage = Number.isInteger(pageToShow) && pageToShow > 0 ? pageToShow : parseInt(pageToShow, 10) || 1;
         currentPage = requestedPage;
         showAllOrderHistory = Boolean(showAll);
+        orderHistoryShowAll = showAllOrderHistory;
 
         const startDateElement = document.getElementById('history-start-date');
         const endDateElement = document.getElementById('history-end-date');
@@ -4672,7 +5055,7 @@ function renderOrderHistoryPagination(totalOrders, page) {
     pagination.innerHTML = '';
     const totalPages = Math.max(1, Math.ceil(totalOrders / itemsPerPage));
 
-    if (showAllOrderHistory) {
+    if (orderHistoryShowAll) {
         const allInfo = document.createElement('span');
         allInfo.textContent = `Showing all ${totalOrders} records.`;
         allInfo.style.color = '#444';
@@ -4972,6 +5355,16 @@ function exportVoidDetails() {
 // =================== CHECKOUT & PAYMENT FUNCTIONS ========================
 // =========================================================================
 
+function persistCheckoutState() {
+    saveCheckoutState({
+        currentTable,
+        paymentAmount,
+        discount,
+        discountCodeApplied,
+        paymentMethods: paymentMethods.map(pm => ({ ...pm }))
+    });
+}
+
 function resetCheckoutState() {
     paymentMethods = [];
     paymentAmount = 0;
@@ -4983,6 +5376,8 @@ function resetCheckoutState() {
     
     const discountCodeInput = document.getElementById('discount-code');
     if (discountCodeInput) discountCodeInput.value = '';
+
+    persistCheckoutState();
 }
 
 function showCheckoutDialog() {
@@ -4991,17 +5386,30 @@ function showCheckoutDialog() {
         return;
     }
 
-    resetCheckoutState();
+    const restoredCheckoutState = restoreCheckoutState();
+    if (restoredCheckoutState && restoredCheckoutState.currentTable === currentTable) {
+        paymentMethods = Array.isArray(restoredCheckoutState.paymentMethods) ? restoredCheckoutState.paymentMethods : [];
+        paymentAmount = typeof restoredCheckoutState.paymentAmount === 'number' ? restoredCheckoutState.paymentAmount : 0;
+        discount = typeof restoredCheckoutState.discount === 'number' ? restoredCheckoutState.discount : 0;
+        discountCodeApplied = restoredCheckoutState.discountCodeApplied || null;
+        const numericInput = document.getElementById('numeric-input');
+        if (numericInput) numericInput.value = paymentAmount.toFixed(2);
+    } else {
+        resetCheckoutState();
+    }
+
     updateTotal(); 
     document.getElementById('dialog-total-amount').textContent = calculateTotal().toFixed(2);
     renderPaymentMethods(); 
     updateChange();         
     
     document.getElementById('checkout-dialog').style.display = 'block';
+    persistCheckoutState();
 }
 
 function closeCheckoutDialog() {
     document.getElementById('checkout-dialog').style.display = 'none';
+    clearCheckoutState();
     resetCheckoutState();
     renderOrderItems();
     updateTotal();
@@ -5024,7 +5432,10 @@ function appendNumber(num) {
     
     // Debounce updateChange to reduce DOM updates
     clearTimeout(appendNumberTimeout);
-    appendNumberTimeout = setTimeout(updateChange, 50);
+    appendNumberTimeout = setTimeout(() => {
+        updateChange();
+        persistCheckoutState();
+    }, 50);
 }
 
 function clearInput() {
@@ -5032,6 +5443,7 @@ function clearInput() {
     if (input) input.value = '0';
     paymentAmount = 0;
     updateChange();
+    persistCheckoutState();
 }
 
 function setQuickAmount(amount) {
@@ -5050,6 +5462,7 @@ function setQuickAmount(amount) {
     input.value = finalAmount.toFixed(2);
     paymentAmount = finalAmount;
     updateChange();
+    persistCheckoutState();
 }
 
 function applyDiscount(percentage) {
@@ -5064,6 +5477,7 @@ function applyDiscount(percentage) {
     updateTotal();
     document.getElementById('dialog-total-amount').textContent = calculateTotal().toFixed(2);
     updateChange();
+    persistCheckoutState();
     notifications.show(`${percentage}% discount applied to eligible items.`, 'success');
     
     const discountCodeEl = document.getElementById('discount-code');
@@ -5093,6 +5507,7 @@ function applyDiscountCode() {
         updateTotal();
         document.getElementById('dialog-total-amount').textContent = calculateTotal().toFixed(2);
         updateChange();
+        persistCheckoutState();
 
         notifications.show(`Discount code "${code}" applied for ${percentage}%.`, 'success');
     } else {
@@ -5119,6 +5534,7 @@ async function clearDiscount() {
     updateTotal();
     document.getElementById('dialog-total-amount').textContent = calculateTotal().toFixed(2);
     updateChange();
+    persistCheckoutState();
     notifications.show('Discount has been cleared.', 'success');
 }
 
@@ -5153,6 +5569,7 @@ function processPayment(method) {
     paymentAmount = 0;
     document.getElementById('numeric-input').value = '0';
     updateChange();
+    persistCheckoutState();
 
     if (method === 'Mobile') {
         displayQRCode();
@@ -5217,6 +5634,7 @@ function removePayment(index) {
     paymentMethods.splice(index, 1);
     renderPaymentMethods();
     updateChange(); // Recalculates remaining due, change amount, and button states
+    persistCheckoutState();
 }
 
 function updateChange() {
@@ -5248,24 +5666,34 @@ function updateChange() {
             insufficientMsgEl.style.display = 'none';
         }
     }
+
+    persistCheckoutState();
 }
 
 function calculateTotal() {
-    if (!orders[currentTable] || !Array.isArray(orders[currentTable])) return 0;
+    const tableKey = currentTable || 'current';
+    const currentItems = orders[tableKey] && Array.isArray(orders[tableKey]) ? orders[tableKey] : [];
+    const currentDiscount = (typeof discount === 'number' && discount >= 0) ? discount : 0;
+    const cacheKey = `${tableKey}:${currentItems.length}:${currentDiscount}:${currentItems.map(item => `${item.name}:${item.quantity}:${item.price}:${(item.extras||[]).map(e => `${e.name}:${e.price}`).join('|')}:${item.discountable === false ? '0' : '1'}`).join('||')}`;
+    if (currentItems.length === 0) {
+        cachedTotal = 0;
+        cachedTotalVersion = 0;
+        return 0;
+    }
+    if (cachedTotalVersion && cacheKey === cachedTotalVersion) {
+        return cachedTotal;
+    }
 
     let discountableTotal = 0;
     let nonDiscountableTotal = 0;
 
-    orders[currentTable].forEach(item => {
+    currentItems.forEach(item => {
         const extrasTotal = (item.extras && Array.isArray(item.extras))
-            ? item.extras.reduce((s, e) => s + e.price, 0)
+            ? item.extras.reduce((s, e) => s + (Number(e.price) || 0), 0)
             : 0;
-        const itemTotal = (item.price + extrasTotal) * item.quantity;
+        const itemTotal = ((Number(item.price) || 0) + extrasTotal) * (Number(item.quantity) || 1);
 
-        // Finalized items (sent to kitchen/bar) are still subject to discounts
-        // They just cannot be modified (quantity changes, removals, etc.)
         const isDiscountable = item.discountable !== false;
-
         if (isDiscountable) {
             discountableTotal += itemTotal;
         } else {
@@ -5273,10 +5701,10 @@ function calculateTotal() {
         }
     });
 
-    const validDiscount = (typeof discount === 'number' && discount >= 0) ? discount : 0;
-    const discountedTotal = discountableTotal * (1 - validDiscount / 100);
-
-    return discountedTotal + nonDiscountableTotal;
+    const discountedTotal = discountableTotal * (1 - currentDiscount / 100);
+    cachedTotal = discountedTotal + nonDiscountableTotal;
+    cachedTotalVersion = cacheKey;
+    return cachedTotal;
 }
 
 function calculateOriginalTotal() {
@@ -5284,9 +5712,9 @@ function calculateOriginalTotal() {
 
     return orders[currentTable].reduce((sum, item) => {
         const extrasTotal = (item.extras && Array.isArray(item.extras))
-            ? item.extras.reduce((s, e) => s + e.price, 0)
+            ? item.extras.reduce((s, e) => s + (Number(e.price) || 0), 0)
             : 0;
-        return sum + ((item.price + extrasTotal) * (item.quantity || 1));
+        return sum + (((Number(item.price) || 0) + extrasTotal) * (Number(item.quantity) || 1));
     }, 0);
 }
 
@@ -5315,13 +5743,18 @@ function closeQRCodeDialog() {
 async function completePayment() {
     if (isProcessingPayment) return;
     isProcessingPayment = true;
+    if (paymentResetTimer) clearTimeout(paymentResetTimer);
+    paymentResetTimer = setTimeout(() => {
+        isProcessingPayment = false;
+        hideLoadingSpinner();
+    }, 15000);
+
     try {
         const total = calculateTotal();
         const itemCount = orders[currentTable]?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
         if (total > 5000 || itemCount > 12) {
-            const confirmed = confirm(`Large checkout detected: Rs ${total.toFixed(2)} for ${itemCount} item(s). Proceed?`);
+            const confirmed = await showConfirmModal('Large checkout', `Large checkout detected: Rs ${total.toFixed(2)} for ${itemCount} item(s). Proceed?`);
             if (!confirmed) {
-                isProcessingPayment = false;
                 return;
             }
         }
@@ -5335,7 +5768,6 @@ async function completePayment() {
 
         if (!currentTable || !orders[currentTable] || !orders[currentTable].length) {
             notifications.show("No order to complete!", 'warning');
-            isProcessingPayment = false;
             return;
         }
         const paidSoFar = paymentMethods.reduce((sum, pm) => sum + pm.amount, 0);
@@ -5345,71 +5777,74 @@ async function completePayment() {
                 paymentMethods.pop();
             }
             renderPaymentMethods();
-            isProcessingPayment = false;
             return;
         }
 
         showLoadingSpinner();
 
-    const orderId = generateOrderId();
-    const sale = {
-        orderNumber: orderId,
-        table: currentTable,
-        items: JSON.parse(JSON.stringify(orders[currentTable])),
-        total,
-        paymentMethods: JSON.parse(JSON.stringify(paymentMethods)),
-        discount: discountCodeApplied || (discount ? `${discount}%` : 'None'),
-        discountAmount: (calculateOriginalTotal() - total).toFixed(2),
-        timestamp: new Date().toISOString(),
-        user: currentUser?.email || 'Guest',
-        status: 'completed',
-        change: Math.max(0, paidSoFar - total),
-        orderType: 'dine-in'
-    };
+        const orderId = generateOrderId();
+        const sale = {
+            orderNumber: orderId,
+            table: currentTable,
+            items: JSON.parse(JSON.stringify(orders[currentTable])),
+            total,
+            paymentMethods: JSON.parse(JSON.stringify(paymentMethods)),
+            discount: discountCodeApplied || (discount ? `${discount}%` : 'None'),
+            discountAmount: (calculateOriginalTotal() - total).toFixed(2),
+            timestamp: new Date().toISOString(),
+            user: currentUser?.email || 'Guest',
+            status: 'completed',
+            change: Math.max(0, paidSoFar - total),
+            orderType: 'dine-in'
+        };
 
-    salesHistory.push(sale);
-    orderHistory.push(sale);
-    
-    // Update itemsSold for items sold report
-    sale.items.forEach(item => {
-        const itemTotal = (item.price + (item.extras?.reduce((s, e) => s + e.price, 0) || 0)) * item.quantity;
-        // Find existing item entry in itemsSold or create new one
-        let existingItemEntry = itemsSold.find(entry => entry.name === item.name);
-        if (existingItemEntry) {
-            existingItemEntry.quantity += item.quantity;
-            existingItemEntry.totalRevenue += itemTotal;
-        } else {
-            itemsSold.push({
-                name: item.name,
-                quantity: item.quantity,
-                totalRevenue: itemTotal,
-                timestamp: sale.timestamp // Add timestamp for filtering in items sold report
-            });
-        }
-    });
+        salesHistory.push(sale);
+        orderHistory.push(sale);
+        
+        sale.items.forEach(item => {
+            const extrasTotal = (item.extras?.reduce((s, e) => s + (Number(e.price) || 0), 0) || 0);
+            const itemTotal = ((Number(item.price) || 0) + extrasTotal) * (Number(item.quantity) || 1);
+            let existingItemEntry = itemsSold.find(entry => entry.name === item.name);
+            if (existingItemEntry) {
+                existingItemEntry.quantity += Number(item.quantity) || 1;
+                existingItemEntry.totalRevenue += itemTotal;
+            } else {
+                itemsSold.push({
+                    name: item.name,
+                    quantity: Number(item.quantity) || 1,
+                    totalRevenue: itemTotal,
+                    timestamp: sale.timestamp
+                });
+            }
+        });
 
-    delete orders[currentTable];
-    if (tableTimers[currentTable]) delete tableTimers[currentTable];
-    currentTable = null;
-    const selectedTableEl = document.getElementById('selected-table');
-    const selectedTableCheckoutEl = document.getElementById('selected-table-checkout');
-    if (selectedTableEl) selectedTableEl.textContent = '-';
-    if (selectedTableCheckoutEl) selectedTableCheckoutEl.textContent = '-';
+        delete orders[currentTable];
+        if (tableTimers[currentTable]) delete tableTimers[currentTable];
+        currentTable = null;
+        const selectedTableEl = document.getElementById('selected-table');
+        const selectedTableCheckoutEl = document.getElementById('selected-table-checkout');
+        if (selectedTableEl) selectedTableEl.textContent = '-';
+        if (selectedTableCheckoutEl) selectedTableCheckoutEl.textContent = '-';
 
-    persistAllData();
-    renderOrderItems();
-    initializeTables();
-    
-    closeCheckoutDialog();
-    notifications.show('Thank you!', 'success');
-    speakText('Thank you!');
-    return sale;
+        persistAllData();
+        renderOrderItems();
+        initializeTables();
+        
+        clearCheckoutState();
+        closeCheckoutDialog();
+        notifications.show('Thank you!', 'success');
+        speakText('Thank you!');
+        return sale;
     } catch (error) {
         console.error('Payment completion failed:', error);
         notifications.show('Unable to process payment. Please try again.', 'error');
     } finally {
         hideLoadingSpinner();
         isProcessingPayment = false;
+        if (paymentResetTimer) {
+            clearTimeout(paymentResetTimer);
+            paymentResetTimer = null;
+        }
     }
 }
 
@@ -5427,12 +5862,18 @@ function generateKOTNumber() {
 }
 
 async function finalizeOrder() {
+    if (isFinalizingOrder) {
+        notifications.show('KOT already being sent. Please wait a moment.', 'info');
+        return;
+    }
+
     try {
         if (!currentTable || !orders[currentTable]?.length) {
             notifications.show('No order to finalize!', 'warning');
             return;
         }
 
+        isFinalizingOrder = true;
         const itemsToFinalize = orders[currentTable].filter(item => !item.finalized);
     if (itemsToFinalize.length === 0) {
         notifications.show('No new items to send.', 'info');
@@ -5485,6 +5926,8 @@ async function finalizeOrder() {
     } catch (error) {
         handleCriticalError('Finalizing order', error);
         hideLoadingSpinner();
+    } finally {
+        isFinalizingOrder = false;
     }
 }
 
@@ -6012,7 +6455,7 @@ function generateReceipt(order) {
 async function resetAllDataConfirmed() {
     const confirmed = await showConfirmModal(
         'Reset All Data',
-        '<p><strong>Are you absolutely sure you want to reset ALL data?</strong></p><p>This will permanently delete all orders, sales history, void details, and KOT history from this device\'s local storage.</p><p>This action cannot be undone!</p>'
+        'Are you absolutely sure you want to reset ALL data? This will permanently delete all orders, sales history, void details, and KOT history from this device\'s local storage. This action cannot be undone!'
     );
 
     if (confirmed) {
@@ -6060,14 +6503,30 @@ async function resetAllDataConfirmed() {
 document.addEventListener("DOMContentLoaded", () => {
     // Load all data from localStorage on startup
     loadFromLocalStorage();
+    loadOfflineQueue();
     loadLargeStateFromIndexedDB().then(() => {
         trimHistoryIfNeeded();
         renderOrderItems();
         initializeTables();
         renderOrderHistory();
         renderVoidDetails();
-    }).catch((error) => {
+    }).catch(async (error) => {
         console.warn('IndexedDB data load skipped:', error);
+        const shouldReset = await showConfirmModal('IndexedDB issue', 'IndexedDB is unavailable or corrupted. Reset it and continue with local storage?');
+        if (shouldReset) {
+            try {
+                const deleteRequest = indexedDB.deleteDatabase('taboche-pos-db');
+                deleteRequest.onsuccess = () => {
+                    notifications.show('IndexedDB reset successfully. You can continue using local storage.', 'success');
+                };
+                deleteRequest.onerror = () => {
+                    notifications.show('IndexedDB could not be reset automatically. Please restore from backup if needed.', 'warning');
+                };
+            } catch (cleanupError) {
+                console.error('IndexedDB reset failed:', cleanupError);
+                notifications.show('IndexedDB reset failed. Please restore from backup if needed.', 'warning');
+            }
+        }
     });
 
     // Set up BroadcastChannel for real-time sync across tabs
@@ -6283,6 +6742,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.addEventListener('online', () => {
         updateNetworkStatusIndicator();
+        flushOfflineQueue();
         notifications.show('Back online', 'success');
     });
     window.addEventListener('offline', () => {
@@ -6357,7 +6817,7 @@ function searchMenu() {
     if (!menu || !categoriesContainer || !backButton || !menuSectionTitle) return;
 
     if (!searchTerm) {
-        // If search is cleared, revert to normal menu navigation
+        restoreMenuNavigationState();
         renderMenuNavigation();
         return;
     }
