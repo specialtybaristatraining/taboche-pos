@@ -4817,12 +4817,12 @@ function showItemsSoldContent(e) {
 
 function showOrderHistoryContent(e) {
     e.preventDefault();
-    
+
     showSidebarContentModal('Order History', `
         <div class="report-container">
             <h4>Order History</h4>
 
-            <div class="report-filter"> 
+            <div class="report-filter order-history-filters">
                 <input type="date" id="history-start-date" value="${new Date().toISOString().split('T')[0]}">
                 <input type="date" id="history-end-date" value="${new Date().toISOString().split('T')[0]}">
                 <select id="history-status-filter">
@@ -4833,70 +4833,66 @@ function showOrderHistoryContent(e) {
                 </select>
             </div>
 
-            <div class="report-filter" style="margin-top: 10px; margin-bottom: 5px; align-items: center;">
-                <input type="text" id="history-search" placeholder="Search (ID, Table, Item, Payment)..." style="flex-grow: 1;"> 
-                <button id="filter-history" class="export-btn" style="margin-left: 10px;">Filter</button>
-                <button id="show-all-history" class="export-btn" style="margin-left: 10px;">Show All</button>
+            <div class="report-filter order-history-filters">
+                <input type="text" id="history-search" class="history-search" placeholder="Search (ID, Table, Item, Payment)...">
+                <button id="filter-history" class="export-btn" type="button">Filter</button>
+                <button id="show-all-history" class="export-btn" type="button">Show All</button>
             </div>
 
             <div id="order-history-results">
-                <div class="history-summary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 20px;">
-                    <div class="summary-card" style="background: #f8f9fa; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div class="history-summary">
+                    <div class="summary-card">
                         <h5>Total Orders</h5>
                         <p id="total-orders-count">0</p>
                     </div>
-                    <div class="summary-card" style="background: #f8f9fa; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <div class="summary-card">
                         <h5>Total Revenue</h5>
                         <p id="total-revenue">Rs 0.00</p>
                     </div>
-                    <div class="summary-card" style="background: #f8f9fa; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <div class="summary-card">
                         <h5>Avg. Order Value</h5>
                         <p id="avg-order-value">Rs 0.00</p>
                     </div>
                 </div>
                 <div id="order-history-list"></div>
             </div>
-            <div id="pagination" style="display: flex; justify-content: center; gap: 10px; margin-top: 10px;"></div>
+            <div id="pagination"></div>
         </div>
     `, () => {
-        const filterButton = document.getElementById('filter-history');
-        if (filterButton) {
-            const filterHandler = () => renderOrderHistory(1, false);
-            filterButton.addEventListener('click', filterHandler);
-        }
-        const showAllButton = document.getElementById('show-all-history');
-        if (showAllButton) {
-            showAllButton.addEventListener('click', () => renderOrderHistory(1, true));
-        }
-        
-        const searchInput = document.getElementById('history-search');
-        if (searchInput) {
-            searchInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    renderOrderHistory(1);
-                }
-            });
-        }
+        document.getElementById('filter-history')?.addEventListener('click', () => renderOrderHistory(1, false));
+        document.getElementById('show-all-history')?.addEventListener('click', () => renderOrderHistory(1, true));
+
+        document.getElementById('history-search')?.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                renderOrderHistory(1, false);
+            }
+        });
 
         const today = new Date();
         const earliestHistoryDate = orderHistory.length
             ? new Date(Math.min(...orderHistory.map(order => new Date(order.timestamp).getTime())))
             : today;
+
         const startDateEl = document.getElementById('history-start-date');
         const endDateEl = document.getElementById('history-end-date');
         if (startDateEl) startDateEl.valueAsDate = earliestHistoryDate;
         if (endDateEl) endDateEl.valueAsDate = today;
 
         currentPage = 1;
-        renderOrderHistory(currentPage);
+        showAllOrderHistory = false;
+        orderHistoryShowAll = false;
+        renderOrderHistory(currentPage, false);
     });
 }
 
-function renderOrderHistory(pageToShow, showAll = false) {
+function renderOrderHistory(pageToShow = currentPage, showAll = orderHistoryShowAll) {
     try {
-        const requestedPage = Number.isInteger(pageToShow) && pageToShow > 0 ? pageToShow : parseInt(pageToShow, 10) || 1;
-        currentPage = requestedPage;
+        const requestedPage = Number.isInteger(pageToShow) && pageToShow > 0
+            ? pageToShow
+            : parseInt(pageToShow, 10) || currentPage || 1;
+
+        currentPage = Math.max(1, requestedPage);
         showAllOrderHistory = Boolean(showAll);
         orderHistoryShowAll = showAllOrderHistory;
 
@@ -4904,41 +4900,41 @@ function renderOrderHistory(pageToShow, showAll = false) {
         const endDateElement = document.getElementById('history-end-date');
         const statusFilterElement = document.getElementById('history-status-filter');
         const searchElement = document.getElementById('history-search');
+        if (!startDateElement || !endDateElement || !statusFilterElement || !searchElement) return;
 
-    if (!startDateElement || !endDateElement || !statusFilterElement || !searchElement) {
-        return;
-    }
+        const startDate = new Date(startDateElement.value);
+        const endDate = new Date(endDateElement.value);
+        endDate.setHours(23, 59, 59, 999);
 
-    const startDate = new Date(startDateElement.value);
-    const endDate = new Date(endDateElement.value);
-    endDate.setHours(23, 59, 59, 999);
+        const statusFilter = statusFilterElement.value || 'all';
+        const searchQuery = (searchElement.value || '').trim().toLowerCase();
 
-    const statusFilter = statusFilterElement.value || "all";
-    const searchQuery = (searchElement.value || "").trim().toLowerCase();
+        const filteredHistory = orderHistory.filter(order => {
+            if (!order || !order.timestamp) return false;
+            const orderDate = new Date(order.timestamp);
 
-    const filteredHistory = orderHistory.filter(order => {
-        if (!order || !order.timestamp) return false;
-        const orderDate = new Date(order.timestamp);
+            return (
+                orderDate >= startDate &&
+                orderDate <= endDate &&
+                (statusFilter === 'all' || (order.status && order.status.toLowerCase() === statusFilter.toLowerCase())) &&
+                (!searchQuery || matchesSearch(order, searchQuery))
+            );
+        }).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-        return (
-            orderDate >= startDate && orderDate <= endDate &&
-            (statusFilter === 'all' || (order.status && order.status.toLowerCase() === statusFilter.toLowerCase())) &&
-            (!searchQuery || matchesSearch(order, searchQuery))
-        );
-    }).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        const paginatedHistory = showAllOrderHistory
+            ? filteredHistory
+            : paginateOrders(filteredHistory, currentPage);
 
-    const paginatedHistory = showAllOrderHistory ? filteredHistory : paginateOrders(filteredHistory, currentPage);
+        updateOrderHistorySummaryUI(filteredHistory);
 
-    updateOrderHistorySummaryUI(filteredHistory);
-
-    const historyDiv = document.getElementById('order-history-list');
-    if (historyDiv) {
-        historyDiv.innerHTML = paginatedHistory.length > 0
-            ? paginatedHistory.map((order) => renderOrderHistoryItem(order)).join('')
-            : '<div class="no-orders">No orders found matching your criteria.</div>';
-
+        const historyDiv = document.getElementById('order-history-list');
+        if (historyDiv) {
+            historyDiv.innerHTML = paginatedHistory.length > 0
+                ? paginatedHistory.map(order => renderOrderHistoryItem(order)).join('')
+                : '<div class="no-orders">No orders found matching your criteria.</div>';
         }
-    renderOrderHistoryPagination(filteredHistory.length, currentPage);
+
+        renderOrderHistoryPagination(filteredHistory.length, currentPage);
     } catch (error) {
         console.error('Error rendering order history:', error);
         notifications.show('Unable to render order history.', 'error');
@@ -5055,18 +5051,23 @@ function renderOrderHistoryPagination(totalOrders, page) {
     pagination.innerHTML = '';
     const totalPages = Math.max(1, Math.ceil(totalOrders / itemsPerPage));
 
+    const makeButton = (label, handler, isActive = false) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = label;
+        if (isActive) btn.classList.add('active');
+        btn.addEventListener('click', handler);
+        return btn;
+    };
+
     if (orderHistoryShowAll) {
         const allInfo = document.createElement('span');
         allInfo.textContent = `Showing all ${totalOrders} records.`;
         allInfo.style.color = '#444';
-        allInfo.style.alignSelf = 'center';
         pagination.appendChild(allInfo);
 
         if (totalOrders > itemsPerPage) {
-            const pagedViewBtn = document.createElement('button');
-            pagedViewBtn.textContent = 'Show paged view';
-            pagedViewBtn.addEventListener('click', () => renderOrderHistory(1, false));
-            pagination.appendChild(pagedViewBtn);
+            pagination.appendChild(makeButton('Show paged view', () => renderOrderHistory(1, false)));
         }
         return;
     }
@@ -5074,21 +5075,14 @@ function renderOrderHistoryPagination(totalOrders, page) {
     if (totalPages <= 1) return;
 
     if (page > 1) {
-        const prevBtn = document.createElement('button');
-        prevBtn.innerHTML = '« Previous';
-        prevBtn.addEventListener('click', () => renderOrderHistory(page - 1));
-        pagination.appendChild(prevBtn);
+        pagination.appendChild(makeButton('« Previous', () => renderOrderHistory(page - 1)));
     }
 
     let startPage = Math.max(1, page - 2);
     let endPage = Math.min(totalPages, page + 2);
 
     if (startPage > 1) {
-        const firstBtn = document.createElement('button');
-        firstBtn.textContent = '1';
-        firstBtn.addEventListener('click', () => renderOrderHistory(1));
-        pagination.appendChild(firstBtn);
-
+        pagination.appendChild(makeButton('1', () => renderOrderHistory(1)));
         if (startPage > 2) {
             const ellipsis = document.createElement('span');
             ellipsis.textContent = '...';
@@ -5097,13 +5091,7 @@ function renderOrderHistoryPagination(totalOrders, page) {
     }
 
     for (let i = startPage; i <= endPage; i++) {
-        const pageBtn = document.createElement('button');
-        pageBtn.textContent = i;
-        if (i === page) {
-            pageBtn.classList.add('active');
-        }
-        pageBtn.addEventListener('click', () => renderOrderHistory(i));
-        pagination.appendChild(pageBtn);
+        pagination.appendChild(makeButton(String(i), () => renderOrderHistory(i), i === page));
     }
 
     if (endPage < totalPages) {
@@ -5112,18 +5100,11 @@ function renderOrderHistoryPagination(totalOrders, page) {
             ellipsis.textContent = '...';
             pagination.appendChild(ellipsis);
         }
-
-        const lastBtn = document.createElement('button');
-        lastBtn.textContent = totalPages;
-        lastBtn.addEventListener('click', () => renderOrderHistory(totalPages));
-        pagination.appendChild(lastBtn);
+        pagination.appendChild(makeButton(String(totalPages), () => renderOrderHistory(totalPages)));
     }
 
     if (page < totalPages) {
-        const nextBtn = document.createElement('button');
-        nextBtn.innerHTML = 'Next »';
-        nextBtn.addEventListener('click', () => renderOrderHistory(page + 1));
-        pagination.appendChild(nextBtn);
+        pagination.appendChild(makeButton('Next »', () => renderOrderHistory(page + 1)));
     }
 }
 
