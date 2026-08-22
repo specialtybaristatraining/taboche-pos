@@ -746,6 +746,10 @@ body.dark-mode .search-bar {
     padding: 0.6rem 0.75rem;
     border-bottom: 1px solid rgba(148, 163, 184, 0.18);
     background: linear-gradient(90deg, rgba(37, 99, 235, 0.08), rgba(59, 130, 246, 0.05));
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    flex-shrink: 0;
 }
 
 .order-items {
@@ -754,6 +758,7 @@ body.dark-mode .search-bar {
     -webkit-overflow-scrolling: touch;
     padding: 0.25rem;
     min-height: 0;
+    max-height: calc(100vh - 280px);
 }
 
 .order-item {
@@ -840,6 +845,10 @@ body.dark-mode .search-bar {
     padding: 0.55rem 0.6rem;
     border-top: 1px solid #e5e7eb;
     background-color: #f9fafb;
+    position: sticky;
+    bottom: 0;
+    z-index: 50;
+    flex-shrink: 0;
 }
 
 .order-footer-buttons {
@@ -1578,14 +1587,21 @@ body.dark-mode .search-bar {
     }
 
     .order-footer-buttons {
-        gap: 0.28rem;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.45rem;
     }
 
     .order-footer-buttons button {
-        padding: 5px 4px;
-        font-size: 0.54rem;
-        min-height: 32px;
+        padding: 8px 6px;
+        font-size: 0.72rem;
+        min-height: 44px;
+        min-width: 0;
+        width: 100%;
+        flex: none;
+        white-space: normal;
     }
+    .order-footer-buttons .print-receipt-btn { grid-column: 1 / -1; }
 }
 
 @media (max-width: 768px) {
@@ -1618,8 +1634,20 @@ body.dark-mode .search-bar {
     }
     .order-item-controls { gap: 6px; }
     .order-item-controls button { padding: 6px 8px; font-size: 0.65rem; }
-    .order-footer-buttons { gap: 8px; }
-    .order-footer-buttons button { padding: 10px 4px; font-size: 0.7rem; }
+    .order-footer-buttons {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+    .order-footer-buttons button {
+        padding: 10px 6px;
+        font-size: 0.75rem;
+        min-width: 0;
+        width: 100%;
+        flex: none;
+        white-space: normal;
+    }
+    .order-footer-buttons .print-receipt-btn { grid-column: 1 / -1; }
     .modal-content { margin: 15% auto; width: 95%; max-height: 80vh; }
     button, .table-btn, .menu-item {
         min-height: 48px;
@@ -1962,6 +1990,128 @@ kbd {
 .settings-panel .form-check-label {
     margin-left: 8px;
 }
+    
+    /* ==================== Premium UI Tweaks (Suggested) ==================== */
+    /* Premium Card Styling */
+    .menu-item {
+        border: none !important;
+        border-radius: 16px !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        background: #ffffff;
+        transition: all 0.2s ease;
+    }
+
+    .menu-item:active {
+        transform: scale(0.95);
+        background: #f1f5f9;
+    }
+
+    /* Category Pills */
+    .categories button {
+        border-radius: 50px !important;
+        padding: 8px 20px !important;
+        border: 1px solid #e2e8f0 !important;
+        font-weight: 500;
+    }
+
+    .categories button.active {
+        background: #2563eb !important;
+        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+    }
+
+    /* Improved Order Item Layout for Touch */
+    .order-item {
+        padding: 15px !important;
+        margin-bottom: 10px !important;
+        border: none !important;
+        background: #f8fafc !important;
+        border-radius: 12px !important;
+    }
+
+    /* Large Checkout Button */
+    .checkout-btn {
+        height: 55px;
+        font-size: 1.1rem !important;
+        border-radius: 12px !important;
+        background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+    }
+
+    /* Numeric Keypad for iPad/Mobile */
+    #keypad button {
+        height: 65px; /* Larger tap area */
+        border-radius: 15px !important;
+        background: #ffffff !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        font-size: 1.5rem !important;
+    }
+
+    /* Specific iPad optimization */
+    @media (min-width: 768px) {
+        .order-section {
+            max-width: 380px;
+            position: sticky;
+            top: 70px;
+            height: calc(100vh - 80px);
+        }
+    }
+
+    /* Optional: subtle hover for desktop to emphasize premium feel */
+    @media (hover: hover) and (pointer: fine) {
+        .menu-item:hover {
+            transform: translateY(-6px) scale(1.01);
+            box-shadow: 0 12px 30px rgba(2,6,23,0.06);
+        }
+    }
+
+@media print {
+    @page { margin: 0; size: auto; }
+    body { margin: 0; padding: 5mm; width: 80mm; background: white; }
+    .hamburger-menu, .sidebar, .menu-section, .order-section, .no-print, header nav, .tables-dashboard { display: none !important; }
+    .notification-toast, .loading-spinner, #network-status, #storage-indicator, #offline-queue-badge, #theme-toggle { display: none !important; }
+    .print-button { display: inline-block !important; }
+    * { background: transparent !important; color: black !important; }
+}
+
+    /* Mobile: Bottom sheet for order drawer (pattern support) */
+    @media (max-width: 767px) {
+        .order-section {
+            position: fixed !important;
+            right: 0;
+            left: 0;
+            bottom: 0;
+            top: auto;
+            max-height: 55vh;
+            background: linear-gradient(180deg, rgba(255,255,255,0.98), #fff);
+            border-top-left-radius: 18px;
+            border-top-right-radius: 18px;
+            box-shadow: 0 -8px 30px rgba(2,6,23,0.08);
+            transform: translateY(100%);
+            transition: transform 0.28s cubic-bezier(.2,.9,.3,1);
+            z-index: 1060;
+            overflow: auto;
+        }
+        .order-section.open {
+            transform: translateY(0%);
+        }
+            .order-drawer-toggle {
+                display: block;
+                position: fixed;
+                right: 1rem;
+                bottom: 1rem;
+                z-index: 1061;
+                border: 0;
+                border-radius: 999px;
+                padding: 0.75rem 1rem;
+                background: #2563eb;
+                color: #ffffff;
+                box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2);
+            }
+        .menu-section { padding-bottom: 72px; }
+    }
+
+        @media (min-width: 768px) {
+            .order-drawer-toggle { display: none; }
+        }
 
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -2020,7 +2170,10 @@ kbd {
                 <div class="categories" id="categories"></div>
                 <div class="menu" id="menu"></div>
             </div>
-            <div class="order-section">
+            <button class="order-drawer-toggle" id="order-drawer-toggle" type="button" aria-controls="order-section" aria-expanded="false">
+                <i class="fas fa-receipt" aria-hidden="true"></i> Order <span id="order-item-count" aria-label="0 items">0</span>
+            </button>
+            <div class="order-section" id="order-section">
                 <div class="order-header">
                     <h3>Table <span id="selected-table">-</span></h3>
                 </div>
@@ -2029,10 +2182,10 @@ kbd {
                     <p>Total: Rs <span id="total-amount">0.00</span></p>
                     <div class="order-footer-buttons">
                         <button class="finalize-btn" id="finalize-btn">Send to Kitchen</button>
-                        <button class="checkout-btn" id="checkout-btn">Checkout</button>
+                        <button class="checkout-btn" id="checkout-btn">Pay</button>
                         <button class="change-table-btn" id="change-table-btn">Change Table</button>
-                        <button class="void-btn" id="void-btn">Void Entire Order</button>
-                        <button class="print-receipt-btn" id="print-receipt-btn">Print Bill</button>
+                        <button class="void-btn" id="void-btn">Void</button>
+                        <button class="print-receipt-btn" id="print-receipt-btn">Print</button>
                     </div>
                 </div>
             </div>
@@ -2051,6 +2204,8 @@ kbd {
             <a href="#" id="nav-void-details">Void Details</a>
             <a href="#" id="nav-kitchen-view">🍳 Kitchen Display</a>
             <a href="#" id="nav-settings">⚙️ Settings</a>
+            <a href="#" id="nav-merge-tables">Merge Tables</a>
+            <a href="#" id="nav-help">Help</a>
             <hr>
             <h6 class="text-muted mb-2">Reports & Utilities</h6>
             <a href="#" id="nav-backup-data"><i class="fas fa-download me-2"></i>Backup Data</a>
@@ -2092,8 +2247,8 @@ kbd {
                          <button data-amount="exact" title="Fills the remaining due amount">Exact</button><button data-amount="500" title="Adds 500">500</button><button data-amount="1000" title="Adds 1000">1000</button><button data-amount="2000" title="Adds 2000">2000</button>
                     </div>
                     <div class="payment-buttons mt-3">
-                        <button id="cash-btn" class="btn-lg"><i class="fas fa-money-bill-wave me-2"></i>Add Cash</button>
-                        <button id="mobile-btn" class="btn-lg"><i class="fas fa-mobile-alt me-2"></i>Add Mobile</button>
+                        <button id="cash-btn" class="btn-lg"><i class="fas fa-money-bill-wave me-2"></i>Cash</button>
+                        <button id="mobile-btn" class="btn-lg"><i class="fas fa-mobile-alt me-2"></i> Mobile</button>
                     </div>
                 </div>
                <div class="col-md-5 border-start">
@@ -2321,12 +2476,19 @@ function checkStorageAndWarn() {
 
 function quickBackupNow() {
     const data = {
+        schemaVersion: BACKUP_SCHEMA_VERSION,
+        timestamp: new Date().toISOString(),
+        orders,
+        tableTimers,
         salesHistory: salesHistory,
         orderHistory: orderHistory,
         voidDetails: voidDetails,
-        backupDate: new Date().toISOString(),
-        totalSales: salesHistory.length,
-        totalRevenue: salesHistory.reduce((sum, s) => sum + (s.total || 0), 0)
+        kotHistory,
+        itemsSold,
+        menuItems,
+        extras,
+        discountCodes,
+        exportDate: new Date().toISOString()
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
     const a = document.createElement('a');
@@ -2449,7 +2611,7 @@ function restoreMenuNavigationState() {
 let currentUser = { email: 'localuser@example.com', role: 'Staff' }; 
 
 // Hardcoded menu and extras
-const menuItems = [
+let menuItems = [
     // ================== FOOD GROUPS ==================
 { name: "Burger with Fries (Chicken)", price: 370, category: "Burger with Fries", section: "Kitchen", type: "food", image: "images/burger_chicken_with_fries.jpg" },
     { name: "Burger with Fries (Buff)", price: 350, category: "Burger with Fries", section: "Kitchen", type: "food", image: "images/burger_chicken_with_fries.jpg" },
@@ -2507,11 +2669,14 @@ const menuItems = [
     { name: "Sausage (Buff)", price: 300, category: "Sausage", section: "Kitchen", type: "food", image: "images/sausage_buff.jpg" },
 
     // ================== BREAKFAST ITEMS ==================
-    { name: "Toast", price: 150, category: "Breakfast", section: "Kitchen", type: "food", image: "images/chi_toasty_salsa.jpg" },
-    { name: "Omelette", price: 120, category: "Breakfast", section: "Kitchen", type: "food", image: "images/omelet_plain.jpg" },
-    { name: "Sausage (2pcs)", price: 120, category: "Breakfast", section: "Kitchen", type: "food", image: "images/buff_sausage.jpg" },
-    { name: "Veg Sandwich", price: 300, category: "Breakfast", section: "Kitchen", type: "food", image: "images/sandwich_veg.jpg" },
-    { name: "Chi Sandwich", price: 350, category: "Breakfast", section: "Kitchen", type: "food", image: "images/chi_toasty_salsa.jpg" },
+{ name: "Toast", price: 150, category: "Breakfast", section: "Kitchen", type: "food", image: "images/chi_toasty_salsa.jpg" },
+{ name: "Plain Omelette", price: 130, category: "Breakfast", section: "Kitchen", type: "food", image: "images/omelet_plain.jpg" },
+{ name: "Boiled Egg", price: 120, category: "Breakfast", section: "Kitchen", type: "food", image: "images/boiled_egg.jpg" },
+{ name: "Masala Omelette", price: 140, category: "Breakfast", section: "Kitchen", type: "food", image: "images/masala_omelette.jpg" },
+{ name: "Sausage (2pcs)", price: 120, category: "Breakfast", section: "Kitchen", type: "food", image: "images/buff_sausage.jpg" },
+{ name: "Veg Sandwich", price: 300, category: "Breakfast", section: "Kitchen", type: "food", image: "images/sandwich_veg.jpg" },
+{ name: "Chi Sandwich", price: 350, category: "Breakfast", section: "Kitchen", type: "food", image: "images/chi_toasty_salsa.jpg" },
+
 
     { name: "Laping (Noodles)", price: 95, category: "Laping", section: "Kitchen", type: "food", image: "images/laping_noodles.jpg" },
     { name: "Laping (Chips)", price: 120, category: "Laping", section: "Kitchen", type: "food", image: "images/laping_chips.jpg" },
@@ -2523,30 +2688,36 @@ const menuItems = [
     
     { name: "Chocolate Muffin", price: 150, category: "Breakfast", section: "Kitchen", type: "food", image: "images/chocolate_muffin.jpg" },
 
-    // ================== DRINK GROUPS (now section "Bar", type "drink") ==================
-    { name: "Americano", price: 150, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/americano.jpg" },
-    { name: "Espresso", price: 140, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/espresso.jpg" },
-    { name: "Latte", price: 190, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/latte.jpg" },
-    { name: "Cappuccino", price: 200, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/cappuccino.jpg" },
-    { name: "Vanilla Latte", price: 260, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/latte_vanilla.jpg" },
-    { name: "Hazelnut Latte", price: 260, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/flavored_latte_hazelnut.jpg" },
-    { name: "Caramel Latte", price: 260, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/latte_caramel.jpg" },
-    { name: "Hot Chocolate", price: 260, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/hot_chocolate.jpg" },
+// ================== DRINK GROUPS (now section "Bar", type "drink") ==================
+{ name: "Americano", price: 150, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/americano.jpg" },
+{ name: "Espresso", price: 140, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/espresso.jpg" },
+{ name: "Lungo", price: 150, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/lungo.jpg" },
+{ name: "Latte", price: 190, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/latte.jpg" },
+{ name: "Cappuccino", price: 200, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/cappuccino.jpg" },
+{ name: "Vanilla Latte", price: 260, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/latte_vanilla.jpg" },
+{ name: "Hazelnut Latte", price: 260, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/flavored_latte_hazelnut.jpg" },
+{ name: "Caramel Latte", price: 260, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/latte_caramel.jpg" },
+{ name: "Spanish Latte", price: 280, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/spanish_latte.jpg" },
+{ name: "Hot Chocolate", price: 260, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/hot_chocolate.jpg" },
 
-    // Moved Cold Coffee OUT of "Cold Drinks" section to be a top-level category
-    { name: "Iced Latte", price: 220, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_latte.jpg" },
-    { name: "Iced Americano", price: 200, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_americano.jpg" },
-    { name: "Iced Cappuccino", price: 240, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_cappuccino.jpg" },
-    { name: "Iced Vanilla", price: 290, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_vanilla_latte.jpg" },
-    { name: "Iced Caramel", price: 290, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_caramel_latte.jpg" },
-    { name: "Iced Mocha", price: 290, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_mocha.jpg" },
-    { name: "Iced Hazelnut", price: 290, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_hazelnut_latte.jpg" },
 
-    { name: "Mocha", price: 320, category: "Frappe / Blended", section: "Bar", type: "drink", image: "images/blended.jpg" },
-    { name: "Vanilla", price: 320, category: "Frappe / Blended", section: "Bar", type: "drink", image: "images/blended.jpg" },
-    { name: "Caramel", price: 320, category: "Frappe / Blended", section: "Bar", type: "drink", image: "images/blended.jpg" },
-    { name: "Hazelnut", price: 320, category: "Frappe / Blended", section: "Bar", type: "drink", image: "images/blended.jpg" },
-    { name: "Oreo", price: 320, category: "Frappe / Blended", section: "Bar", type: "drink", image: "images/blended.jpg" },
+   // Moved Cold Coffee OUT of "Cold Drinks" section to be a top-level category
+{ name: "Iced Latte", price: 220, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_latte.jpg" },
+{ name: "Iced Americano", price: 200, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_americano.jpg" },
+{ name: "Iced Cappuccino", price: 240, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_cappuccino.jpg" },
+{ name: "Iced Vanilla", price: 290, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_vanilla_latte.jpg" },
+{ name: "Iced Caramel", price: 290, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_caramel_latte.jpg" },
+{ name: "Iced Mocha", price: 290, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_mocha.jpg" },
+{ name: "Iced Hazelnut", price: 290, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_hazelnut_latte.jpg" },
+{ name: "Iced Spanish Latte", price: 300, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_spanish_latte.jpg" },
+{ name: "Iced Rose Latte", price: 300, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_rose_latte.jpg" },
+
+
+    { name: "Mocha Blended ", price: 320, category: "Frappe / Blended", section: "Bar", type: "drink", image: "images/blended.jpg" },
+    { name: "Vanilla Blended", price: 320, category: "Frappe / Blended", section: "Bar", type: "drink", image: "images/blended.jpg" },
+    { name: "Caramel Blended", price: 320, category: "Frappe / Blended", section: "Bar", type: "drink", image: "images/blended.jpg" },
+    { name: "Hazelnut Blended", price: 320, category: "Frappe / Blended", section: "Bar", type: "drink", image: "images/blended.jpg" },
+    { name: "Oreo Blended", price: 320, category: "Frappe / Blended", section: "Bar", type: "drink", image: "images/blended.jpg" },
 
     { name: "Virgin Mojito", price: 250, category: "Mojito", section: "Bar", type: "drink", image: "images/virgin_mojito.jpg" },
     { name: "Peach Mojito", price: 280, category: "Mojito", section: "Bar", type: "drink", image: "images/peach_mojito.jpg" },
@@ -2575,12 +2746,12 @@ const menuItems = [
     { name: "Lassi (Strawberry)", price: 250, category: "Lassi", section: "Bar", type: "drink", image: "images/lassi_strawberry.jpg" },
 
     // ================== NEW TEA ITEMS ==================
-    { name: "Black Rosella", price: 150, category: "Tea", section: "Bar", type: "drink", image: "images/black_rosella.jpg", recipe: [{ materialId: 'tea-bag-rosella', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
-    { name: "Butterfly", price: 180, category: "Tea", section: "Bar", type: "drink", image: "images/butterfly.jpg", recipe: [{ materialId: 'tea-bag-butterfly-pea', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
+    { name: "Black Rosella Tea", price: 150, category: "Tea", section: "Bar", type: "drink", image: "images/black_rosella.jpg", recipe: [{ materialId: 'tea-bag-rosella', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
+    { name: "Butterfly Tea", price: 180, category: "Tea", section: "Bar", type: "drink", image: "images/butterfly.jpg", recipe: [{ materialId: 'tea-bag-butterfly-pea', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
     { name: "Calming Tea", price: 200, category: "Tea", section: "Bar", type: "drink", image: "images/calming_tea.jpg", recipe: [{ materialId: 'tea-bag-calming', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
-    { name: "Chamomile", price: 150, category: "Tea", section: "Bar", type: "drink", image: "images/chamomile.jpg", recipe: [{ materialId: 'tea-bag-chamomile', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
-    { name: "Earl Grey", price: 150, category: "Tea", section: "Bar", type: "drink", image: "images/earl_grey.jpg", recipe: [{ materialId: 'tea-bag-earl-grey', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
-    { name: "Floral Delight", price: 200, category: "Tea", section: "Bar", type: "drink", image: "images/floral_delight.jpg", recipe: [{ materialId: 'tea-bag-floral-delight', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
+    { name: "Chamomile Tea", price: 150, category: "Tea", section: "Bar", type: "drink", image: "images/chamomile.jpg", recipe: [{ materialId: 'tea-bag-chamomile', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
+    { name: "Earl Grey Tea", price: 150, category: "Tea", section: "Bar", type: "drink", image: "images/earl_grey.jpg", recipe: [{ materialId: 'tea-bag-earl-grey', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
+    { name: "Floral Delight Tea", price: 200, category: "Tea", section: "Bar", type: "drink", image: "images/floral_delight.jpg", recipe: [{ materialId: 'tea-bag-floral-delight', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
     { name: "Ginger Honey Hot Lemon", price: 130, category: "Tea", section: "Bar", type: "drink", image: "images/ginger_honey_hot_lemon.jpg", recipe: [{ materialId: 'hot-water', quantity: 0.22 }, { materialId: 'ginger-slice', quantity: 2 }, { materialId: 'honey', quantity: 0.02 }, { materialId: 'lemon-slice', quantity: 1 }] },
     { name: "Green Tea", price: 120, category: "Tea", section: "Bar", type: "drink", image: "images/green_tea.jpg", recipe: [{ materialId: 'tea-bag-green', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
     { name: "Hibiscus", price: 180, category: "Tea", section: "Bar", type: "drink", image: "images/hibiscus.jpg", recipe: [{ materialId: 'tea-bag-hibiscus', quantity: 1 }, { materialId: 'hot-water', quantity: 0.22 }] },
@@ -2634,7 +2805,7 @@ const menuItems = [
     { name: "Water", price: 50, category: "Misc", section: "Misc", type: "misc", image: "images/water.jpg", discountable: false }
 ];
 
-const extras = [
+let extras = [
     // Food Extras
     { name: "Cheese", price: 75, image: "images/cheese.jpg", type: "food" },
     { name: "Sausage", price: 40, image: "images/buff_sausage.jpg", type: "food" },
@@ -2654,13 +2825,13 @@ const extras = [
     { name: "Extra Coil", price: 50, image: "images/coil.jpg", type: "misc" },
     { name: "Extra Flavour", price: 250, image: "images/extraflavour.jpg", type: "misc" }
 ];
-const discountCodes = {
+let discountCodes = {
     "SAVE10": 10,
     "SAVE20": 20,
     "FREEDRINK": 15
 };
 
-// MODIFIED: "Cold Coffee" is now a top-level category outside of "Cold Drinks" section.
+// MODIFIED: "Cold Coffee" is now a top-level category outside of "Cold Drinks" section
 const menuSections = {
     "Food": [
         "Bakery",
@@ -2683,18 +2854,6 @@ const menuSections = {
     ],
     "Breakfast": [
         "Breakfast"
-    ],
-    "Coffee": [
-        "Hot Coffee",
-        "Cold Coffee",
-        "Frappe / Blended",
-        "Mojito",
-        "Iced Tea",
-        "Lemonade",
-        "Bubble Tea",
-        "Lassi",
-        "Tea",
-        "Soft Drinks"
     ],
     "Retail": [
         "Retail"
@@ -2826,6 +2985,22 @@ async function loadLargeStateFromIndexedDB() {
     }
 }
 
+async function clearLargeStateFromIndexedDB() {
+    try {
+        const db = await openIndexedDB();
+        const tx = db.transaction(IDB_STORE_NAME, 'readwrite');
+        tx.objectStore(IDB_STORE_NAME).clear();
+        await new Promise((resolve, reject) => {
+            tx.oncomplete = resolve;
+            tx.onerror = () => reject(tx.error);
+            tx.onabort = () => reject(tx.error);
+        });
+        db.close();
+    } catch (error) {
+        console.warn('IndexedDB reset skipped:', error);
+    }
+}
+
 function validateBackupData(data) {
     if (!data || typeof data !== 'object' || Array.isArray(data)) return false;
     if (data.schemaVersion !== BACKUP_SCHEMA_VERSION && data.schemaVersion !== 1) {
@@ -2921,6 +3096,7 @@ function persistAllData() {
 
         const channel = new BroadcastChannel('pos-sync');
         channel.postMessage('data-changed');
+        channel.close();
     } catch (error) {
         handleCriticalError('Persisting all data', error);
     }
@@ -3160,6 +3336,45 @@ function flushOfflineQueue() {
 // =========================================================================
 // =================== UTILITY FUNCTIONS ===================================
 // =========================================================================
+
+function printContent(htmlContent) {
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    iframe.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!doc || !iframe.contentWindow) {
+        iframe.remove();
+        notifications.show('Unable to prepare the print preview.', 'error');
+        return;
+    }
+
+    const cleanup = () => {
+        if (document.body.contains(iframe)) iframe.remove();
+    };
+
+    let hasPrinted = false;
+    const triggerPrint = () => {
+        if (hasPrinted || !document.body.contains(iframe)) return;
+        hasPrinted = true;
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+        setTimeout(cleanup, 1000);
+    };
+
+    doc.open();
+    doc.write(htmlContent);
+    doc.close();
+    iframe.contentWindow.addEventListener('afterprint', cleanup, { once: true });
+    iframe.contentWindow.addEventListener('load', triggerPrint, { once: true });
+    setTimeout(triggerPrint, 250);
+}
 
 function showLoadingSpinner() {
     const spinner = document.getElementById('loading-spinner');
@@ -3692,9 +3907,30 @@ async function selectTable(tableNumber) {
     
     renderOrderItems();
     updateTotal();
+    setOrderDrawerOpen(true);
     stopBlinking(tableNumber);
     initializeTables(); // Update table status visual
     hideLoadingSpinner();
+}
+
+function setOrderDrawerOpen(isOpen) {
+    const orderSection = document.getElementById('order-section');
+    const toggle = document.getElementById('order-drawer-toggle');
+    if (!orderSection || !toggle) return;
+
+    orderSection.classList.toggle('open', isOpen);
+    toggle.setAttribute('aria-expanded', String(isOpen));
+    const itemCount = currentTable && Array.isArray(orders[currentTable])
+        ? orders[currentTable].reduce((total, item) => total + (Number(item.quantity) || 0), 0)
+        : 0;
+    const countBadge = document.getElementById('order-item-count');
+    if (countBadge) {
+        countBadge.textContent = itemCount;
+        countBadge.setAttribute('aria-label', `${itemCount} item${itemCount === 1 ? '' : 's'}`);
+    }
+    toggle.innerHTML = isOpen
+        ? `<i class="fas fa-chevron-down" aria-hidden="true"></i> Hide Order <span id="order-item-count">${itemCount}</span>`
+        : `<i class="fas fa-receipt" aria-hidden="true"></i> Order <span id="order-item-count">${itemCount}</span>`;
 }
 
 // Helper to get image for category or section
@@ -3976,6 +4212,9 @@ function debouncedRenderOrderItems() {
 function renderOrderItems() {
     const orderItemsDiv = document.getElementById('order-items');
     if (!orderItemsDiv) return;
+
+    const orderSection = document.getElementById('order-section');
+    setOrderDrawerOpen(orderSection?.classList.contains('open') ?? false);
 
     if (!currentTable || !orders[currentTable] || orders[currentTable].length === 0) {
         orderItemsDiv.innerHTML = '<div class="no-items">No items added to this table</div>';
@@ -4463,7 +4702,13 @@ function showSidebarContentModal(title, contentHTML, setupCallback = null) {
     const modal = document.getElementById('sidebar-content-modal');
     const contentArea = document.getElementById('modal-content-area');
     if (!modal || !contentArea) return;
-    contentArea.innerHTML = `<h3>${title}</h3>${contentHTML}`;
+    
+    // CRITICAL: Clear all previous event listeners to prevent memory leaks
+    const newContentArea = contentArea.cloneNode(false);
+    contentArea.parentNode.replaceChild(newContentArea, contentArea);
+    
+    const updatedContentArea = document.getElementById('modal-content-area');
+    updatedContentArea.innerHTML = `<h3>${escapeHtml(title)}</h3>${contentHTML}`;
     modal.style.display = 'block';
     if (setupCallback) setupCallback();
     toggleSidebar({ preventDefault: () => {} });
@@ -4612,14 +4857,16 @@ function exportSalesReport() {
         ].join(','));
     });
 
-    const csvContent = "data:text/csv;charset=utf-8," + csvRows.join('\n');
-    const encodedUri = encodeURI(csvContent);
+    const csvContent = csvRows.join('\n');
+    const csvBlob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+    const encodedUri = URL.createObjectURL(csvBlob);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
     link.setAttribute("download", `sales_report_${startDate}_to_${endDate}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(encodedUri);
     notifications.show('Sales report exported to CSV.', 'success');
 }
 
@@ -5294,10 +5541,12 @@ function exportVoidDetails() {
         const startDate = startDateInput.value;
         const endDate = endDateInput.value;
         
+        const endOfDay = new Date(endDate);
+        endOfDay.setHours(23, 59, 59, 999);
         const filteredVoids = voidDetails.filter(item => {
             if (!item.timestamp) return false;
             const itemDate = new Date(item.timestamp);
-            return itemDate >= new Date(startDate) && itemDate <= new Date(endDate);
+            return itemDate >= new Date(startDate) && itemDate <= endOfDay;
         });
 
         if (filteredVoids.length === 0) {
@@ -5317,13 +5566,15 @@ function exportVoidDetails() {
                 return `"${e.table}","${type}","${itemsStr}",${total},"${e.reason || 'No reason'}","${e.user || 'Unknown'}","${timestamp}"`;
             }).join("\n");
         
-        const encodedUri = encodeURI(csvContent);
+        const csvBlob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+        const encodedUri = URL.createObjectURL(csvBlob);
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
         link.setAttribute("download", `void_details_${startDate}_to_${endDate}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        URL.revokeObjectURL(encodedUri);
         notifications.show('Void details exported to CSV.', 'success');
     } catch (error) {
         console.error('Error exporting void details:', error);
@@ -5633,15 +5884,19 @@ function updateChange() {
     if (remainingDueEl) remainingDueEl.textContent = `Rs ${remainingDue.toFixed(2)}`;
     if (changeAmountEl) changeAmountEl.textContent = `Rs ${changeAmount.toFixed(2)}`;
     
+    // STRICT: Disable completion only if payment is insufficient
     if (completeBtn) {
         const effectivePaid = paidSoFar + Math.max(0, paymentAmount);
-        const canComplete = total <= 0.01 || effectivePaid >= total - 0.01;
+        const canComplete = total <= 0.01 || (effectivePaid >= total - 0.01);
         completeBtn.disabled = !canComplete;
+        completeBtn.style.opacity = canComplete ? '1' : '0.5';
+        completeBtn.style.cursor = canComplete ? 'pointer' : 'not-allowed';
     }
     
+    // Show insufficient message with more clarity
     if (insufficientMsgEl) {
-        if (remainingDue > 0.01 && total > 0.01) {
-            insufficientMsgEl.textContent = `Payment is insufficient.`;
+        if (remainingDue > 0.01) {
+            insufficientMsgEl.textContent = `Payment is insufficient. Still owed: Rs ${remainingDue.toFixed(2)}`;
             insufficientMsgEl.style.display = 'block';
         } else {
             insufficientMsgEl.style.display = 'none';
@@ -5651,19 +5906,16 @@ function updateChange() {
     persistCheckoutState();
 }
 
+// 2. CORE CALCULATION ENGINE
 function calculateTotal() {
+    const VAT_PERCENT = 0; 
+    const SERVICE_CHARGE_PERCENT = 0; 
+    
     const tableKey = currentTable || 'current';
     const currentItems = orders[tableKey] && Array.isArray(orders[tableKey]) ? orders[tableKey] : [];
-    const currentDiscount = (typeof discount === 'number' && discount >= 0) ? discount : 0;
-    const cacheKey = `${tableKey}:${currentItems.length}:${currentDiscount}:${currentItems.map(item => `${item.name}:${item.quantity}:${item.price}:${(item.extras||[]).map(e => `${e.name}:${e.price}`).join('|')}:${item.discountable === false ? '0' : '1'}`).join('||')}`;
-    if (currentItems.length === 0) {
-        cachedTotal = 0;
-        cachedTotalVersion = 0;
-        return 0;
-    }
-    if (cachedTotalVersion && cacheKey === cachedTotalVersion) {
-        return cachedTotal;
-    }
+    const currDiscount = (typeof discount === 'number' && discount >= 0) ? discount : 0;
+    
+    if (currentItems.length === 0) return 0;
 
     let discountableTotal = 0;
     let nonDiscountableTotal = 0;
@@ -5674,28 +5926,26 @@ function calculateTotal() {
             : 0;
         const itemTotal = ((Number(item.price) || 0) + extrasTotal) * (Number(item.quantity) || 1);
 
-        const isDiscountable = item.discountable !== false;
-        if (isDiscountable) {
+        if (item.discountable !== false) {
             discountableTotal += itemTotal;
         } else {
             nonDiscountableTotal += itemTotal;
         }
     });
 
-    const discountedTotal = discountableTotal * (1 - currentDiscount / 100);
-    cachedTotal = discountedTotal + nonDiscountableTotal;
-    cachedTotalVersion = cacheKey;
-    return cachedTotal;
+    const afterDiscount = (discountableTotal * (1 - currDiscount / 100)) + nonDiscountableTotal;
+    const serviceCharge = afterDiscount * (SERVICE_CHARGE_PERCENT / 100);
+    const beforeVAT = afterDiscount + serviceCharge;
+    const vat = beforeVAT * (VAT_PERCENT / 100);
+    
+    return Number((beforeVAT + vat).toFixed(2));
 }
 
 function calculateOriginalTotal() {
-    if (!currentTable || !orders[currentTable] || !Array.isArray(orders[currentTable])) return 0;
-
+    if (!currentTable || !orders[currentTable]) return 0;
     return orders[currentTable].reduce((sum, item) => {
-        const extrasTotal = (item.extras && Array.isArray(item.extras))
-            ? item.extras.reduce((s, e) => s + (Number(e.price) || 0), 0)
-            : 0;
-        return sum + (((Number(item.price) || 0) + extrasTotal) * (Number(item.quantity) || 1));
+        const extrasTotal = (item.extras || []).reduce((s, e) => s + (e.price || 0), 0);
+        return sum + (item.price + extrasTotal) * item.quantity;
     }, 0);
 }
 
@@ -5782,6 +6032,14 @@ async function completePayment() {
         salesHistory.push(sale);
         orderHistory.push(sale);
         
+        // Subtract stock from inventory
+        sale.items.forEach(item => {
+            const menuItem = menuItems.find(m => m.name === item.name);
+            if (menuItem && typeof menuItem.stock === 'number') {
+                menuItem.stock = Math.max(0, menuItem.stock - (Number(item.quantity) || 1));
+            }
+        });
+        
         sale.items.forEach(item => {
             const extrasTotal = (item.extras?.reduce((s, e) => s + (Number(e.price) || 0), 0) || 0);
             const itemTotal = ((Number(item.price) || 0) + extrasTotal) * (Number(item.quantity) || 1);
@@ -5810,6 +6068,7 @@ async function completePayment() {
         persistAllData();
         renderOrderItems();
         initializeTables();
+        setOrderDrawerOpen(false);
         
         clearCheckoutState();
         closeCheckoutDialog();
@@ -5818,6 +6077,7 @@ async function completePayment() {
         return sale;
     } catch (error) {
         console.error('Payment completion failed:', error);
+        resetCheckoutState();
         notifications.show('Unable to process payment. Please try again.', 'error');
     } finally {
         hideLoadingSpinner();
@@ -5856,6 +6116,7 @@ async function finalizeOrder() {
 
         isFinalizingOrder = true;
         const itemsToFinalize = orders[currentTable].filter(item => !item.finalized);
+    const nonPreparationItems = itemsToFinalize.filter(item => item.section !== 'Kitchen' && item.section !== 'Bar');
     if (itemsToFinalize.length === 0) {
         notifications.show('No new items to send.', 'info');
         return;
@@ -5902,7 +6163,11 @@ async function finalizeOrder() {
 
     persistAllData();
     renderOrderItems();
-    notifications.show(`KOT ${kotNumberBase} sent successfully.`, 'success');
+    const kotCreated = kitchenItems.length > 0 || barItems.length > 0;
+    const message = kotCreated
+        ? `KOT ${kotNumberBase} sent successfully.${nonPreparationItems.length > 0 ? ` ${nonPreparationItems.length} retail/misc item(s) finalized without a KOT.` : ''}`
+        : `${nonPreparationItems.length} item(s) finalized. No KOT sent (Retail/Misc only).`;
+    notifications.show(message, 'success');
     hideLoadingSpinner();
     } catch (error) {
         handleCriticalError('Finalizing order', error);
@@ -5946,37 +6211,7 @@ function printKOT(kotItems, type) {
         </html>
     `;
 
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'fixed';
-    iframe.style.visibility = 'hidden';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
-    iframe.style.border = '0';
-    document.body.appendChild(iframe);
-
-    const iframeDoc = iframe.contentWindow?.document;
-    if (!iframeDoc) {
-        console.error('Unable to create hidden print frame for KOT.');
-        document.body.removeChild(iframe);
-        return;
-    }
-
-    iframeDoc.open();
-    iframeDoc.write(kotHTML);
-    iframeDoc.close();
-    iframe.contentWindow.focus();
-
-    try {
-        iframe.contentWindow.print();
-    } catch (error) {
-        console.warn('KOT print dialog could not be opened:', error);
-    }
-
-    setTimeout(() => {
-        if (document.body.contains(iframe)) {
-            document.body.removeChild(iframe);
-        }
-    }, 1000);
+    printContent(kotHTML);
 }
 
 async function changeTable() {
@@ -6006,15 +6241,17 @@ async function changeTable() {
 
     orders[newTable] = itemsToMove;
     if (timerToMove) {
+        // Use performance.now() for accurate timer tracking
         tableTimers[newTable] = {
             ...timerToMove,
-            lastUpdated: Date.now()
+            lastUpdated: performance.now()
         };
     } else {
+        // Create fresh timer with performance.now()
         tableTimers[newTable] = {
-            start: Date.now(),
+            start: performance.now(),
             elapsed: 0,
-            lastUpdated: Date.now()
+            lastUpdated: performance.now()
         };
     }
     delete orders[oldTable];
@@ -6403,28 +6640,10 @@ function generateReceipt(order) {
                     <p>Find us on social media @Taboche</p>
                 </div>
             </div>
-            <div style="text-align:center; margin-top: 20px;">
-                 <button class="print-button" onclick="window.print()" style="padding: 10px 20px; font-size: 16px; cursor: pointer;">Print Receipt</button>
-            </div>
         `;
 
-        const printWindow = window.open('', '_blank');
-        if (printWindow) {
-            printWindow.document.write(`
-                <!DOCTYPE html>
-                <html>
-                    <head><title>Bill - ${order.orderNumber || ''}</title>${receiptCSS}</head>
-                    <body>${receiptHTML}</body>
-                </html>
-            `);
-            printWindow.document.close();
-            printWindow.addEventListener('load', () => {
-                printWindow.focus();
-                printWindow.print();
-            });
-        } else {
-            notifications.show('Print window blocked. Please enable pop-ups.', 'error');
-        }
+        const fullHTML = `<!DOCTYPE html><html><head><title>Bill - ${order.orderNumber || ''}</title>${receiptCSS}</head><body>${receiptHTML}</body></html>`;
+        printContent(fullHTML);
 
     } catch (error) {
         console.error('Error generating professional receipt:', error);
@@ -6443,6 +6662,8 @@ async function resetAllDataConfirmed() {
         showLoadingSpinner();
         try {
             localStorage.clear();
+            clearCheckoutState();
+            await clearLargeStateFromIndexedDB();
             // Re-initialize all global state variables to their default empty states
             currentTable = null;
             orders = {};
@@ -6520,6 +6741,12 @@ document.addEventListener("DOMContentLoaded", () => {
             initializeTables();
             renderOrderHistory();
             renderVoidDetails();
+            
+            // AUTO-REFRESH: If Kitchen View is open, refresh it
+            const modalContentArea = document.getElementById('modal-content-area');
+            if (modalContentArea && modalContentArea.querySelector('.kitchen-view')) {
+                showKitchenView();
+            }
         }
     };
 
@@ -6611,6 +6838,14 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("nav-void-details")?.addEventListener("click", showVoidDetailsContent);
     document.getElementById("nav-kitchen-view")?.addEventListener("click", showKitchenView);
     document.getElementById("nav-settings")?.addEventListener("click", showSettings);
+    document.getElementById("nav-merge-tables")?.addEventListener("click", (e) => {
+        e.preventDefault();
+        mergeTables();
+    });
+    document.getElementById("nav-help")?.addEventListener("click", (e) => {
+        e.preventDefault();
+        showHelpModal();
+    });
     document.getElementById("nav-backup-data")?.addEventListener("click", (e) => {
         e.preventDefault();
         backupData();
@@ -6638,6 +6873,10 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('cash-btn')?.addEventListener('click', () => processPayment("Cash"));
     document.getElementById('mobile-btn')?.addEventListener('click', () => processPayment("Mobile"));
     document.getElementById('complete-btn')?.addEventListener('click', completePayment);
+    document.getElementById('order-drawer-toggle')?.addEventListener('click', () => {
+        const orderSection = document.getElementById('order-section');
+        setOrderDrawerOpen(!orderSection?.classList.contains('open'));
+    });
 
     // Keypad and Quick Amounts - Use event delegation for better performance
     const keypad = document.getElementById('keypad');
@@ -6751,14 +6990,14 @@ document.addEventListener('click', function(e) {
     }
 });
 
+// --- UTILITIES ---
 function toggleSidebar(e) {
     e?.preventDefault();
-    const sidebar = document.getElementById('sidebar');
-    if (!sidebar) {
-        console.warn("Sidebar element not found.");
-        return;
-    }
-    sidebar.classList.toggle('active');
+    document.getElementById('sidebar').classList.toggle('active');
+}
+
+function updateDateTime() {
+    document.getElementById('datetime').textContent = new Date().toLocaleString();
 }
 
 function initializeTableTimer(table) {
@@ -6787,7 +7026,9 @@ function stopBlinking(table) {
     }
 }
 
-// Modified searchMenu to integrate with the new navigation flow
+ // Track navigation state for back button
+
+// --- SEARCH AND NAVIGATION FIX ---
 function searchMenu() {
     const searchTerm = document.getElementById('search')?.value.toLowerCase().trim() || '';
     const menu = document.getElementById('menu');
@@ -6795,37 +7036,28 @@ function searchMenu() {
     const backButton = document.getElementById('back-button');
     const menuSectionTitle = document.getElementById('menu-section-title');
 
-    if (!menu || !categoriesContainer || !backButton || !menuSectionTitle) return;
-
     if (!searchTerm) {
-        restoreMenuNavigationState();
+        currentMenuLevel = 'topLevelSections';
         renderMenuNavigation();
         return;
     }
 
-    // When searching, bypass the hierarchy and show all matching items
-    categoriesContainer.innerHTML = ''; // Clear category buttons
-    backButton.style.display = 'block'; // Show back button
-    menuSectionTitle.textContent = `Search Results for "${searchTerm}"`;
+    categoriesContainer.innerHTML = ''; 
+    backButton.style.display = 'block';
+    menuSectionTitle.textContent = `Results for "${searchTerm}"`;
 
     const filteredItems = menuItems.filter(item => item.name.toLowerCase().includes(searchTerm));
-
     menu.innerHTML = '';
-    if (filteredItems.length === 0) {
-        menu.innerHTML = '<p class="text-muted text-center py-4">No items match your search.</p>';
-        return;
-    }
-
+    
     filteredItems.forEach(item => {
         const div = document.createElement('div');
         div.className = `menu-item`;
-        
         div.innerHTML = `
-            <img src="${item.image}" alt="${item.name}" loading="lazy">
+            <img src="${item.image}" alt="${item.name}">
             <p>${item.name}</p>
             <div class="price">Rs ${item.price.toFixed(2)}</div>
+            <div class="stock-info" style="font-size:0.7em">Stock: ${item.stock}</div>
         `;
-
         div.addEventListener('click', () => addToOrder(item));
         menu.appendChild(div);
     });
@@ -7003,8 +7235,8 @@ document.addEventListener('keydown', (e) => {
         e.preventDefault();
         showCheckoutDialog();
     }
-    // Ctrl+Shift+M for merge tables
-    if (e.ctrlKey && e.shiftKey && e.key === 'M') {
+    // Ctrl+Alt+M for merge tables
+    if (e.ctrlKey && e.altKey && e.key === 'M') {
         e.preventDefault();
         mergeTables();
     }
@@ -7020,7 +7252,7 @@ function showHelpModal() {
                 <li><kbd>Ctrl+F</kbd> - Focus search bar</li>
                 <li><kbd>F1</kbd> - Show this help</li>
                 <li><kbd>Ctrl+Shift+C</kbd> - Open checkout</li>
-                <li><kbd>Ctrl+Shift+M</kbd> - Merge tables</li>
+                <li><kbd>Ctrl+Alt+M</kbd> - Merge tables</li>
             </ul>
             <h4>Tips</h4>
             <ul>
@@ -7065,7 +7297,8 @@ function exportToPDF(elementId, filename) {
     }).finally(() => {
         hideLoadingSpinner();
     });
-}
+
+    }
 </script>
 </body>
 </html>
