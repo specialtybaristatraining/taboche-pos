@@ -841,6 +841,13 @@ body.dark-mode .search-bar {
     transform: scale(0.95);
 }
 
+.order-item-controls .void-btn,
+.order-item-controls .remove-btn {
+    min-width: auto;
+    min-height: 32px;
+    padding: 4px 8px;
+}
+
 .order-footer {
     padding: 0.55rem 0.6rem;
     border-top: 1px solid #e5e7eb;
@@ -1588,20 +1595,19 @@ body.dark-mode .search-bar {
 
     .order-footer-buttons {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.45rem;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.4rem;
     }
 
     .order-footer-buttons button {
-        padding: 8px 6px;
-        font-size: 0.72rem;
-        min-height: 44px;
         min-width: 0;
-        width: 100%;
-        flex: none;
+        padding: 8px 4px;
+        font-size: 0.72rem;
+        min-height: 40px;
         white-space: normal;
+        text-align: center;
+        border-radius: 8px;
     }
-    .order-footer-buttons .print-receipt-btn { grid-column: 1 / -1; }
 }
 
 @media (max-width: 768px) {
@@ -1666,6 +1672,43 @@ body.dark-mode .search-bar {
     .table-btn { font-size: 0.75rem; min-height: 45px; }
     .menu { grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)); }
     .modal-content { margin: 20% auto; padding: 0.75rem; }
+}
+
+/* Keep all order actions visible in two rows on iPad-sized screens. */
+@media (min-width: 600px) and (max-width: 1024px) {
+    .pos-container {
+        height: calc(100dvh - 4.5rem);
+        min-height: 0;
+    }
+
+    .main-content {
+        min-height: 0;
+    }
+
+    .order-section {
+        height: auto;
+        max-height: 100%;
+        position: relative;
+        top: auto;
+    }
+
+    .order-footer-buttons {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.5rem;
+    }
+
+    .order-footer-buttons button {
+        min-width: 0;
+        min-height: 40px;
+        padding: 8px 4px;
+        font-size: 0.7rem;
+        white-space: normal;
+    }
+
+    .order-footer-buttons .print-receipt-btn {
+        grid-column: auto;
+    }
 }
 
 @media (min-width: 769px) {
@@ -4243,7 +4286,7 @@ function renderOrderItems() {
         }
 
         const removeButtonHTML = !isFinalized
-            ? '<button class="remove-btn" style="background-color: #cc0000; color: white;">Remove Item</button>'
+            ? '<button class="remove-btn" style="background-color: #cc0000; color: white;">Remove</button>'
             : '';
 
         let comboDetailsHTML = '';
@@ -4276,7 +4319,7 @@ function renderOrderItems() {
                 <button class="notes-btn" style="background-color: #2196f3; color: white;" ${isFinalized ? 'disabled' : ''}>Notes</button>
                 <button class="extras-btn" data-name="${escapeHtml(item.name)}"
                         style="background-color: #ff9800; color: white;" ${isFinalized ? 'disabled' : ''}>Extras</button>
-                <button class="void-btn" style="background-color: #ef4444; color: white;">Void Item</button>
+                <button class="void-btn" style="background-color: #ef4444; color: white;">Void</button>
                 ${removeButtonHTML}
             </div>
         `;
