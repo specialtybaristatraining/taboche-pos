@@ -6263,8 +6263,17 @@ async function changeTable() {
         return;
     }
 
-    const newTable = await showPromptModal('Change Table', `Move order from Table ${currentTable} to which table?`);
-    if (!newTable || newTable === currentTable || !tableList.includes(newTable)) {
+    const requestedTable = await showPromptModal(
+        'Change Table',
+        `Move order from Table ${currentTable} to which table? Enter a table number such as 2 or 8A.`
+    );
+    const newTable = requestedTable
+        ?.trim()
+        .replace(/^table\s*/i, '')
+        .toUpperCase();
+
+    const oldTable = String(currentTable).trim().toUpperCase();
+    if (!newTable || newTable === oldTable || !tableList.includes(newTable)) {
         notifications.show('Invalid or cancelled table change.', 'warning');
         return;
     }
@@ -6275,39 +6284,33 @@ async function changeTable() {
     }
 
     showLoadingSpinner();
-    const oldTable = currentTable;
+    try {
+        const itemsToMove = orders[oldTable].map(item => ({
+            ...item,
+            finalized: true
+        }));
+        const timerToMove = tableTimers[oldTable]
+            ? { ...tableTimers[oldTable], lastUpdated: performance.now() }
+            : { start: performance.now(), elapsed: 0, lastUpdated: performance.now() };
 
-    const itemsToMove = [...orders[oldTable]];
-    // Auto-finalize all items when changing tables
-    itemsToMove.forEach(item => item.finalized = true);
-    const timerToMove = tableTimers[oldTable] ? { ...tableTimers[oldTable] } : null;
+        orders[newTable] = itemsToMove;
+        tableTimers[newTable] = timerToMove;
+        delete orders[oldTable];
+        delete tableTimers[oldTable];
+        currentTable = newTable;
 
-    orders[newTable] = itemsToMove;
-    if (timerToMove) {
-        // Use performance.now() for accurate timer tracking
-        tableTimers[newTable] = {
-            ...timerToMove,
-            lastUpdated: performance.now()
-        };
-    } else {
-        // Create fresh timer with performance.now()
-        tableTimers[newTable] = {
-            start: performance.now(),
-            elapsed: 0,
-            lastUpdated: performance.now()
-        };
+        persistAllData();
+        document.getElementById('selected-table').textContent = currentTable;
+        document.getElementById('selected-table-checkout').textContent = currentTable;
+        renderOrderItems();
+        initializeTables();
+        setOrderDrawerOpen(true);
+        notifications.show(`Order moved successfully from Table ${oldTable} to ${newTable}.`, 'success');
+    } catch (error) {
+        handleCriticalError('Changing table', error);
+    } finally {
+        hideLoadingSpinner();
     }
-    delete orders[oldTable];
-    delete tableTimers[oldTable];
-    currentTable = newTable;
-
-    persistAllData();
-    document.getElementById('selected-table').textContent = currentTable;
-    document.getElementById('selected-table-checkout').textContent = currentTable;
-    renderOrderItems();
-    initializeTables();
-    notifications.show(`Order moved successfully from Table ${oldTable} to ${newTable}.`, 'success');
-    hideLoadingSpinner();
 }
 
 async function voidItem(index) {
