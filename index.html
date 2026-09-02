@@ -1165,9 +1165,9 @@ body.modal-open {
     border-radius: 6px;
     text-align: right;
     touch-action: manipulation;
-    user-select: none;
-    caret-color: transparent;
-    -webkit-user-select: none;
+    user-select: text;
+    caret-color: auto;
+    -webkit-user-select: text;
 }
 
 #keypad {
@@ -2313,7 +2313,7 @@ kbd {
                 <div class="col-md-7">
                     <p class="h4">Total Due: <strong class="text-primary">Rs <span id="dialog-total-amount">0</span></strong></p>
                     <label for="numeric-input" class="visually-hidden">Amount</label>
-                    <input type="text" class="numeric-input" id="numeric-input" value="0" readonly>
+                    <input type="text" class="numeric-input" id="numeric-input" value="0" inputmode="decimal" autocomplete="off">
                     <div id="keypad">
                         <button data-num="1">1</button><button data-num="2">2</button><button data-num="3">3</button>
                         <button data-num="4">4</button><button data-num="5">5</button><button data-num="6">6</button>
