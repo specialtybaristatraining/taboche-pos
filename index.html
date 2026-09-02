@@ -1108,26 +1108,6 @@ body.modal-open {
     position: relative;
 }
 
-.qr-dialog-content .qr-image {
-    display: block;
-    width: min(280px, 80vw);
-    height: min(280px, 80vw);
-    object-fit: contain;
-    margin: 1rem auto;
-    background: #f8fafc;
-}
-
-.qr-payment-received-btn {
-    width: 100%;
-    min-height: 44px;
-    border: 0;
-    border-radius: 6px;
-    background: #16a34a;
-    color: #ffffff;
-    font-weight: 600;
-    cursor: pointer;
-}
-
 .qr-close-btn { /* Style inherited from .close-modal */
     color: #ffffff;
     background-color: #ef4444;
@@ -2333,7 +2313,7 @@ kbd {
                 <div class="col-md-7">
                     <p class="h4">Total Due: <strong class="text-primary">Rs <span id="dialog-total-amount">0</span></strong></p>
                     <label for="numeric-input" class="visually-hidden">Amount</label>
-                    <input type="text" class="numeric-input" id="numeric-input" value="0" inputmode="decimal" autocomplete="off" aria-label="Payment amount">
+                    <input type="text" class="numeric-input" id="numeric-input" value="0" readonly>
                     <div id="keypad">
                         <button data-num="1">1</button><button data-num="2">2</button><button data-num="3">3</button>
                         <button data-num="4">4</button><button data-num="5">5</button><button data-num="6">6</button>
@@ -2386,8 +2366,7 @@ kbd {
             <button id="close-qr-code-dialog" class="qr-close-btn">×</button>
             <h3 class="qr-dialog-title">Scan to Pay</h3>
             <img id="qr-code-image" class="qr-image" alt="QR Code" src="./images/qr.jpeg" loading="lazy">
-            <p class="qr-instruction">Ask the customer to scan and confirm the mobile payment.</p>
-            <button id="mobile-payment-received" class="qr-payment-received-btn" type="button">Mobile Payment Received</button>
+            <p class="qr-instruction">Please scan the QR code to complete your mobile payment.</p>
         </div>
     </div>
 
@@ -2662,6 +2641,7 @@ const AUDIT_LOG_PAGE_SIZE = 20;
 let saveTimeout;
 let appendNumberTimeout; // Debounce timeout for number input
 let isProcessingPayment = false;
+let paymentResetTimer = null;
 let cachedTotal = 0;
 let cachedTotalVersion = '';
 let timerUpdateQueued = false;
@@ -3814,7 +3794,6 @@ function showPromptModal(title, message, options = {}) {
         
         inputContainer.appendChild(inputEl);
         inputContainer.style.display = 'block';
-        document.body.classList.add('modal-open');
         
         modal.style.display = 'flex';
         modal.setAttribute('aria-hidden', 'false');
@@ -3838,7 +3817,6 @@ function showPromptModal(title, message, options = {}) {
             modal.setAttribute('aria-hidden', 'true');
             modal.removeEventListener('keydown', handleKeydown);
             inputContainer.style.display = 'block';
-            document.body.classList.remove('modal-open');
             confirmBtn.replaceWith(confirmBtn.cloneNode(true));
             cancelBtn.replaceWith(cancelBtn.cloneNode(true));
             if (previousActiveElement && typeof previousActiveElement.focus === 'function') {
@@ -3877,7 +3855,6 @@ function showConfirmModal(title, message) {
         titleEl.textContent = escapeHtml(title || '');
         messageEl.textContent = escapeHtml(String(message || ''));
         inputContainer.style.display = 'none'; // Hide the input field
-        document.body.classList.add('modal-open');
         
         modal.style.display = 'flex';
         modal.setAttribute('aria-hidden', 'false');
@@ -3900,7 +3877,6 @@ function showConfirmModal(title, message) {
             modal.setAttribute('aria-hidden', 'true');
             modal.removeEventListener('keydown', handleKeydown);
             inputContainer.style.display = 'block'; // Show input field again for next use
-            document.body.classList.remove('modal-open');
             confirmBtn.replaceWith(confirmBtn.cloneNode(true));
             cancelBtn.replaceWith(cancelBtn.cloneNode(true));
             if (previousActiveElement && typeof previousActiveElement.focus === 'function') {
@@ -4127,7 +4103,7 @@ function speakText(message) {
         return;
     }
 
-    const speakWithVoices = () => {
+    setTimeout(() => {
         try {
             const voices = window.speechSynthesis.getVoices();
             console.log('=== All Available Voices ===');
@@ -4173,21 +4149,7 @@ function speakText(message) {
         } catch (err) {
             console.error('Speech error:', err);
         }
-    };
-
-    const trySpeak = () => {
-        const voices = window.speechSynthesis.getVoices();
-        if (voices.length > 0) {
-            speakWithVoices();
-            return;
-        }
-        window.speechSynthesis.onvoiceschanged = () => {
-            window.speechSynthesis.onvoiceschanged = null;
-            speakWithVoices();
-        };
-    };
-
-    setTimeout(trySpeak, 300);
+    }, 300);
 }
 
 function generateOrderId() {
@@ -4347,16 +4309,19 @@ function setOrderDrawerOpen(isOpen) {
 // Helper to get image for category or section
 function getRepresentativeImage(name, isSection = false) {
     if (isSection) {
-        const categoriesInSection = menuSections[name] || [];
-        for (const category of categoriesInSection) {
-            const item = menuItems.find(menuItem => menuItem.category === category && menuItem.image);
-            if (item) return item.image;
+        // For top-level sections (Food, Cold Drinks, Retail & Misc), pick a representative category's image
+        const categoriesInSection = menuSections[name];
+        if (categoriesInSection && categoriesInSection.length > 0) {
+            const firstCategory = categoriesInSection[0];
+            const firstItemInCategory = menuItems.find(item => item.category === firstCategory && item.image);
+            if (firstItemInCategory) return firstItemInCategory.image;
         }
     } else {
-        const item = menuItems.find(menuItem => menuItem.category === name && menuItem.image);
-        if (item) return item.image;
+        // For individual categories (including all drink categories), pick the first item's image
+        const firstItemInCategory = menuItems.find(item => item.category === name && item.image);
+        if (firstItemInCategory) return firstItemInCategory.image;
     }
-    return 'images/placeholder.jpg';
+    return 'images/placeholder.jpg'; // Generic placeholder
 }
 
 
@@ -4914,13 +4879,11 @@ function showExtrasModal() {
     content.appendChild(saveBtn);
 
     modal.style.display = 'block';
-    document.body.classList.add('modal-open');
 }
 
 function closeExtrasModal() {
     const modal = document.getElementById('extras-modal');
     if (modal) modal.style.display = 'none';
-    document.body.classList.remove('modal-open');
 }
 
 async function saveExtras() {
@@ -4989,7 +4952,6 @@ async function saveExtras() {
 function closeNotesModal() {
     const modal = document.getElementById('notes-modal');
     if (modal) modal.style.display = 'none';
-    document.body.classList.remove('modal-open');
 }
 
 function showNotesModal() {
@@ -5014,7 +4976,6 @@ function showNotesModal() {
     closeBtn.onclick = () => closeNotesModal();
     
     modal.style.display = 'block';
-    document.body.classList.add('modal-open');
     textarea.focus();
 }
 
@@ -5119,14 +5080,15 @@ function showSidebarContentModal(title, contentHTML, setupCallback = null) {
     const contentArea = document.getElementById('modal-content-area');
     if (!modal || !contentArea) return;
     
+    // CRITICAL: Clear all previous event listeners to prevent memory leaks
     const newContentArea = contentArea.cloneNode(false);
     contentArea.parentNode.replaceChild(newContentArea, contentArea);
     
     const updatedContentArea = document.getElementById('modal-content-area');
     updatedContentArea.innerHTML = `<h3>${escapeHtml(title)}</h3>${contentHTML}`;
     modal.style.display = 'block';
-    document.getElementById('sidebar')?.classList.remove('active');
     if (setupCallback) setupCallback();
+    toggleSidebar({ preventDefault: () => {} });
 }
 
 function closeSidebarContentModal() {
@@ -5177,7 +5139,6 @@ function generateSalesReport() {
     endDate.setHours(23, 59, 59, 999);
 
     const filteredSales = salesHistory.filter(sale => {
-        if (sale.status === 'voided') return false;
         const saleDate = new Date(sale.timestamp);
         return saleDate >= startDate && saleDate <= endDate;
     });
@@ -5252,7 +5213,6 @@ function exportSalesReport() {
     const startDate = document.getElementById('start-date').value;
     const endDate = document.getElementById('end-date').value;
     const filteredSales = salesHistory.filter(sale => {
-        if (sale.status === 'voided') return false;
         const saleDate = new Date(sale.timestamp);
         return saleDate >= new Date(startDate) && saleDate <= new Date(endDate);
     });
@@ -5414,7 +5374,6 @@ function showItemsSoldContent(e) {
 
         // Filter raw sales history to only include sales within the date range
         const salesInDateRange = salesHistory.filter(s => {
-            if (s.status === 'voided') return false;
             const saleDate = new Date(s.timestamp);
             return saleDate >= start && saleDate <= end;
         });
@@ -6015,7 +5974,7 @@ function persistCheckoutState() {
     });
 }
 
-function resetCheckoutState(shouldPersist = true) {
+function resetCheckoutState() {
     paymentMethods = [];
     paymentAmount = 0;
     discount = 0;
@@ -6027,7 +5986,7 @@ function resetCheckoutState(shouldPersist = true) {
     const discountCodeInput = document.getElementById('discount-code');
     if (discountCodeInput) discountCodeInput.value = '';
 
-    if (shouldPersist) persistCheckoutState();
+    persistCheckoutState();
 }
 
 function showCheckoutDialog() {
@@ -6038,15 +5997,7 @@ function showCheckoutDialog() {
 
     const restoredCheckoutState = restoreCheckoutState();
     if (restoredCheckoutState && restoredCheckoutState.currentTable === currentTable) {
-        paymentMethods = Array.isArray(restoredCheckoutState.paymentMethods)
-            ? restoredCheckoutState.paymentMethods
-                .filter(pm => pm && (pm.method === 'Cash' || pm.method === 'Mobile'))
-                .map(pm => ({
-                    method: pm.method,
-                    amount: validateNumericInput(pm.amount, 0),
-                    status: pm.method === 'Mobile' ? (pm.status === 'received' ? 'received' : 'pending') : 'received'
-                }))
-            : [];
+        paymentMethods = Array.isArray(restoredCheckoutState.paymentMethods) ? restoredCheckoutState.paymentMethods : [];
         paymentAmount = typeof restoredCheckoutState.paymentAmount === 'number' ? restoredCheckoutState.paymentAmount : 0;
         discount = typeof restoredCheckoutState.discount === 'number' ? restoredCheckoutState.discount : 0;
         discountCodeApplied = restoredCheckoutState.discountCodeApplied || null;
@@ -6081,7 +6032,8 @@ function closeCheckoutDialog() {
     const checkoutDialog = document.getElementById('checkout-dialog');
     if (checkoutDialog) checkoutDialog.style.display = 'none';
     document.body.classList.remove('modal-open');
-    closeQRCodeDialog();
+    clearCheckoutState();
+    resetCheckoutState();
     renderOrderItems();
     updateTotal();
 }
@@ -6109,14 +6061,14 @@ function appendNumber(num) {
     }, 50);
 }
 
-function handlePaymentInput(event) {
+function handleNumericInput(event) {
     const input = event.target;
     const sanitizedValue = input.value.replace(/[^0-9.]/g, '');
-    const decimalIndex = sanitizedValue.indexOf('.');
-    input.value = decimalIndex === -1
-        ? sanitizedValue
-        : `${sanitizedValue.slice(0, decimalIndex + 1)}${sanitizedValue.slice(decimalIndex + 1).replace(/\./g, '')}`;
-    paymentAmount = validateNumericInput(input.value || 0, 0);
+    const decimalParts = sanitizedValue.split('.');
+    input.value = decimalParts.length > 1
+        ? `${decimalParts[0]}.${decimalParts.slice(1).join('')}`
+        : sanitizedValue;
+    paymentAmount = validateNumericInput(input.value, 0);
     updateChange();
     persistCheckoutState();
 }
@@ -6136,7 +6088,7 @@ function setQuickAmount(amount) {
     let finalAmount;
     if (isNaN(amount)) { // For "Exact" button
         const total = validateNumericInput(document.getElementById('dialog-total-amount').textContent, 0);
-        const paidSoFar = getPaidAmount();
+        const paidSoFar = paymentMethods.reduce((sum, pm) => sum + pm.amount, 0);
         finalAmount = Math.max(0, total - paidSoFar);
     } else {
         finalAmount = validateNumericInput(amount, 0);
@@ -6146,10 +6098,6 @@ function setQuickAmount(amount) {
     paymentAmount = finalAmount;
     updateChange();
     persistCheckoutState();
-}
-
-function getPaidAmount() {
-    return paymentMethods.reduce((sum, pm) => sum + validateNumericInput(pm.amount, 0), 0);
 }
 
 function applyDiscount(percentage) {
@@ -6226,9 +6174,8 @@ async function clearDiscount() {
 }
 
 function processPayment(method) {
-    if (isProcessingPayment) return;
     const total = calculateTotal();
-    const paidSoFar = getPaidAmount();
+    const paidSoFar = paymentMethods.reduce((sum, pm) => sum + pm.amount, 0);
     const remainingDue = Math.max(0, total - paidSoFar);
 
     if (total <= 0.01 && paymentAmount === 0) {
@@ -6252,14 +6199,11 @@ function processPayment(method) {
         return;
     }
 
-    paymentMethods.push({
-        method,
-        amount: validateNumericInput(paymentAmount, 0),
-        status: method === 'Mobile' ? 'pending' : 'received'
-    });
+    paymentMethods.push({ method, amount: paymentAmount });
+    renderPaymentMethods();
     paymentAmount = 0;
     document.getElementById('numeric-input').value = '0';
-    renderPaymentMethods();
+    updateChange();
     persistCheckoutState();
 
     if (method === 'Mobile') {
@@ -6278,7 +6222,7 @@ function renderPaymentMethods() {
 
     paymentList.innerHTML = paymentMethods.map((pm, index) => `
         <li>
-            <span>${pm.method}: Rs ${validateNumericInput(pm.amount, 0).toFixed(2)}${pm.method === 'Mobile' && pm.status !== 'received' ? ' (Pending)' : ''}</span>
+            ${pm.method}: Rs ${pm.amount.toFixed(2)}
             <button class="remove-payment-btn" data-index="${index}">Remove</button>
         </li>
     `).join('');
@@ -6289,44 +6233,12 @@ function renderPaymentMethods() {
         paymentList.dataset.listenersAdded = 'true';
     }
 
-    updateChange();
-}
-
-function syncPaymentModalState() {
-    const qrCodeDialog = document.getElementById('qr-code-dialog');
-    const checkoutDialog = document.getElementById('checkout-dialog');
-    const checkoutOpen = checkoutDialog && checkoutDialog.style.display === 'block';
-    const qrOpen = qrCodeDialog && qrCodeDialog.style.display === 'flex';
-    document.body.classList.toggle('modal-open', checkoutOpen || qrOpen);
-}
-
-function hasPendingMobilePayment() {
-    return paymentMethods.some(pm => pm.method === 'Mobile' && pm.status !== 'received');
-}
-
-function confirmMobilePaymentReceived() {
-    const pendingMobilePayments = paymentMethods.filter(pm => pm.method === 'Mobile' && pm.status !== 'received');
-    if (pendingMobilePayments.length === 0) {
-        notifications.show('No pending mobile payment to confirm.', 'info');
+    const hasMobilePayment = paymentMethods.some(pm => pm.method === 'Mobile');
+    if (hasMobilePayment) {
+        displayQRCode();
+    } else {
         closeQRCodeDialog();
-        return;
     }
-
-    pendingMobilePayments.forEach(pm => {
-        pm.status = 'received';
-    });
-    closeQRCodeDialog();
-    renderPaymentMethods();
-    persistCheckoutState();
-    notifications.show('Mobile payment marked as received.', 'success');
-}
-
-function setPaymentUIBusy(isBusy) {
-    const checkoutDialog = document.getElementById('checkout-dialog');
-    if (!checkoutDialog) return;
-    checkoutDialog.querySelectorAll('button, input').forEach(control => {
-        control.disabled = isBusy;
-    });
 }
 
 // Event delegation handler for payment list clicks
@@ -6362,8 +6274,8 @@ function removePayment(index) {
 
 function updateChange() {
     const total = calculateTotal();
-    const paidSoFar = getPaidAmount();
-    const effectivePaid = paidSoFar + Math.max(0, validateNumericInput(paymentAmount, 0));
+    const paidSoFar = paymentMethods.reduce((sum, pm) => sum + pm.amount, 0);
+    const effectivePaid = paidSoFar + Math.max(0, paymentAmount);
 
     const remainingDue = Math.max(0, total - effectivePaid);
     const changeAmount = Math.max(0, effectivePaid - total);
@@ -6378,7 +6290,7 @@ function updateChange() {
     
     // STRICT: Disable completion only if payment is insufficient
     if (completeBtn) {
-        const canComplete = !isProcessingPayment && !hasPendingMobilePayment() && (total <= 0.01 || (effectivePaid >= total - 0.01));
+        const canComplete = total <= 0.01 || (effectivePaid >= total - 0.01);
         completeBtn.disabled = !canComplete;
         completeBtn.style.opacity = canComplete ? '1' : '0.5';
         completeBtn.style.cursor = canComplete ? 'pointer' : 'not-allowed';
@@ -6469,9 +6381,6 @@ function displayQRCode() {
 
     qrCodeImage.src = './images/qr.jpeg';
     qrCodeDialog.style.display = 'flex';
-    const checkoutDialog = document.getElementById('checkout-dialog');
-    const checkoutOpen = checkoutDialog && checkoutDialog.style.display === 'block';
-    document.body.classList.toggle('modal-open', checkoutOpen || qrCodeDialog.style.display === 'flex');
 }
 
 function closeQRCodeDialog() {
@@ -6481,23 +6390,28 @@ function closeQRCodeDialog() {
     } else {
         console.error('QR code dialog element not found');
     }
-
-    const checkoutDialog = document.getElementById('checkout-dialog');
-    const checkoutOpen = checkoutDialog && checkoutDialog.style.display === 'block';
-    document.body.classList.toggle('modal-open', checkoutOpen);
 }
 
 async function completePayment() {
     if (isProcessingPayment) return;
     isProcessingPayment = true;
-    setPaymentUIBusy(true);
     const completeBtn = document.getElementById('complete-btn');
     if (completeBtn) {
-        completeBtn.textContent = 'Completing Payment...';
         completeBtn.disabled = true;
         completeBtn.style.opacity = '0.6';
         completeBtn.style.cursor = 'not-allowed';
     }
+    if (paymentResetTimer) clearTimeout(paymentResetTimer);
+    paymentResetTimer = setTimeout(() => {
+        isProcessingPayment = false;
+        if (completeBtn) {
+            completeBtn.disabled = false;
+            completeBtn.style.opacity = '1';
+            completeBtn.style.cursor = 'pointer';
+        }
+        hideLoadingSpinner();
+    }, 15000);
+
     try {
         const total = calculateTotal();
         const itemCount = orders[currentTable]?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
@@ -6519,11 +6433,7 @@ async function completePayment() {
             notifications.show("No order to complete!", 'warning');
             return;
         }
-        const paidSoFar = getPaidAmount();
-        if (hasPendingMobilePayment()) {
-            notifications.show('Confirm all mobile payments before completing checkout.', 'warning');
-            return;
-        }
+        const paidSoFar = paymentMethods.reduce((sum, pm) => sum + pm.amount, 0);
         if (paidSoFar < total - 0.01 && total > 0.01) {
             notifications.show("Payment amount is insufficient!", 'error');
             if (paymentAmount > 0) {
@@ -6563,14 +6473,6 @@ async function completePayment() {
 
         salesHistory.push(sale);
         orderHistory.push(sale);
-
-        if (Array.isArray(kotHistory)) {
-            kotHistory.forEach(kot => {
-                if (kot.table === currentTable && kot.status && kot.status !== 'voided') {
-                    kot.status = 'completed';
-                }
-            });
-        }
         
         // Subtract stock from inventory
         sale.items.forEach(item => {
@@ -6610,9 +6512,8 @@ async function completePayment() {
         initializeTables();
         setOrderDrawerOpen(false);
         
-        closeCheckoutDialog();
         clearCheckoutState();
-        resetCheckoutState(false);
+        closeCheckoutDialog();
         notifications.show('Thank you!', 'success');
         speakText('Thank you!');
         return sale;
@@ -6623,9 +6524,10 @@ async function completePayment() {
     } finally {
         hideLoadingSpinner();
         isProcessingPayment = false;
-        setPaymentUIBusy(false);
-        if (completeBtn) completeBtn.textContent = 'Complete Payment';
-        updateChange();
+        if (paymentResetTimer) {
+            clearTimeout(paymentResetTimer);
+            paymentResetTimer = null;
+        }
     }
 }
 
@@ -6725,8 +6627,7 @@ async function finalizeOrder() {
     }
 }
 
-function printKOT(kotItems, type, table = currentTable) {
-    const kotTable = table ?? currentTable;
+function printKOT(kotItems, type) {
     const kotHTML = `
         <!DOCTYPE html>
         <html>
@@ -6742,7 +6643,7 @@ function printKOT(kotItems, type, table = currentTable) {
         <body>
             <div class="header">
                 <h2>KITCHEN ORDER TICKET</h2>
-                <p>Table: ${kotTable} | Type: ${type.toUpperCase()}</p>
+                <p>Table: ${currentTable} | Type: ${type.toUpperCase()}</p>
                 <p>Time: ${new Date().toLocaleTimeString()}</p>
             </div>
             <div class="items">
@@ -6803,14 +6704,6 @@ async function changeTable() {
         tableTimers[newTable] = timerToMove;
         delete orders[oldTable];
         delete tableTimers[oldTable];
-
-        if (Array.isArray(kotHistory)) {
-            kotHistory.forEach(kot => {
-                if (kot.table === oldTable) {
-                    kot.table = newTable;
-                }
-            });
-        }
         currentTable = newTable;
 
         persistAllData();
@@ -6985,13 +6878,6 @@ async function voidOrderFromHistory(orderToVoid) {
     orderHistory[orderIndexInHistory].status = 'voided';
     if (saleIndexInHistory !== -1) {
          salesHistory[saleIndexInHistory].status = 'voided';
-    }
-    if (Array.isArray(kotHistory)) {
-        kotHistory.forEach(kot => {
-            if (kot.table === orderToVoid.table && String(kot.kotNumber) === String(orderToVoid.orderNumber || '')) {
-                kot.status = 'voided';
-            }
-        });
     }
     voidDetails.push(voidEntry);
 
@@ -7462,8 +7348,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // Checkout Dialog Listeners
     document.getElementById('close-checkout-dialog')?.addEventListener('click', closeCheckoutDialog);
     document.getElementById('close-extras-modal')?.addEventListener('click', closeExtrasModal);
-    document.getElementById('numeric-input')?.addEventListener('input', handlePaymentInput);
     document.getElementById('clear-input')?.addEventListener('click', clearInput);
+    document.getElementById('numeric-input')?.addEventListener('input', handleNumericInput);
     document.getElementById('apply-discount-code')?.addEventListener('click', applyDiscountCode);
     document.getElementById('clear-discount')?.addEventListener('click', clearDiscount);
     document.getElementById('cash-btn')?.addEventListener('click', () => processPayment("Cash"));
@@ -7504,7 +7390,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // QR Code Dialog
     document.getElementById('close-qr-code-dialog')?.addEventListener('click', closeQRCodeDialog);
-    document.getElementById('mobile-payment-received')?.addEventListener('click', confirmMobilePaymentReceived);
 
     // Search input debounce
     const searchInput = document.getElementById('search');
@@ -7728,7 +7613,7 @@ window.markKOTReady = markKOTReady;
 function printKOTFromView(kotId) {
     const kot = kotHistory.find(k => k.kotId === kotId);
     if (kot) {
-        printKOT(kot.items, kot.type, kot.table);
+        printKOT(kot.items, kot.type);
     }
 }
 
@@ -7885,7 +7770,7 @@ function showHelpModal() {
 // Export to PDF function
 function exportToPDF(elementId, filename) {
     if (typeof html2pdf === 'undefined') {
-        notifications.show('PDF library not loaded. Please check your internet connection or refresh the page.', 'error');
+        notifications.show('PDF library not loaded. Please check your internet connection.', 'error');
         return;
     }
     
