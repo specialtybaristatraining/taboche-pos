@@ -288,7 +288,7 @@ header {
     text-align: center;
     min-height: 45px;
     line-height: 1.2;
-    touch-action: manipulation;
+    touch-action: auto;
     transition: all 0.2s ease;
     box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
     background: #ecf9f1;
@@ -1032,7 +1032,6 @@ body.dark-mode .search-bar {
 
 body.modal-open {
     overflow: hidden;
-    touch-action: none;
 }
 
 .modal-content {
@@ -2313,7 +2312,7 @@ kbd {
                 <div class="col-md-7">
                     <p class="h4">Total Due: <strong class="text-primary">Rs <span id="dialog-total-amount">0</span></strong></p>
                     <label for="numeric-input" class="visually-hidden">Amount</label>
-                    <input type="text" class="numeric-input" id="numeric-input" value="0" inputmode="decimal" autocomplete="off">
+                    <input type="number" class="numeric-input" id="numeric-input" value="0" inputmode="decimal" enterkeyhint="done" min="0" step="0.01" autocomplete="off">
                     <div id="keypad">
                         <button data-num="1">1</button><button data-num="2">2</button><button data-num="3">3</button>
                         <button data-num="4">4</button><button data-num="5">5</button><button data-num="6">6</button>
@@ -2324,8 +2323,8 @@ kbd {
                          <button data-amount="exact" title="Fills the remaining due amount">Exact</button><button data-amount="500" title="Adds 500">500</button><button data-amount="1000" title="Adds 1000">1000</button><button data-amount="2000" title="Adds 2000">2000</button>
                     </div>
                     <div class="payment-buttons mt-3">
-                        <button id="cash-btn" class="btn-lg"><i class="fas fa-money-bill-wave me-2"></i>Cash</button>
-                        <button id="mobile-btn" class="btn-lg"><i class="fas fa-mobile-alt me-2"></i> Mobile</button>
+                        <button type="button" id="cash-btn" class="btn-lg"><i class="fas fa-money-bill-wave me-2"></i>Cash</button>
+                        <button type="button" id="mobile-btn" class="btn-lg"><i class="fas fa-mobile-alt me-2"></i> Mobile</button>
                     </div>
                 </div>
                <div class="col-md-5 border-start">
@@ -2354,7 +2353,7 @@ kbd {
                         <span id="change-amount" class="text-success">Rs 0.00</span>
                     </div>
                     <div id="insufficient-message" class="text-danger" style="display:none; font-size: 0.95rem; margin-top: 0.5rem;"></div>
-                    <button id="complete-btn" data-sound="confirm" class="btn-primary btn-lg w-100 mt-3" disabled>Complete Payment</button>
+                    <button type="button" id="complete-btn" data-sound="confirm" class="btn-primary btn-lg w-100 mt-3" disabled>Complete Payment</button>
                 </div>
             </div>
         </div>
@@ -2490,7 +2489,11 @@ function compressDataState(data = {}) {
 
 function saveCheckoutState(state, storage = globalThis.sessionStorage) {
     if (!storage) return;
-    storage.setItem('pos-checkout-state', JSON.stringify(state));
+    try {
+        storage.setItem('pos-checkout-state', JSON.stringify(state));
+    } catch (error) {
+        console.warn('Checkout state could not be saved:', error);
+    }
 }
 
 function restoreCheckoutState(storage = globalThis.sessionStorage) {
@@ -6063,11 +6066,6 @@ function appendNumber(num) {
 
 function handleNumericInput(event) {
     const input = event.target;
-    const sanitizedValue = input.value.replace(/[^0-9.]/g, '');
-    const decimalParts = sanitizedValue.split('.');
-    input.value = decimalParts.length > 1
-        ? `${decimalParts[0]}.${decimalParts.slice(1).join('')}`
-        : sanitizedValue;
     paymentAmount = validateNumericInput(input.value, 0);
     updateChange();
     persistCheckoutState();
