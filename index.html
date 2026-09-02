@@ -195,8 +195,8 @@ header {
 /* Indicators and Notifications */
 .notification-toast {
     position: fixed;
-    bottom: 1.5rem;
-    right: 1.5rem;
+    top: 5.25rem;
+    right: 1.25rem;
     display: none; /* Controlled by JS */
     flex-direction: row;
     align-items: center;
@@ -206,10 +206,10 @@ header {
     border-radius: 8px;
     z-index: 1055; /* Above bootstrap modals */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    min-width: 300px;
-    max-width: 400px;
+    min-width: 260px;
+    max-width: 360px;
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(-20px);
     transition: opacity 0.3s ease, transform 0.3s ease;
 }
 .notification-icon { font-size: 1.5rem; }
@@ -907,10 +907,6 @@ body.dark-mode .search-bar {
 }
 .print-receipt-btn {
     background: #64748b;
-}
-.clear-all-btn {
-    background: #dc2626;
-    color: #ffffff;
 }
 
 /* Status badge styling */
@@ -2267,7 +2263,6 @@ kbd {
                         <button class="change-table-btn" id="change-table-btn">Change Table</button>
                         <button class="void-btn" id="void-btn">Void</button>
                         <button class="print-receipt-btn" id="print-receipt-btn">Print</button>
-                        <button class="clear-all-btn" id="clear-all-btn">Clear All</button>
                     </div>
                 </div>
             </div>
@@ -3962,7 +3957,7 @@ class NotificationSystem {
 
         setTimeout(() => {
             toast.style.opacity = '0';
-            toast.style.transform = 'translateY(20px)';
+            toast.style.transform = 'translateY(-20px)';
             setTimeout(() => {
                 toast.style.display = 'none';
                 this.processQueue();
@@ -5068,24 +5063,6 @@ async function removeOrderItem(index) {
     refreshUI();
     notifications.show(`Removed "${itemToRemove.name}"`, 'success');
     hideLoadingSpinner();
-}
-
-async function clearAllOrderItems() {
-    if (!currentTable || !orders[currentTable]?.length) {
-        notifications.show('No items to clear.', 'info');
-        return;
-    }
-
-    const confirmed = await showConfirmModal('Clear All Items', 'Remove all items from this order?');
-    if (!confirmed) return;
-
-    orders[currentTable] = [];
-    delete tableTimers[currentTable];
-    persistAllData();
-    renderOrderItems();
-    updateTotal();
-    initializeTables();
-    notifications.show('All items cleared.', 'success');
 }
 
 function refreshUI() {
@@ -7323,7 +7300,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("change-table-btn")?.addEventListener("click", changeTable);
     document.getElementById("void-btn")?.addEventListener("click", voidOrder);
     document.getElementById("print-receipt-btn")?.addEventListener("click", printReceipt);
-    document.getElementById("clear-all-btn")?.addEventListener("click", clearAllOrderItems);
 
     // Sidebar Navigation
     document.getElementById("nav-sales-reports")?.addEventListener("click", showSalesReportsContent);
