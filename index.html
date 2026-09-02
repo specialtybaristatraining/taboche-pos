@@ -6039,7 +6039,11 @@ function showCheckoutDialog() {
 
     const restoredCheckoutState = restoreCheckoutState();
     if (restoredCheckoutState && restoredCheckoutState.currentTable === currentTable) {
-        paymentMethods = Array.isArray(restoredCheckoutState.paymentMethods) ? restoredCheckoutState.paymentMethods : [];
+        paymentMethods = Array.isArray(restoredCheckoutState.paymentMethods)
+            ? restoredCheckoutState.paymentMethods
+                .filter(pm => pm && (pm.method === 'Cash' || pm.method === 'Mobile'))
+                .map(pm => ({ method: pm.method, amount: validateNumericInput(pm.amount, 0) }))
+            : [];
         paymentAmount = typeof restoredCheckoutState.paymentAmount === 'number' ? restoredCheckoutState.paymentAmount : 0;
         discount = typeof restoredCheckoutState.discount === 'number' ? restoredCheckoutState.discount : 0;
         discountCodeApplied = restoredCheckoutState.discountCodeApplied || null;
@@ -6130,7 +6134,7 @@ function setQuickAmount(amount) {
     let finalAmount;
     if (isNaN(amount)) { // For "Exact" button
         const total = validateNumericInput(document.getElementById('dialog-total-amount').textContent, 0);
-        const paidSoFar = paymentMethods.reduce((sum, pm) => sum + pm.amount, 0);
+        const paidSoFar = getPaidAmount();
         finalAmount = Math.max(0, total - paidSoFar);
     } else {
         finalAmount = validateNumericInput(amount, 0);
@@ -6140,6 +6144,10 @@ function setQuickAmount(amount) {
     paymentAmount = finalAmount;
     updateChange();
     persistCheckoutState();
+}
+
+function getPaidAmount() {
+    return paymentMethods.reduce((sum, pm) => sum + validateNumericInput(pm.amount, 0), 0);
 }
 
 function applyDiscount(percentage) {
@@ -6217,7 +6225,7 @@ async function clearDiscount() {
 
 function processPayment(method) {
     const total = calculateTotal();
-    const paidSoFar = paymentMethods.reduce((sum, pm) => sum + pm.amount, 0);
+    const paidSoFar = getPaidAmount();
     const remainingDue = Math.max(0, total - paidSoFar);
 
     if (total <= 0.01 && paymentAmount === 0) {
@@ -6241,7 +6249,7 @@ function processPayment(method) {
         return;
     }
 
-    paymentMethods.push({ method, amount: paymentAmount });
+    paymentMethods.push({ method, amount: validateNumericInput(paymentAmount, 0) });
     renderPaymentMethods();
     paymentAmount = 0;
     document.getElementById('numeric-input').value = '0';
@@ -6279,7 +6287,7 @@ function renderPaymentMethods() {
 }
 
 function syncPaymentModalState() {
-    const paymentTotal = paymentMethods.reduce((sum, pm) => sum + (Number(pm.amount) || 0), 0);
+    const paymentTotal = getPaidAmount();
     const orderTotal = calculateTotal();
     const hasOutstandingMobilePayment = paymentMethods.some(pm => pm.method === 'Mobile') && paymentTotal < orderTotal - 0.01;
     const qrCodeDialog = document.getElementById('qr-code-dialog');
@@ -6326,10 +6334,11 @@ function removePayment(index) {
 
 function updateChange() {
     const total = calculateTotal();
-    const paidSoFar = paymentMethods.reduce((sum, pm) => sum + pm.amount, 0);
+    const paidSoFar = getPaidAmount();
+    const effectivePaid = paidSoFar + Math.max(0, validateNumericInput(paymentAmount, 0));
 
-    const remainingDue = Math.max(0, total - paidSoFar);
-    const changeAmount = Math.max(0, paidSoFar - total);
+    const remainingDue = Math.max(0, total - effectivePaid);
+    const changeAmount = Math.max(0, effectivePaid - total);
     
     const remainingDueEl = document.getElementById('remaining-due');
     const changeAmountEl = document.getElementById('change-amount');
@@ -6341,7 +6350,6 @@ function updateChange() {
     
     // STRICT: Disable completion only if payment is insufficient
     if (completeBtn) {
-        const effectivePaid = paidSoFar + Math.max(0, paymentAmount);
         const canComplete = total <= 0.01 || (effectivePaid >= total - 0.01);
         completeBtn.disabled = !canComplete;
         completeBtn.style.opacity = canComplete ? '1' : '0.5';
@@ -6492,7 +6500,7 @@ async function completePayment() {
             notifications.show("No order to complete!", 'warning');
             return;
         }
-        const paidSoFar = paymentMethods.reduce((sum, pm) => sum + pm.amount, 0);
+        const paidSoFar = getPaidAmount();
         if (paidSoFar < total - 0.01 && total > 0.01) {
             notifications.show("Payment amount is insufficient!", 'error');
             if (paymentAmount > 0) {
