@@ -2313,7 +2313,7 @@ kbd {
                 <div class="col-md-7">
                     <p class="h4">Total Due: <strong class="text-primary">Rs <span id="dialog-total-amount">0</span></strong></p>
                     <label for="numeric-input" class="visually-hidden">Amount</label>
-                    <input type="text" class="numeric-input" id="numeric-input" value="0" readonly>
+                    <input type="text" class="numeric-input" id="numeric-input" value="0" inputmode="decimal" autocomplete="off" aria-label="Payment amount">
                     <div id="keypad">
                         <button data-num="1">1</button><button data-num="2">2</button><button data-num="3">3</button>
                         <button data-num="4">4</button><button data-num="5">5</button><button data-num="6">6</button>
@@ -6030,13 +6030,12 @@ function showCheckoutDialog() {
 
     const numericInput = document.getElementById('numeric-input');
     if (numericInput) {
-        numericInput.setAttribute('readonly', 'readonly');
-        numericInput.setAttribute('inputmode', 'numeric');
+        numericInput.removeAttribute('readonly');
+        numericInput.setAttribute('inputmode', 'decimal');
         numericInput.setAttribute('autocomplete', 'off');
         numericInput.setAttribute('autocorrect', 'off');
         numericInput.setAttribute('spellcheck', 'false');
-        numericInput.tabIndex = -1;
-        numericInput.onfocus = () => numericInput.blur();
+        numericInput.tabIndex = 0;
     }
 
     updateTotal(); 
@@ -6081,6 +6080,18 @@ function appendNumber(num) {
         updateChange();
         persistCheckoutState();
     }, 50);
+}
+
+function handlePaymentInput(event) {
+    const input = event.target;
+    const sanitizedValue = input.value.replace(/[^0-9.]/g, '');
+    const decimalIndex = sanitizedValue.indexOf('.');
+    input.value = decimalIndex === -1
+        ? sanitizedValue
+        : `${sanitizedValue.slice(0, decimalIndex + 1)}${sanitizedValue.slice(decimalIndex + 1).replace(/\./g, '')}`;
+    paymentAmount = validateNumericInput(input.value || 0, 0);
+    updateChange();
+    persistCheckoutState();
 }
 
 function clearInput() {
@@ -7399,6 +7410,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Checkout Dialog Listeners
     document.getElementById('close-checkout-dialog')?.addEventListener('click', closeCheckoutDialog);
     document.getElementById('close-extras-modal')?.addEventListener('click', closeExtrasModal);
+    document.getElementById('numeric-input')?.addEventListener('input', handlePaymentInput);
     document.getElementById('clear-input')?.addEventListener('click', clearInput);
     document.getElementById('apply-discount-code')?.addEventListener('click', applyDiscountCode);
     document.getElementById('clear-discount')?.addEventListener('click', clearDiscount);
