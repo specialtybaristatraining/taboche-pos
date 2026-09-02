@@ -2662,7 +2662,6 @@ const AUDIT_LOG_PAGE_SIZE = 20;
 let saveTimeout;
 let appendNumberTimeout; // Debounce timeout for number input
 let isProcessingPayment = false;
-let paymentResetTimer = null;
 let cachedTotal = 0;
 let cachedTotalVersion = '';
 let timerUpdateQueued = false;
@@ -6016,7 +6015,7 @@ function persistCheckoutState() {
     });
 }
 
-function resetCheckoutState() {
+function resetCheckoutState(shouldPersist = true) {
     paymentMethods = [];
     paymentAmount = 0;
     discount = 0;
@@ -6028,7 +6027,7 @@ function resetCheckoutState() {
     const discountCodeInput = document.getElementById('discount-code');
     if (discountCodeInput) discountCodeInput.value = '';
 
-    persistCheckoutState();
+    if (shouldPersist) persistCheckoutState();
 }
 
 function showCheckoutDialog() {
@@ -6042,7 +6041,11 @@ function showCheckoutDialog() {
         paymentMethods = Array.isArray(restoredCheckoutState.paymentMethods)
             ? restoredCheckoutState.paymentMethods
                 .filter(pm => pm && (pm.method === 'Cash' || pm.method === 'Mobile'))
-                .map(pm => ({ method: pm.method, amount: validateNumericInput(pm.amount, 0) }))
+                .map(pm => ({
+                    method: pm.method,
+                    amount: validateNumericInput(pm.amount, 0),
+                    status: pm.method === 'Mobile' ? (pm.status === 'received' ? 'received' : 'pending') : 'received'
+                }))
             : [];
         paymentAmount = typeof restoredCheckoutState.paymentAmount === 'number' ? restoredCheckoutState.paymentAmount : 0;
         discount = typeof restoredCheckoutState.discount === 'number' ? restoredCheckoutState.discount : 0;
@@ -6078,8 +6081,7 @@ function closeCheckoutDialog() {
     const checkoutDialog = document.getElementById('checkout-dialog');
     if (checkoutDialog) checkoutDialog.style.display = 'none';
     document.body.classList.remove('modal-open');
-    clearCheckoutState();
-    resetCheckoutState();
+    closeQRCodeDialog();
     renderOrderItems();
     updateTotal();
 }
@@ -6224,6 +6226,7 @@ async function clearDiscount() {
 }
 
 function processPayment(method) {
+    if (isProcessingPayment) return;
     const total = calculateTotal();
     const paidSoFar = getPaidAmount();
     const remainingDue = Math.max(0, total - paidSoFar);
@@ -6249,11 +6252,14 @@ function processPayment(method) {
         return;
     }
 
-    paymentMethods.push({ method, amount: validateNumericInput(paymentAmount, 0) });
-    renderPaymentMethods();
+    paymentMethods.push({
+        method,
+        amount: validateNumericInput(paymentAmount, 0),
+        status: method === 'Mobile' ? 'pending' : 'received'
+    });
     paymentAmount = 0;
     document.getElementById('numeric-input').value = '0';
-    updateChange();
+    renderPaymentMethods();
     persistCheckoutState();
 
     if (method === 'Mobile') {
@@ -6272,7 +6278,7 @@ function renderPaymentMethods() {
 
     paymentList.innerHTML = paymentMethods.map((pm, index) => `
         <li>
-            ${pm.method}: Rs ${pm.amount.toFixed(2)}
+            <span>${pm.method}: Rs ${validateNumericInput(pm.amount, 0).toFixed(2)}${pm.method === 'Mobile' && pm.status !== 'received' ? ' (Pending)' : ''}</span>
             <button class="remove-payment-btn" data-index="${index}">Remove</button>
         </li>
     `).join('');
@@ -6283,22 +6289,44 @@ function renderPaymentMethods() {
         paymentList.dataset.listenersAdded = 'true';
     }
 
-    syncPaymentModalState();
+    updateChange();
 }
 
 function syncPaymentModalState() {
-    const paymentTotal = getPaidAmount();
-    const orderTotal = calculateTotal();
-    const hasOutstandingMobilePayment = paymentMethods.some(pm => pm.method === 'Mobile') && paymentTotal < orderTotal - 0.01;
     const qrCodeDialog = document.getElementById('qr-code-dialog');
     const checkoutDialog = document.getElementById('checkout-dialog');
+    const checkoutOpen = checkoutDialog && checkoutDialog.style.display === 'block';
+    const qrOpen = qrCodeDialog && qrCodeDialog.style.display === 'flex';
+    document.body.classList.toggle('modal-open', checkoutOpen || qrOpen);
+}
 
-    if (qrCodeDialog) {
-        qrCodeDialog.style.display = hasOutstandingMobilePayment ? 'flex' : 'none';
+function hasPendingMobilePayment() {
+    return paymentMethods.some(pm => pm.method === 'Mobile' && pm.status !== 'received');
+}
+
+function confirmMobilePaymentReceived() {
+    const pendingMobilePayments = paymentMethods.filter(pm => pm.method === 'Mobile' && pm.status !== 'received');
+    if (pendingMobilePayments.length === 0) {
+        notifications.show('No pending mobile payment to confirm.', 'info');
+        closeQRCodeDialog();
+        return;
     }
 
-    const checkoutOpen = checkoutDialog && checkoutDialog.style.display === 'block';
-    document.body.classList.toggle('modal-open', checkoutOpen || hasOutstandingMobilePayment);
+    pendingMobilePayments.forEach(pm => {
+        pm.status = 'received';
+    });
+    closeQRCodeDialog();
+    renderPaymentMethods();
+    persistCheckoutState();
+    notifications.show('Mobile payment marked as received.', 'success');
+}
+
+function setPaymentUIBusy(isBusy) {
+    const checkoutDialog = document.getElementById('checkout-dialog');
+    if (!checkoutDialog) return;
+    checkoutDialog.querySelectorAll('button, input').forEach(control => {
+        control.disabled = isBusy;
+    });
 }
 
 // Event delegation handler for payment list clicks
@@ -6350,7 +6378,7 @@ function updateChange() {
     
     // STRICT: Disable completion only if payment is insufficient
     if (completeBtn) {
-        const canComplete = total <= 0.01 || (effectivePaid >= total - 0.01);
+        const canComplete = !isProcessingPayment && !hasPendingMobilePayment() && (total <= 0.01 || (effectivePaid >= total - 0.01));
         completeBtn.disabled = !canComplete;
         completeBtn.style.opacity = canComplete ? '1' : '0.5';
         completeBtn.style.cursor = canComplete ? 'pointer' : 'not-allowed';
@@ -6462,23 +6490,14 @@ function closeQRCodeDialog() {
 async function completePayment() {
     if (isProcessingPayment) return;
     isProcessingPayment = true;
+    setPaymentUIBusy(true);
     const completeBtn = document.getElementById('complete-btn');
     if (completeBtn) {
+        completeBtn.textContent = 'Completing Payment...';
         completeBtn.disabled = true;
         completeBtn.style.opacity = '0.6';
         completeBtn.style.cursor = 'not-allowed';
     }
-    if (paymentResetTimer) clearTimeout(paymentResetTimer);
-    paymentResetTimer = setTimeout(() => {
-        isProcessingPayment = false;
-        if (completeBtn) {
-            completeBtn.disabled = false;
-            completeBtn.style.opacity = '1';
-            completeBtn.style.cursor = 'pointer';
-        }
-        hideLoadingSpinner();
-    }, 15000);
-
     try {
         const total = calculateTotal();
         const itemCount = orders[currentTable]?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
@@ -6501,6 +6520,10 @@ async function completePayment() {
             return;
         }
         const paidSoFar = getPaidAmount();
+        if (hasPendingMobilePayment()) {
+            notifications.show('Confirm all mobile payments before completing checkout.', 'warning');
+            return;
+        }
         if (paidSoFar < total - 0.01 && total > 0.01) {
             notifications.show("Payment amount is insufficient!", 'error');
             if (paymentAmount > 0) {
@@ -6587,8 +6610,9 @@ async function completePayment() {
         initializeTables();
         setOrderDrawerOpen(false);
         
-        clearCheckoutState();
         closeCheckoutDialog();
+        clearCheckoutState();
+        resetCheckoutState(false);
         notifications.show('Thank you!', 'success');
         speakText('Thank you!');
         return sale;
@@ -6599,10 +6623,9 @@ async function completePayment() {
     } finally {
         hideLoadingSpinner();
         isProcessingPayment = false;
-        if (paymentResetTimer) {
-            clearTimeout(paymentResetTimer);
-            paymentResetTimer = null;
-        }
+        setPaymentUIBusy(false);
+        if (completeBtn) completeBtn.textContent = 'Complete Payment';
+        updateChange();
     }
 }
 
@@ -7481,7 +7504,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // QR Code Dialog
     document.getElementById('close-qr-code-dialog')?.addEventListener('click', closeQRCodeDialog);
-    document.getElementById('mobile-payment-received')?.addEventListener('click', closeQRCodeDialog);
+    document.getElementById('mobile-payment-received')?.addEventListener('click', confirmMobilePaymentReceived);
 
     // Search input debounce
     const searchInput = document.getElementById('search');
