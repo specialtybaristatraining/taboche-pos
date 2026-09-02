@@ -1108,6 +1108,26 @@ body.modal-open {
     position: relative;
 }
 
+.qr-dialog-content .qr-image {
+    display: block;
+    width: min(280px, 80vw);
+    height: min(280px, 80vw);
+    object-fit: contain;
+    margin: 1rem auto;
+    background: #f8fafc;
+}
+
+.qr-payment-received-btn {
+    width: 100%;
+    min-height: 44px;
+    border: 0;
+    border-radius: 6px;
+    background: #16a34a;
+    color: #ffffff;
+    font-weight: 600;
+    cursor: pointer;
+}
+
 .qr-close-btn { /* Style inherited from .close-modal */
     color: #ffffff;
     background-color: #ef4444;
@@ -2366,7 +2386,8 @@ kbd {
             <button id="close-qr-code-dialog" class="qr-close-btn">×</button>
             <h3 class="qr-dialog-title">Scan to Pay</h3>
             <img id="qr-code-image" class="qr-image" alt="QR Code" src="./images/qr.jpeg" loading="lazy">
-            <p class="qr-instruction">Please scan the QR code to complete your mobile payment.</p>
+            <p class="qr-instruction">Ask the customer to scan and confirm the mobile payment.</p>
+            <button id="mobile-payment-received" class="qr-payment-received-btn" type="button">Mobile Payment Received</button>
         </div>
     </div>
 
@@ -7452,6 +7473,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // QR Code Dialog
     document.getElementById('close-qr-code-dialog')?.addEventListener('click', closeQRCodeDialog);
+    document.getElementById('mobile-payment-received')?.addEventListener('click', closeQRCodeDialog);
 
     // Search input debounce
     const searchInput = document.getElementById('search');
