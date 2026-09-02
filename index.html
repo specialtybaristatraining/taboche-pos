@@ -758,7 +758,7 @@ body.dark-mode .search-bar {
     -webkit-overflow-scrolling: touch;
     padding: 0.25rem;
     min-height: 0;
-    max-height: calc(100vh - 280px);
+    max-height: calc(100vh - 320px);
 }
 
 .order-item {
@@ -908,6 +908,10 @@ body.dark-mode .search-bar {
 .print-receipt-btn {
     background: #64748b;
 }
+.clear-all-btn {
+    background: #dc2626;
+    color: #ffffff;
+}
 
 /* Status badge styling */
 .finalized-badge {
@@ -1030,6 +1034,10 @@ body.dark-mode .search-bar {
     -webkit-overflow-scrolling: touch;
 }
 
+body.modal-open {
+    overflow: hidden;
+    touch-action: none;
+}
 
 .modal-content {
     background-color: #ffffff;
@@ -1160,6 +1168,10 @@ body.dark-mode .search-bar {
     border: 1px solid #e2e8f0;
     border-radius: 6px;
     text-align: right;
+    touch-action: manipulation;
+    user-select: none;
+    caret-color: transparent;
+    -webkit-user-select: none;
 }
 
 #keypad {
@@ -1718,13 +1730,25 @@ body.dark-mode .search-bar {
 
 /* Improved tablet/desktop layout */
 @media (min-width: 1024px) {
+    .main-content {
+        min-height: 0;
+    }
+
     .menu-section {
         max-width: 65%;
+    }
+
+    .order-items {
+        max-height: none;
     }
     
     .order-section {
         min-width: 350px;
         max-width: 400px;
+        position: relative;
+        top: auto;
+        height: calc(100% - 16px);
+        max-height: 100%;
     }
     
     .menu {
@@ -2156,6 +2180,19 @@ kbd {
             .order-drawer-toggle { display: none; }
         }
 
+        @media (min-width: 1024px) {
+            .order-section {
+                position: relative !important;
+                top: auto !important;
+                height: calc(100% - 16px) !important;
+                max-height: 100%;
+            }
+
+            .order-items {
+                max-height: none;
+            }
+        }
+
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
@@ -2182,6 +2219,7 @@ kbd {
         <div id="offline-queue-badge" class="offline-queue-badge hidden">
             <i class="fas fa-clock"></i> <span id="pending-count">0</span> pending
         </div>
+        <div id="current-user-badge" class="current-user-badge">Cashier • CASHIER</div>
         <i class="fas fa-moon" id="theme-toggle" role="button" tabindex="0" aria-label="Toggle theme"></i>
     </header>
 
@@ -2229,6 +2267,7 @@ kbd {
                         <button class="change-table-btn" id="change-table-btn">Change Table</button>
                         <button class="void-btn" id="void-btn">Void</button>
                         <button class="print-receipt-btn" id="print-receipt-btn">Print</button>
+                        <button class="clear-all-btn" id="clear-all-btn">Clear All</button>
                     </div>
                 </div>
             </div>
@@ -2420,6 +2459,7 @@ function migrateStoredData(data = {}) {
     next.voidDetails = Array.isArray(next.voidDetails) ? next.voidDetails : [];
     next.kotHistory = Array.isArray(next.kotHistory) ? next.kotHistory : [];
     next.itemsSold = Array.isArray(next.itemsSold) ? next.itemsSold : [];
+    next.auditLog = Array.isArray(next.auditLog) ? next.auditLog : [];
 
     if (!next.schemaVersion || next.schemaVersion < 2) {
         next.schemaVersion = 2;
@@ -2601,22 +2641,193 @@ let currentPage = 1;
 let showAllOrderHistory = false;
 const itemsPerPage = 10;
 const MAX_HISTORY_ITEMS = 1000;
+const MAX_OFFLINE_QUEUE_SIZE = 200;
+const AUDIT_LOG_PAGE_SIZE = 20;
 let saveTimeout;
 let appendNumberTimeout; // Debounce timeout for number input
 let isProcessingPayment = false;
 let paymentResetTimer = null;
 let cachedTotal = 0;
-let cachedTotalVersion = 0;
+let cachedTotalVersion = '';
 let timerUpdateQueued = false;
 let isFinalizingOrder = false;
+let isVoiding = false;
 let orderHistoryShowAll = false;
 let offlineActionQueue = [];
+let auditLog = [];
+let auditLogPage = 1;
 
 // NEW: Menu Navigation State
 let currentMenuLevel = 'topLevelSections'; // 'topLevelSections', 'itemsOfSection', 'itemsOfCategory'
 let activeSection = null; // Stores the top-level section selected (e.g., 'Food')
 let activeCategoryDisplayGroup = null; // Stores the category selected (e.g., 'Burger with fries')
 let menuNavigationHistory = [];
+
+const STAFF_USERS = {
+    ADMIN: { id: 'admin', name: 'Owner Admin', role: 'ADMIN', pin: '0000' },
+    MANAGER: { id: 'manager', name: 'Manager', role: 'MANAGER', pin: '1111' },
+    CASHIER: { id: 'cashier', name: 'Cashier', role: 'CASHIER', pin: '2222' },
+    BARISTA: { id: 'barista', name: 'Barista', role: 'BARISTA', pin: '3333' },
+    KITCHEN: { id: 'kitchen', name: 'Kitchen', role: 'KITCHEN', pin: '4444' }
+};
+
+function renderCurrentUserBadge() {
+    const badge = document.getElementById('current-user-badge');
+    if (!badge) return;
+    badge.textContent = `${currentUser?.name || 'Cashier'} • ${currentUser?.role || 'CASHIER'}`;
+}
+
+function loadStaffSession() {
+    const stored = getFromLocalStorage('taboche-current-user');
+    if (stored && stored.id && stored.role && STAFF_USERS[stored.role]) {
+        currentUser = { ...STAFF_USERS[stored.role], email: stored.email || `${stored.id}@taboche.local` };
+    } else {
+        currentUser = { ...STAFF_USERS.CASHIER, email: 'cashier@taboche.local' };
+    }
+    renderCurrentUserBadge();
+}
+
+function saveStaffSession() {
+    localStorage.setItem('taboche-current-user', JSON.stringify({
+        id: currentUser?.id || 'cashier',
+        name: currentUser?.name || 'Cashier',
+        role: currentUser?.role || 'CASHIER',
+        email: currentUser?.email || 'cashier@taboche.local'
+    }));
+}
+
+function canAccessRole(requiredRoles) {
+    const roles = Array.isArray(requiredRoles) ? requiredRoles : [requiredRoles];
+    return roles.includes(currentUser?.role);
+}
+
+function loadAuditLog() {
+    const stored = getFromLocalStorage('auditLog');
+    auditLog = Array.isArray(stored) ? stored : [];
+}
+
+function logAuditAction(action, details = {}) {
+    const entry = {
+        id: `audit_${Date.now()}_${Math.random().toString(16).slice(2, 8)}`,
+        timestamp: new Date().toISOString(),
+        staff: currentUser?.name || 'System',
+        role: currentUser?.role || 'SYSTEM',
+        action,
+        table: details.table ?? currentTable ?? null,
+        orderNumber: details.orderNumber ?? null,
+        amount: details.amount ?? null,
+        reason: details.reason || '',
+        meta: details.meta || {}
+    };
+
+    auditLog.push(entry);
+    if (auditLog.length > 500) {
+        auditLog = auditLog.slice(-500);
+    }
+    saveToLocalStorage('auditLog', auditLog);
+}
+
+function showStaffLoginModal() {
+    const staffOptions = Object.values(STAFF_USERS)
+        .map(user => `<option value="${user.role}">${user.role} - ${user.name}</option>`)
+        .join('');
+
+    const content = `
+        <div class="settings-panel">
+            <h4>Staff Login</h4>
+            <div class="mb-3">
+                <label for="staff-login-role" class="form-label">Select Staff</label>
+                <select id="staff-login-role" class="form-select">
+                    ${staffOptions}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="staff-login-pin" class="form-label">PIN</label>
+                <input id="staff-login-pin" type="password" class="form-control" placeholder="Enter 4-digit PIN" maxlength="4">
+            </div>
+            <button id="staff-login-confirm" class="btn btn-primary w-100">Login</button>
+        </div>
+    `;
+
+    showSidebarContentModal('Staff Login', content, () => {
+        const roleSelect = document.getElementById('staff-login-role');
+        const pinInput = document.getElementById('staff-login-pin');
+        const loginBtn = document.getElementById('staff-login-confirm');
+
+        if (roleSelect) {
+            roleSelect.value = currentUser?.role || 'CASHIER';
+        }
+
+        loginBtn?.addEventListener('click', () => {
+            const selectedRole = roleSelect?.value || 'CASHIER';
+            const selectedUser = STAFF_USERS[selectedRole];
+            const enteredPin = (pinInput?.value || '').trim();
+
+            if (!selectedUser) {
+                notifications.show('Please select a valid staff member.', 'error');
+                return;
+            }
+
+            if (selectedUser.pin !== enteredPin) {
+                notifications.show('Invalid PIN for selected staff.', 'error');
+                return;
+            }
+
+            currentUser = { ...selectedUser, email: `${selectedUser.id}@taboche.local` };
+            saveStaffSession();
+            renderCurrentUserBadge();
+            closeSidebarContentModal();
+            logAuditAction('staff_login', {
+                reason: `Logged in as ${currentUser.role}`,
+                meta: { userId: currentUser.id }
+            });
+            notifications.show(`${currentUser.name} logged in successfully.`, 'success');
+        });
+    });
+}
+
+function showAuditLogModal() {
+    auditLogPage = 1;
+    renderAuditLogPage();
+}
+
+function renderAuditLogPage() {
+    const reversedLog = auditLog.slice().reverse();
+    const totalPages = Math.ceil(reversedLog.length / AUDIT_LOG_PAGE_SIZE) || 1;
+    const startIdx = (auditLogPage - 1) * AUDIT_LOG_PAGE_SIZE;
+    const endIdx = startIdx + AUDIT_LOG_PAGE_SIZE;
+    const pageEntries = reversedLog.slice(startIdx, endIdx);
+
+    const content = `
+        <div class="settings-panel">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h4 style="margin: 0;">Audit Log (${reversedLog.length} entries)</h4>
+                <div style="font-size: 0.9em; color: #666;">Page ${auditLogPage} of ${totalPages}</div>
+            </div>
+            <ul class="audit-log-list">
+                ${pageEntries.length ? pageEntries.map(entry => `
+                    <li class="audit-log-item" style="margin-bottom: 12px; padding: 8px; background: #f5f5f5; border-radius: 4px;">
+                        <strong>${entry.action}</strong>
+                        <small style="display: block; margin-top: 4px;">${entry.staff} • ${entry.role}</small>
+                        <small style="display: block;">${new Date(entry.timestamp).toLocaleString()}</small>
+                        ${entry.table ? `<small style="display: block;">Table: ${entry.table}</small>` : ''}
+                        ${entry.orderNumber ? `<small style="display: block;">Order: ${entry.orderNumber}</small>` : ''}
+                        ${entry.amount !== null && entry.amount !== undefined ? `<small style="display: block;">Amount: Rs ${Number(entry.amount).toFixed(2)}</small>` : ''}
+                        ${entry.reason ? `<small style="display: block;">Reason: ${entry.reason}</small>` : ''}
+                    </li>
+                `).join('') : '<li class="text-muted">No audit entries yet.</li>'}
+            </ul>
+            ${reversedLog.length > AUDIT_LOG_PAGE_SIZE ? `
+                <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+                    <button class="btn btn-secondary btn-sm" onclick="auditLogPage = Math.max(1, auditLogPage - 1); renderAuditLogPage();" ${auditLogPage === 1 ? 'disabled' : ''}>← Previous</button>
+                    <button class="btn btn-secondary btn-sm" onclick="auditLogPage = Math.min(${totalPages}, auditLogPage + 1); renderAuditLogPage();" ${auditLogPage === totalPages ? 'disabled' : ''}>Next →</button>
+                </div>
+            ` : ''}
+        </div>
+    `;
+
+    showSidebarContentModal('Audit Log', content);
+}
 
 function pushMenuNavigationState() {
     const searchInput = document.getElementById('search');
@@ -2649,9 +2860,6 @@ function restoreMenuNavigationState() {
         searchInput.value = previousState.searchValue || '';
     }
 }
-
-// Dummy current user for local-only mode
-let currentUser = { email: 'localuser@example.com', role: 'Staff' }; 
 
 // Hardcoded menu and extras
 let menuItems = [
@@ -2742,7 +2950,7 @@ let menuItems = [
 { name: "Caramel Latte", price: 260, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/latte_caramel.jpg" },
 { name: "Spanish Latte", price: 280, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/spanish_latte.jpg" },
 { name: "Hot Chocolate", price: 260, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/hot_chocolate.jpg" },
-
+{ name: "Filter Hot Coffee", price: 280, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/filter_hot_coffee.jpg" },
 
    // Moved Cold Coffee OUT of "Cold Drinks" section to be a top-level category
 { name: "Iced Latte", price: 220, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_latte.jpg" },
@@ -2754,6 +2962,7 @@ let menuItems = [
 { name: "Iced Hazelnut", price: 290, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_hazelnut_latte.jpg" },
 { name: "Iced Spanish Latte", price: 300, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_spanish_latte.jpg" },
 { name: "Iced Rose Latte", price: 300, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_rose_latte.jpg" },
+{ name: "Filter Cold Coffee", price: 300, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/filter_cold_coffee.jpg" },
 
 
     { name: "Mocha Blended ", price: 320, category: "Frappe / Blended", section: "Bar", type: "drink", image: "images/blended.jpg" },
@@ -2856,12 +3065,12 @@ let extras = [
     { name: "Extra Buff", price: 100, image: "images/extra_buff.jpg", type: "food" },
     { name: "Egg", price: 50, image: "images/egg.jpg", type: "food" },
     { name: "Salad", price: 75, image: "images/salad.jpg", type: "food" },
-    { name: "Toast", price: 50, image: "images/chi_toasty_salsa.jpg", type: "food" },
+    { name: "Toast", price: 75, image: "images/chi_toasty_salsa.jpg", type: "food" },
 
     // Drink Extras
     { name: "Boba", price: 50, image: "images/boba.jpg", type: "drink" },
-    { name: "Flavour Shot", price: 50, image: "images/flavour.jpg", type: "drink" },
-    { name: "Extra Ice", price: 10, image: "images/ice.jpg", type: "drink" },
+    { name: "Flavour Shot", price: 70, image: "images/flavour.jpg", type: "drink" },
+    { name: "Extra Ice", price: 20, image: "images/ice.jpg", type: "drink" },
     { name: "Extra Sugar", price: 20, image: "images/sugar.jpg", type: "drink" },
 
     // Misc Extras (for hukka, etc.)
@@ -2898,6 +3107,18 @@ const menuSections = {
     "Breakfast": [
         "Breakfast"
     ],
+    "Bar": [
+        "Hot Coffee",
+        "Cold Coffee",
+        "Frappe / Blended",
+        "Mojito",
+        "Iced Tea",
+        "Lemonade",
+        "Lassi",
+        "Tea",
+        "Soft Drinks",
+        "Bubble Tea"
+    ],
     "Retail": [
         "Retail"
     ],
@@ -2924,11 +3145,12 @@ const IDB_DB_NAME = 'taboche-pos-db';
 const IDB_STORE_NAME = 'largeState';
 const IDB_VERSION = 1;
 const BACKUP_SCHEMA_VERSION = 2;
-const ORDER_HISTORY_RETENTION_DAYS = 3;
+const ORDER_HISTORY_RETENTION_DAYS = 30;
 
 // Settings
 let soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
 let speechEnabled = localStorage.getItem('speechEnabled') !== 'false';
+let syncStatus = 'online';
 const VOID_DETAILS_RETENTION_DAYS = 3;
 const SALES_HISTORY_RETENTION_DAYS = 90;
 const KOT_HISTORY_RETENTION_DAYS = 30;
@@ -3088,7 +3310,8 @@ function loadFromLocalStorage() {
             orderHistory: getFromLocalStorage('orderHistory') || [],
             voidDetails: getFromLocalStorage('voidDetails') || [],
             kotHistory: getFromLocalStorage('kotHistory') || [],
-            itemsSold: getFromLocalStorage('itemsSold') || []
+            itemsSold: getFromLocalStorage('itemsSold') || [],
+            auditLog: getFromLocalStorage('auditLog') || []
         });
 
         orders = normalized.orders || {};
@@ -3098,6 +3321,7 @@ function loadFromLocalStorage() {
         voidDetails = normalized.voidDetails || [];
         kotHistory = normalized.kotHistory || [];
         itemsSold = normalized.itemsSold || [];
+        auditLog = Array.isArray(normalized.auditLog) ? normalized.auditLog : [];
     } catch (error) {
         handleCriticalError('Loading state from localStorage', error);
         orders = {};
@@ -3107,6 +3331,7 @@ function loadFromLocalStorage() {
         voidDetails = [];
         kotHistory = [];
         itemsSold = [];
+        auditLog = [];
     }
 }
 
@@ -3126,6 +3351,7 @@ function persistAllData() {
         saveToLocalStorage('voidDetails', normalized.voidDetails);
         saveToLocalStorage('kotHistory', normalized.kotHistory);
         saveToLocalStorage('itemsSold', normalized.itemsSold);
+        saveToLocalStorage('auditLog', Array.isArray(auditLog) ? auditLog : []);
 
         orders = normalized.orders;
         tableTimers = normalized.tableTimers;
@@ -3306,9 +3532,54 @@ function initAudio() {
     }
 }
 
+function setSyncStatus(status, optionalText = '') {
+    syncStatus = status;
+    const indicator = document.getElementById('network-status');
+    if (!indicator) return;
+
+    const normalizedStatus = String(status || 'online').toLowerCase();
+    if (normalizedStatus === 'syncing') {
+        indicator.textContent = optionalText || 'Syncing';
+        indicator.classList.add('online');
+        indicator.classList.remove('offline');
+        return;
+    }
+    if (normalizedStatus === 'synced') {
+        indicator.textContent = optionalText || 'Synced';
+        indicator.classList.add('online');
+        indicator.classList.remove('offline');
+        return;
+    }
+    if (normalizedStatus === 'sync_error') {
+        indicator.textContent = optionalText || 'Sync Error';
+        indicator.classList.remove('online');
+        indicator.classList.add('offline');
+        return;
+    }
+
+    const online = navigator.onLine;
+    indicator.textContent = optionalText || (online ? 'Online' : 'Offline');
+    indicator.classList.toggle('online', online);
+    indicator.classList.toggle('offline', !online);
+}
+
 function updateNetworkStatusIndicator() {
     const indicator = document.getElementById('network-status');
     if (!indicator) return;
+
+    if (syncStatus === 'syncing') {
+        setSyncStatus('syncing', 'Syncing');
+        return;
+    }
+    if (syncStatus === 'synced') {
+        setSyncStatus('synced', 'Synced');
+        return;
+    }
+    if (syncStatus === 'sync_error') {
+        setSyncStatus('sync_error', 'Sync Error');
+        return;
+    }
+
     const online = navigator.onLine;
     indicator.textContent = online ? 'Online' : 'Offline';
     indicator.classList.toggle('online', online);
@@ -3346,6 +3617,11 @@ function persistOfflineQueue() {
 function enqueueOfflineAction(actionType, payload = {}) {
     if (navigator.onLine) return;
 
+    if (offlineActionQueue.length >= MAX_OFFLINE_QUEUE_SIZE) {
+        notifications.show(`Offline queue full (${MAX_OFFLINE_QUEUE_SIZE} items). Please go online and sync.`, 'error');
+        return;
+    }
+
     const lastEntry = offlineActionQueue[offlineActionQueue.length - 1];
     const now = Date.now();
     const lastTimestamp = lastEntry?.timestamp ? new Date(lastEntry.timestamp).getTime() : 0;
@@ -3357,23 +3633,78 @@ function enqueueOfflineAction(actionType, payload = {}) {
         id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
         actionType,
         payload,
+        status: 'pending',
+        attempts: 0,
         timestamp: new Date().toISOString()
     });
 
     persistOfflineQueue();
     updateOfflineQueueBadge();
+    setSyncStatus('offline', 'Offline');
+}
+
+function processQueuedAction(action) {
+    if (!action || !action.actionType) return false;
+
+    try {
+        switch (action.actionType) {
+            case 'local-state-sync':
+                saveToLocalStorage(`sync-${action.id}`, action.payload || {});
+                return true;
+            case 'sale':
+                if (action.payload && action.payload.sale) {
+                    salesHistory.push(action.payload.sale);
+                    return true;
+                }
+                return false;
+            case 'payment':
+                if (action.payload && Array.isArray(action.payload.paymentMethods)) {
+                    paymentMethods = [...paymentMethods, ...action.payload.paymentMethods];
+                    return true;
+                }
+                return false;
+            default:
+                return true;
+        }
+    } catch (error) {
+        console.error('Queued action processing failed:', error);
+        return false;
+    }
 }
 
 function flushOfflineQueue() {
-    if (navigator.onLine && offlineActionQueue.length > 0) {
-        const count = offlineActionQueue.length;
-        offlineActionQueue = [];
-        persistOfflineQueue();
-        updateOfflineQueueBadge();
-        if (count > 0) {
-            notifications.show(`${count} pending action${count === 1 ? '' : 's'} cleared.`, 'success', 4000);
-        }
+    if (!navigator.onLine || offlineActionQueue.length === 0) {
+        return;
     }
+
+    const pendingQueue = offlineActionQueue.filter(entry => entry.status !== 'synced');
+    if (!pendingQueue.length) {
+        setSyncStatus('synced', 'Synced');
+        return;
+    }
+
+    setSyncStatus('syncing', 'Syncing');
+    let hasErrors = false;
+
+    pendingQueue.forEach((entry) => {
+        entry.attempts = (entry.attempts || 0) + 1;
+        const success = processQueuedAction(entry);
+        entry.status = success ? 'synced' : 'sync_error';
+        if (!success) hasErrors = true;
+    });
+
+    offlineActionQueue = offlineActionQueue.filter(entry => entry.status !== 'synced');
+    persistOfflineQueue();
+    updateOfflineQueueBadge();
+
+    if (hasErrors) {
+        setSyncStatus('sync_error', 'Sync Error');
+        notifications.show('Some offline actions failed to sync. They remain queued safely.', 'warning', 4000);
+        return;
+    }
+
+    setSyncStatus('synced', 'Synced');
+    notifications.show('Offline queue synced successfully.', 'success', 3000);
 }
 
 // =========================================================================
@@ -3861,6 +4192,10 @@ function initializeTables() {
 
         tableBtn.innerHTML = `
             <div>Table ${table}</div>
+            ${status !== 'available' ? (() => {
+                const itemCount = orders[table].reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+                return `<div class="item-count">${itemCount} item${itemCount === 1 ? '' : 's'}</div>`;
+            })() : ''}
             ${status !== 'available' ? `<div class="timer" id="timer-${table}">${elapsedTime}</div>` : ''}
         `;
 
@@ -4067,7 +4402,7 @@ function renderMenuNavigation() {
 
         const allTopLevelDisplayItems = [...new Set([
             ...orderedDrinkCategories,
-            ...sectionNames
+            ...sectionNames.filter(sectionName => sectionName !== 'Bar')
         ])].sort((a, b) => a.localeCompare(b, 'en', { sensitivity: 'base' }));
 
         allTopLevelDisplayItems.forEach(displayName => {
@@ -4221,7 +4556,11 @@ async function addToOrder(item) {
     orders[currentTable] ??= [];
     const existingItem = orders[currentTable].find(i =>
         i.name === item.name &&
-        JSON.stringify(i.extras || []) === JSON.stringify(item.extras || []) &&
+        (i.extras || []).length === (item.extras || []).length &&
+        (i.extras || []).every((extra, index) => {
+            const matchingExtra = (item.extras || [])[index];
+            return extra.name === matchingExtra?.name && Number(extra.price) === Number(matchingExtra?.price);
+        }) &&
         (i.notes || '') === (item.notes || '')
     );
 
@@ -4729,6 +5068,24 @@ async function removeOrderItem(index) {
     refreshUI();
     notifications.show(`Removed "${itemToRemove.name}"`, 'success');
     hideLoadingSpinner();
+}
+
+async function clearAllOrderItems() {
+    if (!currentTable || !orders[currentTable]?.length) {
+        notifications.show('No items to clear.', 'info');
+        return;
+    }
+
+    const confirmed = await showConfirmModal('Clear All Items', 'Remove all items from this order?');
+    if (!confirmed) return;
+
+    orders[currentTable] = [];
+    delete tableTimers[currentTable];
+    persistAllData();
+    renderOrderItems();
+    updateTotal();
+    initializeTables();
+    notifications.show('All items cleared.', 'success');
 }
 
 function refreshUI() {
@@ -5673,17 +6030,32 @@ function showCheckoutDialog() {
         resetCheckoutState();
     }
 
+    const numericInput = document.getElementById('numeric-input');
+    if (numericInput) {
+        numericInput.setAttribute('readonly', 'readonly');
+        numericInput.setAttribute('inputmode', 'numeric');
+        numericInput.setAttribute('autocomplete', 'off');
+        numericInput.setAttribute('autocorrect', 'off');
+        numericInput.setAttribute('spellcheck', 'false');
+        numericInput.tabIndex = -1;
+        numericInput.onfocus = () => numericInput.blur();
+    }
+
     updateTotal(); 
     document.getElementById('dialog-total-amount').textContent = calculateTotal().toFixed(2);
     renderPaymentMethods(); 
     updateChange();         
     
-    document.getElementById('checkout-dialog').style.display = 'block';
+    const checkoutDialog = document.getElementById('checkout-dialog');
+    if (checkoutDialog) checkoutDialog.style.display = 'block';
+    document.body.classList.add('modal-open');
     persistCheckoutState();
 }
 
 function closeCheckoutDialog() {
-    document.getElementById('checkout-dialog').style.display = 'none';
+    const checkoutDialog = document.getElementById('checkout-dialog');
+    if (checkoutDialog) checkoutDialog.style.display = 'none';
+    document.body.classList.remove('modal-open');
     clearCheckoutState();
     resetCheckoutState();
     renderOrderItems();
@@ -5957,8 +6329,24 @@ function calculateTotal() {
     const tableKey = currentTable || 'current';
     const currentItems = orders[tableKey] && Array.isArray(orders[tableKey]) ? orders[tableKey] : [];
     const currDiscount = (typeof discount === 'number' && discount >= 0) ? discount : 0;
+
+    const itemSignature = currentItems.map(item => [
+        item.name,
+        item.price,
+        item.quantity,
+        item.discountable !== false,
+        (item.extras || []).map(extra => `${extra.name}:${extra.price}`).join(',')
+    ].join(':')).join('|');
+    const cacheKey = `${tableKey}|${currDiscount}|${itemSignature}`;
+    if (cachedTotalVersion === cacheKey) {
+        return cachedTotal;
+    }
     
-    if (currentItems.length === 0) return 0;
+    if (currentItems.length === 0) {
+        cachedTotal = 0;
+        cachedTotalVersion = cacheKey;
+        return cachedTotal;
+    }
 
     let discountableTotal = 0;
     let nonDiscountableTotal = 0;
@@ -5980,8 +6368,10 @@ function calculateTotal() {
     const serviceCharge = afterDiscount * (SERVICE_CHARGE_PERCENT / 100);
     const beforeVAT = afterDiscount + serviceCharge;
     const vat = beforeVAT * (VAT_PERCENT / 100);
-    
-    return Number((beforeVAT + vat).toFixed(2));
+
+    cachedTotal = Number((beforeVAT + vat).toFixed(2));
+    cachedTotalVersion = cacheKey;
+    return cachedTotal;
 }
 
 function calculateOriginalTotal() {
@@ -6017,16 +6407,27 @@ function closeQRCodeDialog() {
 async function completePayment() {
     if (isProcessingPayment) return;
     isProcessingPayment = true;
+    const completeBtn = document.getElementById('complete-btn');
+    if (completeBtn) {
+        completeBtn.disabled = true;
+        completeBtn.style.opacity = '0.6';
+        completeBtn.style.cursor = 'not-allowed';
+    }
     if (paymentResetTimer) clearTimeout(paymentResetTimer);
     paymentResetTimer = setTimeout(() => {
         isProcessingPayment = false;
+        if (completeBtn) {
+            completeBtn.disabled = false;
+            completeBtn.style.opacity = '1';
+            completeBtn.style.cursor = 'pointer';
+        }
         hideLoadingSpinner();
     }, 15000);
 
     try {
         const total = calculateTotal();
         const itemCount = orders[currentTable]?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
-        if (total > 5000 || itemCount > 12) {
+        if (total > 10000 || itemCount > 30) {
             const confirmed = await showConfirmModal('Large checkout', `Large checkout detected: Rs ${total.toFixed(2)} for ${itemCount} item(s). Proceed?`);
             if (!confirmed) {
                 return;
@@ -6057,6 +6458,16 @@ async function completePayment() {
         showLoadingSpinner();
 
         const orderId = generateOrderId();
+        logAuditAction('payment_completed', {
+            table: currentTable,
+            orderNumber: orderId,
+            amount: total,
+            reason: 'Payment completed successfully',
+            meta: {
+                paymentMethods: paymentMethods.map(pm => ({ method: pm.method, amount: pm.amount }))
+            }
+        });
+
         const sale = {
             orderNumber: orderId,
             table: currentTable,
@@ -6165,8 +6576,16 @@ async function finalizeOrder() {
         return;
     }
 
-    showLoadingSpinner();
     const kotNumberBase = `KOT-${Date.now()}`;
+    logAuditAction('kot_sent', {
+        table: currentTable,
+        orderNumber: kotNumberBase,
+        amount: calculateTotal(),
+        reason: 'Kitchen/bar order submitted',
+        meta: { itemCount: itemsToFinalize.length }
+    });
+
+    showLoadingSpinner();
 
     const kitchenItems = itemsToFinalize.filter(item => item.section === 'Kitchen');
     const barItems = itemsToFinalize.filter(item => item.section === 'Bar');
@@ -6314,6 +6733,11 @@ async function changeTable() {
 }
 
 async function voidItem(index) {
+    if (isVoiding) {
+        notifications.show('Another void operation is in progress. Please wait.', 'info');
+        return;
+    }
+
     if (!orders[currentTable]?.[index]) {
         notifications.show('Invalid item to void.', 'error');
         return;
@@ -6325,34 +6749,48 @@ async function voidItem(index) {
         return;
     }
 
-    showLoadingSpinner();
-    
-    const itemToVoid = { ...orders[currentTable][index] };
-    const voidId = `void_${Date.now()}`;
-    const timestamp = new Date().toISOString();
-    const voidEntry = {
-        voidId,
-        table: currentTable,
-        item: itemToVoid,
-        total: (itemToVoid.price + (itemToVoid.extras?.reduce((s, e) => s + e.price, 0) || 0)) * itemToVoid.quantity,
-        reason,
-        user: currentUser?.email || 'Guest',
-        timestamp: timestamp
-    };
-    
-    voidDetails.push(voidEntry);
-    orders[currentTable].splice(index, 1);
-    
-    const isOrderEmpty = orders[currentTable].length === 0;
-    if (isOrderEmpty) {
-        delete orders[currentTable];
+    isVoiding = true;
+    try {
+        showLoadingSpinner();
+
+        const itemToVoid = { ...orders[currentTable][index] };
+        const voidId = `void_${Date.now()}`;
+        const timestamp = new Date().toISOString();
+        const voidEntry = {
+            voidId,
+            table: currentTable,
+            item: itemToVoid,
+            total: (itemToVoid.price + (itemToVoid.extras?.reduce((s, e) => s + e.price, 0) || 0)) * itemToVoid.quantity,
+            reason,
+            user: currentUser?.email || 'Guest',
+            timestamp: timestamp
+        };
+
+        logAuditAction('item_voided', {
+            table: currentTable,
+            amount: voidEntry.total,
+            reason,
+            meta: { itemName: itemToVoid.name, itemQuantity: itemToVoid.quantity }
+        });
+
+        voidDetails.push(voidEntry);
+        orders[currentTable].splice(index, 1);
+
+        if (orders[currentTable].length === 0) {
+            delete orders[currentTable];
+        }
+
+        persistAllData();
+        renderOrderItems();
+        initializeTables();
+        notifications.show(`${itemToVoid.name} has been voided.`, 'success');
+    } catch (error) {
+        console.error('Void failed:', error);
+        notifications.show('Void failed. Please try again.', 'error');
+    } finally {
+        hideLoadingSpinner();
+        isVoiding = false;
     }
-    
-    persistAllData();
-    renderOrderItems();
-    initializeTables();
-    notifications.show(`${itemToVoid.name} has been voided.`, 'success');
-    hideLoadingSpinner();
 }
 
 async function voidOrder() {
@@ -6379,6 +6817,13 @@ async function voidOrder() {
 
     const voidId = `void_${Date.now()}`;
     const timestamp = new Date().toISOString();
+
+    logAuditAction('order_voided', {
+        table: tableToVoid,
+        amount: calculateTotal(),
+        reason,
+        meta: { itemCount: orders[tableToVoid]?.length || 0 }
+    });
 
     voidDetails.push({
         voidId,
@@ -6751,6 +7196,8 @@ async function resetAllDataConfirmed() {
 document.addEventListener("DOMContentLoaded", () => {
     // Load all data from localStorage on startup
     loadFromLocalStorage();
+    loadAuditLog();
+    loadStaffSession();
     loadOfflineQueue();
     loadLargeStateFromIndexedDB().then(() => {
         trimHistoryIfNeeded();
@@ -6876,6 +7323,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("change-table-btn")?.addEventListener("click", changeTable);
     document.getElementById("void-btn")?.addEventListener("click", voidOrder);
     document.getElementById("print-receipt-btn")?.addEventListener("click", printReceipt);
+    document.getElementById("clear-all-btn")?.addEventListener("click", clearAllOrderItems);
 
     // Sidebar Navigation
     document.getElementById("nav-sales-reports")?.addEventListener("click", showSalesReportsContent);
@@ -7084,6 +7532,7 @@ function searchMenu() {
 
     if (!searchTerm) {
         currentMenuLevel = 'topLevelSections';
+        backButton.style.display = 'none';
         renderMenuNavigation();
         return;
     }
@@ -7102,7 +7551,6 @@ function searchMenu() {
             <img src="${item.image}" alt="${item.name}">
             <p>${item.name}</p>
             <div class="price">Rs ${item.price.toFixed(2)}</div>
-            <div class="stock-info" style="font-size:0.7em">Stock: ${item.stock}</div>
         `;
         div.addEventListener('click', () => addToOrder(item));
         menu.appendChild(div);
@@ -7189,6 +7637,9 @@ function showSettings() {
     const content = `
         <div class="settings-panel">
             <h4>Settings</h4>
+            <div class="mb-3 p-2 rounded bg-dark-subtle text-light">
+                <strong>Logged in as:</strong> ${currentUser?.name || 'Cashier'} (${currentUser?.role || 'CASHIER'})
+            </div>
             <div class="mb-3">
                 <label class="form-check-label">
                     <input type="checkbox" class="form-check-input" id="sound-toggle" ${soundEnabled ? 'checked' : ''}>
@@ -7201,7 +7652,11 @@ function showSettings() {
                     Enable Voice Feedback
                 </label>
             </div>
-            <button id="save-settings" class="btn btn-primary">Save Settings</button>
+            <div class="d-grid gap-2">
+                <button id="save-settings" class="btn btn-primary">Save Settings</button>
+                <button id="switch-staff-btn" class="btn btn-secondary">Switch Staff</button>
+                <button id="view-audit-log-btn" class="btn btn-outline-light">View Audit Log</button>
+            </div>
         </div>
     `;
     
@@ -7217,6 +7672,14 @@ function showSettings() {
             localStorage.setItem('speechEnabled', speechEnabled);
             notifications.show('Settings saved', 'success');
             closeSidebarContentModal();
+        });
+        document.getElementById('switch-staff-btn')?.addEventListener('click', () => {
+            closeSidebarContentModal();
+            showStaffLoginModal();
+        });
+        document.getElementById('view-audit-log-btn')?.addEventListener('click', () => {
+            closeSidebarContentModal();
+            showAuditLogModal();
         });
     });
 }
@@ -7280,6 +7743,10 @@ document.addEventListener('keydown', (e) => {
     if (e.ctrlKey && e.shiftKey && e.key === 'C') {
         e.preventDefault();
         showCheckoutDialog();
+    }
+    if (e.ctrlKey && e.shiftKey && e.key === 'K') {
+        e.preventDefault();
+        finalizeOrder();
     }
     // Ctrl+Alt+M for merge tables
     if (e.ctrlKey && e.altKey && e.key === 'M') {
