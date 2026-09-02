@@ -3794,6 +3794,7 @@ function showPromptModal(title, message, options = {}) {
         
         inputContainer.appendChild(inputEl);
         inputContainer.style.display = 'block';
+        document.body.classList.add('modal-open');
         
         modal.style.display = 'flex';
         modal.setAttribute('aria-hidden', 'false');
@@ -3817,6 +3818,7 @@ function showPromptModal(title, message, options = {}) {
             modal.setAttribute('aria-hidden', 'true');
             modal.removeEventListener('keydown', handleKeydown);
             inputContainer.style.display = 'block';
+            document.body.classList.remove('modal-open');
             confirmBtn.replaceWith(confirmBtn.cloneNode(true));
             cancelBtn.replaceWith(cancelBtn.cloneNode(true));
             if (previousActiveElement && typeof previousActiveElement.focus === 'function') {
@@ -3855,6 +3857,7 @@ function showConfirmModal(title, message) {
         titleEl.textContent = escapeHtml(title || '');
         messageEl.textContent = escapeHtml(String(message || ''));
         inputContainer.style.display = 'none'; // Hide the input field
+        document.body.classList.add('modal-open');
         
         modal.style.display = 'flex';
         modal.setAttribute('aria-hidden', 'false');
@@ -3877,6 +3880,7 @@ function showConfirmModal(title, message) {
             modal.setAttribute('aria-hidden', 'true');
             modal.removeEventListener('keydown', handleKeydown);
             inputContainer.style.display = 'block'; // Show input field again for next use
+            document.body.classList.remove('modal-open');
             confirmBtn.replaceWith(confirmBtn.cloneNode(true));
             cancelBtn.replaceWith(cancelBtn.cloneNode(true));
             if (previousActiveElement && typeof previousActiveElement.focus === 'function') {
@@ -4103,7 +4107,7 @@ function speakText(message) {
         return;
     }
 
-    setTimeout(() => {
+    const speakWithVoices = () => {
         try {
             const voices = window.speechSynthesis.getVoices();
             console.log('=== All Available Voices ===');
@@ -4149,7 +4153,21 @@ function speakText(message) {
         } catch (err) {
             console.error('Speech error:', err);
         }
-    }, 300);
+    };
+
+    const trySpeak = () => {
+        const voices = window.speechSynthesis.getVoices();
+        if (voices.length > 0) {
+            speakWithVoices();
+            return;
+        }
+        window.speechSynthesis.onvoiceschanged = () => {
+            window.speechSynthesis.onvoiceschanged = null;
+            speakWithVoices();
+        };
+    };
+
+    setTimeout(trySpeak, 300);
 }
 
 function generateOrderId() {
@@ -4309,19 +4327,16 @@ function setOrderDrawerOpen(isOpen) {
 // Helper to get image for category or section
 function getRepresentativeImage(name, isSection = false) {
     if (isSection) {
-        // For top-level sections (Food, Cold Drinks, Retail & Misc), pick a representative category's image
-        const categoriesInSection = menuSections[name];
-        if (categoriesInSection && categoriesInSection.length > 0) {
-            const firstCategory = categoriesInSection[0];
-            const firstItemInCategory = menuItems.find(item => item.category === firstCategory && item.image);
-            if (firstItemInCategory) return firstItemInCategory.image;
+        const categoriesInSection = menuSections[name] || [];
+        for (const category of categoriesInSection) {
+            const item = menuItems.find(menuItem => menuItem.category === category && menuItem.image);
+            if (item) return item.image;
         }
     } else {
-        // For individual categories (including all drink categories), pick the first item's image
-        const firstItemInCategory = menuItems.find(item => item.category === name && item.image);
-        if (firstItemInCategory) return firstItemInCategory.image;
+        const item = menuItems.find(menuItem => menuItem.category === name && menuItem.image);
+        if (item) return item.image;
     }
-    return 'images/placeholder.jpg'; // Generic placeholder
+    return 'images/placeholder.jpg';
 }
 
 
@@ -4879,11 +4894,13 @@ function showExtrasModal() {
     content.appendChild(saveBtn);
 
     modal.style.display = 'block';
+    document.body.classList.add('modal-open');
 }
 
 function closeExtrasModal() {
     const modal = document.getElementById('extras-modal');
     if (modal) modal.style.display = 'none';
+    document.body.classList.remove('modal-open');
 }
 
 async function saveExtras() {
@@ -4952,6 +4969,7 @@ async function saveExtras() {
 function closeNotesModal() {
     const modal = document.getElementById('notes-modal');
     if (modal) modal.style.display = 'none';
+    document.body.classList.remove('modal-open');
 }
 
 function showNotesModal() {
@@ -4976,6 +4994,7 @@ function showNotesModal() {
     closeBtn.onclick = () => closeNotesModal();
     
     modal.style.display = 'block';
+    document.body.classList.add('modal-open');
     textarea.focus();
 }
 
@@ -5080,15 +5099,14 @@ function showSidebarContentModal(title, contentHTML, setupCallback = null) {
     const contentArea = document.getElementById('modal-content-area');
     if (!modal || !contentArea) return;
     
-    // CRITICAL: Clear all previous event listeners to prevent memory leaks
     const newContentArea = contentArea.cloneNode(false);
     contentArea.parentNode.replaceChild(newContentArea, contentArea);
     
     const updatedContentArea = document.getElementById('modal-content-area');
     updatedContentArea.innerHTML = `<h3>${escapeHtml(title)}</h3>${contentHTML}`;
     modal.style.display = 'block';
+    document.getElementById('sidebar')?.classList.remove('active');
     if (setupCallback) setupCallback();
-    toggleSidebar({ preventDefault: () => {} });
 }
 
 function closeSidebarContentModal() {
@@ -5139,6 +5157,7 @@ function generateSalesReport() {
     endDate.setHours(23, 59, 59, 999);
 
     const filteredSales = salesHistory.filter(sale => {
+        if (sale.status === 'voided') return false;
         const saleDate = new Date(sale.timestamp);
         return saleDate >= startDate && saleDate <= endDate;
     });
@@ -5213,6 +5232,7 @@ function exportSalesReport() {
     const startDate = document.getElementById('start-date').value;
     const endDate = document.getElementById('end-date').value;
     const filteredSales = salesHistory.filter(sale => {
+        if (sale.status === 'voided') return false;
         const saleDate = new Date(sale.timestamp);
         return saleDate >= new Date(startDate) && saleDate <= new Date(endDate);
     });
@@ -5374,6 +5394,7 @@ function showItemsSoldContent(e) {
 
         // Filter raw sales history to only include sales within the date range
         const salesInDateRange = salesHistory.filter(s => {
+            if (s.status === 'voided') return false;
             const saleDate = new Date(s.timestamp);
             return saleDate >= start && saleDate <= end;
         });
@@ -6222,12 +6243,22 @@ function renderPaymentMethods() {
         paymentList.dataset.listenersAdded = 'true';
     }
 
-    const hasMobilePayment = paymentMethods.some(pm => pm.method === 'Mobile');
-    if (hasMobilePayment) {
-        displayQRCode();
-    } else {
-        closeQRCodeDialog();
+    syncPaymentModalState();
+}
+
+function syncPaymentModalState() {
+    const paymentTotal = paymentMethods.reduce((sum, pm) => sum + (Number(pm.amount) || 0), 0);
+    const orderTotal = calculateTotal();
+    const hasOutstandingMobilePayment = paymentMethods.some(pm => pm.method === 'Mobile') && paymentTotal < orderTotal - 0.01;
+    const qrCodeDialog = document.getElementById('qr-code-dialog');
+    const checkoutDialog = document.getElementById('checkout-dialog');
+
+    if (qrCodeDialog) {
+        qrCodeDialog.style.display = hasOutstandingMobilePayment ? 'flex' : 'none';
     }
+
+    const checkoutOpen = checkoutDialog && checkoutDialog.style.display === 'block';
+    document.body.classList.toggle('modal-open', checkoutOpen || hasOutstandingMobilePayment);
 }
 
 // Event delegation handler for payment list clicks
@@ -6370,6 +6401,9 @@ function displayQRCode() {
 
     qrCodeImage.src = './images/qr.jpeg';
     qrCodeDialog.style.display = 'flex';
+    const checkoutDialog = document.getElementById('checkout-dialog');
+    const checkoutOpen = checkoutDialog && checkoutDialog.style.display === 'block';
+    document.body.classList.toggle('modal-open', checkoutOpen || qrCodeDialog.style.display === 'flex');
 }
 
 function closeQRCodeDialog() {
@@ -6379,6 +6413,10 @@ function closeQRCodeDialog() {
     } else {
         console.error('QR code dialog element not found');
     }
+
+    const checkoutDialog = document.getElementById('checkout-dialog');
+    const checkoutOpen = checkoutDialog && checkoutDialog.style.display === 'block';
+    document.body.classList.toggle('modal-open', checkoutOpen);
 }
 
 async function completePayment() {
@@ -6462,6 +6500,14 @@ async function completePayment() {
 
         salesHistory.push(sale);
         orderHistory.push(sale);
+
+        if (Array.isArray(kotHistory)) {
+            kotHistory.forEach(kot => {
+                if (kot.table === currentTable && kot.status && kot.status !== 'voided') {
+                    kot.status = 'completed';
+                }
+            });
+        }
         
         // Subtract stock from inventory
         sale.items.forEach(item => {
@@ -6616,7 +6662,8 @@ async function finalizeOrder() {
     }
 }
 
-function printKOT(kotItems, type) {
+function printKOT(kotItems, type, table = currentTable) {
+    const kotTable = table ?? currentTable;
     const kotHTML = `
         <!DOCTYPE html>
         <html>
@@ -6632,7 +6679,7 @@ function printKOT(kotItems, type) {
         <body>
             <div class="header">
                 <h2>KITCHEN ORDER TICKET</h2>
-                <p>Table: ${currentTable} | Type: ${type.toUpperCase()}</p>
+                <p>Table: ${kotTable} | Type: ${type.toUpperCase()}</p>
                 <p>Time: ${new Date().toLocaleTimeString()}</p>
             </div>
             <div class="items">
@@ -6693,6 +6740,14 @@ async function changeTable() {
         tableTimers[newTable] = timerToMove;
         delete orders[oldTable];
         delete tableTimers[oldTable];
+
+        if (Array.isArray(kotHistory)) {
+            kotHistory.forEach(kot => {
+                if (kot.table === oldTable) {
+                    kot.table = newTable;
+                }
+            });
+        }
         currentTable = newTable;
 
         persistAllData();
@@ -6867,6 +6922,13 @@ async function voidOrderFromHistory(orderToVoid) {
     orderHistory[orderIndexInHistory].status = 'voided';
     if (saleIndexInHistory !== -1) {
          salesHistory[saleIndexInHistory].status = 'voided';
+    }
+    if (Array.isArray(kotHistory)) {
+        kotHistory.forEach(kot => {
+            if (kot.table === orderToVoid.table && String(kot.kotNumber) === String(orderToVoid.orderNumber || '')) {
+                kot.status = 'voided';
+            }
+        });
     }
     voidDetails.push(voidEntry);
 
@@ -7601,7 +7663,7 @@ window.markKOTReady = markKOTReady;
 function printKOTFromView(kotId) {
     const kot = kotHistory.find(k => k.kotId === kotId);
     if (kot) {
-        printKOT(kot.items, kot.type);
+        printKOT(kot.items, kot.type, kot.table);
     }
 }
 
@@ -7758,7 +7820,7 @@ function showHelpModal() {
 // Export to PDF function
 function exportToPDF(elementId, filename) {
     if (typeof html2pdf === 'undefined') {
-        notifications.show('PDF library not loaded. Please check your internet connection.', 'error');
+        notifications.show('PDF library not loaded. Please check your internet connection or refresh the page.', 'error');
         return;
     }
     
