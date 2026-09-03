@@ -859,19 +859,17 @@ body.dark-mode .search-bar {
 }
 
 .order-footer-buttons {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 0.35rem;
-    align-items: center;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem;
 }
 
 .order-footer-buttons button {
-    padding: 6px 5px;
+    padding: 8px 5px;
     border: none;
     border-radius: 999px;
     cursor: pointer;
-    font-size: 0.58rem;
+    font-size: 0.7rem;
     font-weight: 600;
     transition: transform 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease;
     color: #ffffff;
@@ -879,8 +877,8 @@ body.dark-mode .search-bar {
     letter-spacing: 0.03em;
     line-height: 1.1;
     min-height: 44px;
-    flex: 1 1 0;
-    white-space: nowrap;
+    min-width: 0;
+    white-space: normal;
 }
 
 .order-footer-buttons button:hover {
@@ -929,48 +927,238 @@ body.dark-mode .search-bar {
     position: fixed;
     top: 0;
     left: -100%;
-    width: 80%;
-    max-width: 320px;
-     height: 100vh;
-    background-color: #ffffff;
-    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.08);
-    transition: left 0.3s ease;
-    z-index: 1000;
- overflow-y: auto;
+    width: 85%;
+    max-width: 340px;
+    height: 100vh;
+    background: #ffffff;
+    box-shadow: 4px 0 20px rgba(15, 23, 42, 0.14);
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1050;
+    overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    display: flex;
+    flex-direction: column;
 }
 
 .sidebar.active {
     left: 0;
 }
 
+.sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.38);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 1040;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+body.dark-mode .sidebar {
+    background: #1e293b;
+}
+
 .sidebar-header {
-    background-color: #2563eb;
+    background: linear-gradient(135deg, #2563eb, #1e40af);
     color: #ffffff;
-    padding: 1rem;
+    padding: 1.25rem 1.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-shrink: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.sidebar-header h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: 0.02em;
+}
+
+.sidebar-brand-mark {
+    width: 2.25rem;
+    height: 2.25rem;
+    object-fit: contain;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.16);
+    padding: 0.2rem;
+}
+
+.sidebar-header .close-sidebar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0.82;
+    transition: transform 0.2s ease, opacity 0.2s ease, background 0.2s ease;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    color: #ffffff;
+    background: transparent;
+}
+
+.sidebar-header .close-sidebar:hover,
+.sidebar-header .close-sidebar:focus-visible {
+    opacity: 1;
+    transform: rotate(90deg);
+    background: rgba(255, 255, 255, 0.15);
+    outline: none;
 }
 
 .sidebar-content {
-    padding: 1.5rem;
+    flex: 1;
+    padding: 1rem 0.75rem 2rem;
+    overflow-y: auto;
+}
+
+.sidebar-content .section-title {
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #6b7280;
+    padding: 0.75rem 0.75rem 0.25rem;
+    font-weight: 600;
 }
 
 .sidebar-content a {
-    display: block;
-    padding: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 48px;
+    padding: 0.65rem 1rem;
     color: #2d3748;
     text-decoration: none;
-    font-size: 0.875rem;
+    font-size: 0.95rem;
     font-weight: 500;
-    border-bottom: 1px solid #e2e8f0;
-    transition: background-color 0.2s ease;
+    border-radius: 10px;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+    margin-bottom: 2px;
 }
 
-.sidebar-content a:hover {
-    background-color: #f3f4f6;
-    border-radius: 6px;
+.sidebar-content a i,
+.sidebar-content a .emoji-icon {
+    width: 1.5rem;
+    text-align: center;
+    font-size: 1.1rem;
+    color: #64748b;
+    transition: color 0.2s ease;
+}
+
+.sidebar-content a:hover,
+.sidebar-content a:focus-visible {
+    background: #f1f5f9;
+    color: #1d4ed8;
+    transform: translateX(4px);
+    outline: none;
+}
+
+.sidebar-content a:hover i,
+.sidebar-content a:focus-visible i,
+.sidebar-content a:hover .emoji-icon,
+.sidebar-content a:focus-visible .emoji-icon {
+    color: #2563eb;
+}
+
+.sidebar-content a.danger-link {
+    color: #dc2626;
+}
+
+.sidebar-content a.danger-link i {
+    color: #dc2626;
+}
+
+.sidebar-content a.danger-link:hover,
+.sidebar-content a.danger-link:focus-visible {
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+.sidebar-content hr {
+    margin: 1rem 0.75rem;
+    border: 0;
+    border-top: 1px solid #e2e8f0;
+}
+
+body.dark-mode .sidebar-content .section-title {
+    color: #94a3b8;
+}
+
+body.dark-mode .sidebar-content a {
+    color: #e2e8f0;
+}
+
+body.dark-mode .sidebar-content a:hover,
+body.dark-mode .sidebar-content a:focus-visible {
+    background: #334155;
+    color: #e2e8f0;
+}
+
+body.dark-mode .sidebar-content a i,
+body.dark-mode .sidebar-content a .emoji-icon {
+    color: #94a3b8;
+}
+
+body.dark-mode .sidebar-content a:hover i,
+body.dark-mode .sidebar-content a:focus-visible i,
+body.dark-mode .sidebar-content a:hover .emoji-icon,
+body.dark-mode .sidebar-content a:focus-visible .emoji-icon {
+    color: #60a5fa;
+}
+
+body.dark-mode .sidebar-content a.danger-link {
+    color: #f87171;
+}
+
+body.dark-mode .sidebar-content a.danger-link i {
+    color: #f87171;
+}
+
+body.dark-mode .sidebar-content a.danger-link:hover,
+body.dark-mode .sidebar-content a.danger-link:focus-visible {
+    background: #451a1a;
+}
+
+body.dark-mode .sidebar-content hr {
+    border-top-color: #334155;
+}
+
+.sidebar-content a.sidebar-storage-link {
+    background: #f8fafc;
+    margin-top: 0.5rem;
+}
+
+body.dark-mode .sidebar-content a.sidebar-storage-link {
+    background: #2d3748;
+}
+
+.sidebar-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 8px;
+}
+
+body.dark-mode .sidebar-content::-webkit-scrollbar-thumb {
+    background: #475569;
 }
 
 /* Extras Modal Styling */
@@ -1603,18 +1791,31 @@ body.modal-open {
 
     .order-footer-buttons {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 0.4rem;
     }
 
     .order-footer-buttons button {
         min-width: 0;
         padding: 8px 4px;
-        font-size: 0.72rem;
+        font-size: 0.7rem;
         min-height: 40px;
         white-space: normal;
         text-align: center;
         border-radius: 8px;
+    }
+}
+
+@media (min-width: 1367px) {
+    .order-footer-buttons {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.4rem;
+    }
+
+    .order-footer-buttons button {
+        min-height: 40px;
+        padding: 7px 4px;
+        font-size: 0.62rem;
     }
 }
 
@@ -1720,7 +1921,7 @@ body.modal-open {
 }
 
 @media (min-width: 769px) {
-    .sidebar { width: 280px; left: -280px; }
+    .sidebar { width: 340px; left: -340px; }
     .sidebar.active { left: 0; }
 }
 
@@ -1733,6 +1934,8 @@ body.modal-open {
     .order-section {
         min-width: 350px;
         max-width: 400px;
+        height: calc(100dvh - 160px);
+        max-height: calc(100dvh - 160px);
     }
     
     .menu {
@@ -2164,10 +2367,66 @@ kbd {
             .order-drawer-toggle { display: none; }
         }
 
+        /* Report screens */
+        .report-container { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.25rem; box-shadow: 0 2px 12px rgba(15,23,42,.06); }
+        body.dark-mode .report-container { background: #1e293b; border-color: #334155; }
+        .report-header { display:flex; justify-content:space-between; align-items:center; gap:.75rem; margin-bottom:1.25rem; padding-bottom:.75rem; border-bottom:1px solid #e2e8f0; }
+        body.dark-mode .report-header { border-color:#334155; }
+        .report-header h4 { margin:0; font-size:1.1rem; font-weight:700; color:#0f172a; }
+        body.dark-mode .report-header h4 { color:#e2e8f0; }
+        .report-badge { padding:.25rem .7rem; border-radius:999px; background:#e2e8f0; color:#475569; font-size:.7rem; font-weight:600; white-space:nowrap; }
+        .report-badge.warning { background:#fef3c7; color:#92400e; }
+        body.dark-mode .report-badge { background:#334155; color:#94a3b8; }
+        .filter-bar { display:flex; flex-wrap:wrap; align-items:flex-end; gap:.75rem; margin-bottom:1.25rem; padding:.75rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; }
+        body.dark-mode .filter-bar { background:#0f172a; border-color:#334155; }
+        .filter-group { display:flex; flex-direction:column; gap:.25rem; flex:1; min-width:130px; }
+        .filter-group label { color:#64748b; font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+        .filter-input,.filter-select { width:100%; min-height:38px; padding:.45rem .7rem; border:1px solid #d1d5db; border-radius:8px; background:#fff; color:#1e293b; font-size:.85rem; }
+        body.dark-mode .filter-input,body.dark-mode .filter-select { background:#1e293b; border-color:#475569; color:#e2e8f0; }
+        .filter-input:focus,.filter-select:focus { outline:none; border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.12); }
+        .main-search-row { display:flex; align-items:center; gap:.5rem; }
+        .main-search-row .search-bar { flex:1; }
+        .search-shortcut-hint { display:inline-flex; align-items:center; color:#94a3b8; font-size:.7rem; white-space:nowrap; }
+        .search-shortcut-hint kbd { padding:.1rem .35rem; border:1px solid #cbd5e1; border-radius:4px; background:#f8fafc; color:#64748b; font-size:.65rem; }
+        body.dark-mode .search-shortcut-hint kbd { border-color:#475569; background:#1e293b; color:#94a3b8; }
+        .date-range { display:flex; align-items:center; gap:.5rem; }
+        .date-separator { color:#94a3b8; }
+        .btn-primary-action,.btn-export,.btn-warning-action { display:inline-flex; align-items:center; justify-content:center; gap:.35rem; min-height:38px; padding:.45rem 1rem; border:0; border-radius:8px; color:#fff; font-size:.8rem; font-weight:600; cursor:pointer; transition:transform .15s,background .2s; white-space:nowrap; }
+        .btn-primary-action { background:#2563eb; }.btn-primary-action:hover { background:#1d4ed8; transform:translateY(-1px); }
+        .btn-export { background:#16a34a; }.btn-export:hover { background:#15803d; }.btn-export.pdf { background:#dc2626; }
+        .btn-warning-action { background:#f59e0b; }.btn-warning-action:disabled { opacity:.45; cursor:not-allowed; }
+        .report-actions { display:flex; gap:.5rem; padding-top:.75rem; border-top:1px solid #e2e8f0; }
+        body.dark-mode .report-actions { border-color:#334155; }
+        .metrics-grid,.summary-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(145px,1fr)); gap:.75rem; margin-bottom:1rem; }
+        .metric-card,.summary-card { padding:.8rem 1rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; }
+        body.dark-mode .metric-card,body.dark-mode .summary-card { background:#0f172a; border-color:#334155; }
+        .metric-card { display:flex; align-items:center; gap:.7rem; }.metric-icon { display:grid; place-items:center; width:2.4rem; height:2.4rem; flex:none; border-radius:10px; background:#dbeafe; color:#2563eb; }.metric-icon.cash{background:#d1fae5;color:#059669}.metric-icon.mobile{background:#e0e7ff;color:#4f46e5}.metric-icon.discount{background:#fef3c7;color:#d97706}.metric-content{display:flex;flex-direction:column;min-width:0}.metric-label,.summary-label{font-size:.65rem;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.04em}.metric-value,.summary-value{font-size:1rem;font-weight:700;color:#0f172a}.summary-card{text-align:center}.summary-value{display:block;font-size:1.15rem;margin-top:.15rem}body.dark-mode .metric-value,body.dark-mode .summary-value{color:#e2e8f0}.metric-card.highlight{background:#dbeafe;border-color:#2563eb}body.dark-mode .metric-card.highlight{background:#1e3a5f}.metric-card.highlight .metric-value{color:#1d4ed8}
+        .table-responsive { overflow-x:auto; }.modern-table { width:100%; border-collapse:collapse; font-size:.85rem; }.modern-table th { padding:.65rem .75rem; color:#64748b; font-size:.7rem; text-transform:uppercase; text-align:left; border-bottom:2px solid #e2e8f0; }.modern-table td { padding:.65rem .75rem; color:#1e293b; border-bottom:1px solid #f1f5f9; }.modern-table .numeric{text-align:right}body.dark-mode .modern-table th{color:#94a3b8;border-color:#334155}body.dark-mode .modern-table td{color:#e2e8f0;border-color:#334155}.modern-table tbody tr:hover td{background:#f8fafc}body.dark-mode .modern-table tbody tr:hover td{background:#1e293b}
+        .modern-pagination { display:flex; flex-wrap:wrap; justify-content:center; gap:.3rem; margin-top:1rem; padding-top:.75rem; border-top:1px solid #e2e8f0; }.modern-pagination button { min-width:34px; padding:.35rem .7rem; border:1px solid #e2e8f0; border-radius:6px; background:#fff; color:#1e293b; cursor:pointer }.modern-pagination button.active{background:#2563eb;color:#fff;border-color:#2563eb}body.dark-mode .modern-pagination{border-color:#334155}body.dark-mode .modern-pagination button{background:#1e293b;color:#e2e8f0;border-color:#334155}
+        .kot-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:1rem; }.kot-card { overflow:hidden; margin:0; border:1px solid #e2e8f0; border-radius:12px; background:#fff; transition:transform .15s,box-shadow .2s; }.kot-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(15,23,42,.1)}body.dark-mode .kot-card{background:#1e293b;border-color:#334155}.kot-header,.kot-actions{display:flex;justify-content:space-between;align-items:center;gap:.5rem;padding:.7rem 1rem;background:#f8fafc;border-bottom:1px solid #e2e8f0}body.dark-mode .kot-header,body.dark-mode .kot-actions{background:#0f172a;border-color:#334155}.kot-info{display:flex;align-items:center;gap:.5rem}.kot-number{font-weight:700}.kot-type{padding:.15rem .5rem;border-radius:999px;font-size:.65rem;font-weight:600}.kot-type.kitchen{background:#fef3c7;color:#92400e}.kot-type.bar{background:#dbeafe;color:#1e40af}.kot-table{color:#2563eb;font-weight:700}.kot-body{padding:.75rem 1rem}.kot-item{display:flex;flex-wrap:wrap;gap:.4rem;padding:.35rem 0;border-bottom:1px solid #f1f5f9}.kot-item-name{font-weight:600}.kot-item-qty{color:#64748b}.kot-item-extras{width:100%;font-size:.7rem;color:#94a3b8}.kot-timer{margin-top:.6rem;color:#94a3b8;font-size:.75rem}.kot-actions{border-top:1px solid #e2e8f0;border-bottom:0}.btn-ready,.btn-print{flex:1;min-height:38px;border:0;border-radius:7px;color:#fff;font-weight:600;cursor:pointer}.btn-ready{background:#16a34a}.btn-print{background:#64748b}
+        .settings-section{margin-bottom:1.25rem}.settings-section h5{font-size:.85rem;color:#0f172a;margin-bottom:.5rem}body.dark-mode .settings-section h5{color:#e2e8f0}.settings-group{overflow:hidden;border:1px solid #e2e8f0;border-radius:10px;background:#f8fafc}body.dark-mode .settings-group{background:#0f172a;border-color:#334155}.setting-item{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:.75rem 1rem;border-bottom:1px solid #e2e8f0}.setting-item:last-child{border-bottom:0}.setting-info{display:flex;flex-direction:column}.setting-label{font-size:.85rem;font-weight:600}.setting-desc{font-size:.7rem;color:#94a3b8}.toggle-switch{position:relative;width:48px;height:26px;flex:none}.toggle-switch input{opacity:0;width:0;height:0}.toggle-slider{position:absolute;inset:0;border-radius:999px;background:#cbd5e1;cursor:pointer}.toggle-slider:before{content:'';position:absolute;width:20px;height:20px;left:3px;bottom:3px;border-radius:50%;background:#fff;transition:transform .2s}.toggle-switch input:checked+.toggle-slider{background:#2563eb}.toggle-switch input:checked+.toggle-slider:before{transform:translateX(22px)}
+        .help-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}.shortcut-list{display:grid;gap:.4rem}.shortcut-item{display:flex;align-items:center;gap:.7rem;padding:.45rem .6rem;border-radius:7px;background:#f8fafc}.shortcut-item span{font-size:.85rem;color:#475569}.tips-list{padding:0;margin:0;list-style:none}.tips-list li{padding:.35rem 0;color:#475569;font-size:.85rem}body.dark-mode .shortcut-item{background:#0f172a}body.dark-mode .shortcut-item span,body.dark-mode .tips-list li{color:#94a3b8}
+        .storage-bar-bg{height:8px;overflow:hidden;border-radius:999px;background:#e2e8f0}.storage-bar-fill{height:100%;border-radius:999px;background:#2563eb;transition:width .4s}.storage-stats{display:flex;justify-content:space-between;margin:.3rem 0 1rem;color:#94a3b8;font-size:.75rem}.storage-actions-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.75rem}.btn-storage{display:flex;flex-direction:column;align-items:center;gap:.2rem;padding:1rem .7rem;border:1px solid #e2e8f0;border-radius:10px;background:#fff;cursor:pointer}.btn-storage i{font-size:1.4rem}.btn-storage span{font-weight:700;font-size:.8rem}.btn-storage small{color:#94a3b8;font-size:.65rem}.btn-storage.danger{color:#dc2626}.storage-info{margin-top:1rem;padding-top:.75rem;border-top:1px solid #e2e8f0;color:#94a3b8;font-size:.75rem}
+        .merge-info{margin-bottom:1rem}.merge-info p{color:#64748b;font-size:.85rem}.alert-warning{display:flex;align-items:center;gap:.5rem;padding:.6rem .75rem;border-radius:8px;background:#fef3c7;color:#92400e;font-size:.8rem}.merge-selectors{display:flex;align-items:center;gap:1rem;margin:1rem 0;flex-wrap:wrap}.merge-select{flex:1;min-width:140px}.merge-select label{display:block;margin-bottom:.25rem;color:#64748b;font-size:.7rem;font-weight:700;text-transform:uppercase}.merge-arrow{color:#94a3b8;font-size:1.2rem}.settings-actions{display:flex;justify-content:flex-end}.empty-state{text-align:center;padding:2rem 1rem;color:#94a3b8}.empty-state i{font-size:2.25rem;margin-bottom:.6rem;opacity:.55}.empty-state p{margin:0;color:#64748b;font-weight:600}body.dark-mode .merge-info p{color:#94a3b8}body.dark-mode .alert-warning{background:#451a03;color:#fcd34d}
+        .void-status{display:inline-flex;padding:.2rem .5rem;border-radius:999px;font-size:.7rem;font-weight:700}.void-status.removed{background:#fef3c7;color:#92400e}.void-status.voided{background:#fee2e2;color:#b91c1c}body.dark-mode .void-status.removed{background:#451a03;color:#fcd34d}body.dark-mode .void-status.voided{background:#450a0a;color:#fca5a5}
+        .menu-navigation-title-group { display:block; }
+        .menu-navigation-header #menu-section-title { display:block; margin:0; font-size:1rem; color:#334155; }
+        .menu-back-button { border:1px solid #e2e8f0; border-radius:999px; padding:.45rem 1rem; background:#f1f5f9; color:#334155; font-weight:600; }
+        .menu-back-button:hover,.menu-back-button:focus-visible { background:#dbeafe; border-color:#93c5fd; outline:none; }
+        body.dark-mode .menu-navigation-header #menu-section-title { color:#e2e8f0; }
+        body.dark-mode .menu-back-button { background:#334155; border-color:#475569; color:#e2e8f0; }
+        .offline-banner { display:none; position:sticky; top:0; z-index:1002; padding:.35rem .75rem; background:#dc2626; color:#fff; text-align:center; font-size:.8rem; }
+        .offline-banner.active { display:block; }
+        .table-notes-input { width:100%; margin-top:.3rem; font-size:.75rem; }
+        .order-summary-line { display:flex; justify-content:space-between; gap:.5rem; font-size:.85rem; }
+        .clear-all-btn { background:#dc2626; }
+        @media(max-width:600px){.help-grid{grid-template-columns:1fr}.filter-bar{align-items:stretch}.filter-group{min-width:100%}.date-range input{min-width:0}.report-header{align-items:flex-start;flex-direction:column}}
+
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
+    <div id="offline-banner" class="offline-banner"><i class="fas fa-wifi-slash me-1"></i>Offline. Data is saved locally. <span id="offline-queue-count">0</span> pending actions.</div>
     
     <!-- =================================================================== -->
     <!-- ======================= CORE UI STRUCTURE ======================= -->
@@ -2208,11 +2467,11 @@ kbd {
         <div class="main-content">
             <div class="menu-section">
                 <label for="search" class="visually-hidden">Search menu</label>
-                <input type="text" id="search" class="search-bar" placeholder="Search menu...">
+                <div class="main-search-row"><input type="text" id="search" class="search-bar" placeholder="Search menu..."><span class="search-shortcut-hint"><kbd>Ctrl</kbd> + <kbd>F</kbd></span></div>
                 
                 <!-- NEW: Menu Navigation Header -->
                 <div class="menu-navigation-header">
-                    <button id="back-button" class="btn btn-secondary" style="display:none"><i class="fas fa-arrow-left me-2"></i>Back</button>
+                    <button id="back-button" class="menu-back-button"><i class="fas fa-arrow-left me-2"></i>Back</button>
                     <div class="menu-navigation-title-group">
                         <h4 id="menu-section-title"></h4>
                     </div>
@@ -2227,16 +2486,18 @@ kbd {
             <div class="order-section" id="order-section">
                 <div class="order-header">
                     <h3>Table <span id="selected-table">-</span></h3>
+                    <input type="text" id="table-notes" class="form-control table-notes-input" placeholder="Add table note..." aria-label="Table note">
                 </div>
                 <div class="order-items" id="order-items"></div>
                 <div class="order-footer">
-                    <p>Total: Rs <span id="total-amount">0.00</span></p>
+                    <p class="order-summary-line"><span>Items: <span id="total-items">0</span></span><span>Total: Rs <span id="total-amount">0.00</span></span></p>
                     <div class="order-footer-buttons">
                         <button class="finalize-btn" id="finalize-btn">Send to Kitchen</button>
                         <button class="checkout-btn" id="checkout-btn">Pay</button>
                         <button class="change-table-btn" id="change-table-btn">Change Table</button>
-                        <button class="void-btn" id="void-btn">Void</button>
+                        <button class="void-btn" id="void-btn">Void Order</button>
                         <button class="print-receipt-btn" id="print-receipt-btn">Print</button>
+                        <button class="clear-all-btn" id="clear-all-btn">Clear All</button>
                     </div>
                 </div>
             </div>
@@ -2245,26 +2506,27 @@ kbd {
 
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <h2>Menu</h2>
-            <span class="close-sidebar" id="close-sidebar">×</span>
+            <h2><img src="./images/logo.png" alt="" class="sidebar-brand-mark">Taboche POS</h2>
+            <button class="close-sidebar" id="close-sidebar" type="button" aria-label="Close menu">×</button>
         </div>
         <div class="sidebar-content">
-            <a href="#" id="nav-sales-reports">Sales Reports</a>
-            <a href="#" id="nav-items-sold">Items Sold Report</a>
-            <a href="#" id="nav-order-history">Order History</a>
-            <a href="#" id="nav-void-details">Void Details</a>
-            <a href="#" id="nav-kitchen-view">🍳 Kitchen Display</a>
-            <a href="#" id="nav-settings">⚙️ Settings</a>
-            <a href="#" id="nav-merge-tables">Merge Tables</a>
-            <a href="#" id="nav-help">Help</a>
+            <a href="#" id="nav-sales-reports"><i class="fas fa-chart-line" aria-hidden="true"></i>Sales Reports</a>
+            <a href="#" id="nav-items-sold"><i class="fas fa-boxes-stacked" aria-hidden="true"></i>Items Sold Report</a>
+            <a href="#" id="nav-order-history"><i class="fas fa-history" aria-hidden="true"></i>Order History</a>
+            <a href="#" id="nav-void-details"><i class="fas fa-ban" aria-hidden="true"></i>Void Details</a>
+            <a href="#" id="nav-kitchen-view"><i class="fas fa-utensils" aria-hidden="true"></i>Kitchen Display</a>
+            <a href="#" id="nav-settings"><i class="fas fa-cog" aria-hidden="true"></i>Settings</a>
+            <a href="#" id="nav-merge-tables"><i class="fas fa-object-ungroup" aria-hidden="true"></i>Merge Tables</a>
+            <a href="#" id="nav-help"><i class="fas fa-circle-question" aria-hidden="true"></i>Help</a>
             <hr>
-            <h6 class="text-muted mb-2">Reports & Utilities</h6>
-            <a href="#" id="nav-backup-data"><i class="fas fa-download me-2"></i>Backup Data</a>
-            <a href="#" id="nav-restore-data"><i class="fas fa-upload me-2"></i>Restore Data</a>
-            <a href="#" id="nav-storage-manager" class="sidebar-storage-link"><i class="fas fa-database me-2"></i>📊 Storage Manager</a>
-            <a href="#" id="nav-reset-data"><i class="fas fa-trash-restore me-2"></i>Reset All Data</a>
+            <span class="section-title">Reports & Utilities</span>
+            <a href="#" id="nav-backup-data"><i class="fas fa-download" aria-hidden="true"></i>Backup Data</a>
+            <a href="#" id="nav-restore-data"><i class="fas fa-upload" aria-hidden="true"></i>Restore Data</a>
+            <a href="#" id="nav-storage-manager" class="sidebar-storage-link"><i class="fas fa-database" aria-hidden="true"></i>Storage Manager</a>
+            <a href="#" id="nav-reset-data" class="danger-link"><i class="fas fa-trash-restore" aria-hidden="true"></i>Reset All Data</a>
         </div>
     </div>
+    <div class="sidebar-overlay" id="sidebar-overlay" aria-hidden="true"></div>
 
     <!-- =================================================================== -->
     <!-- ======================= MODAL DEFINITIONS ======================= -->
@@ -2552,7 +2814,7 @@ function quickBackupNow() {
     if (warning) warning.remove();
 }
 
-async function showQuickBackup() {
+function showQuickBackup() {
     let total = 0;
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
@@ -2560,10 +2822,21 @@ async function showQuickBackup() {
         total += (key.length + value.length) * 2;
     }
     const usedMB = total / (1024 * 1024);
-    const confirmed = await showConfirmModal('Backup data', `📊 Storage: ${usedMB.toFixed(1)}MB / 10MB used\n\nCreate a backup now?`);
-    if (confirmed) {
-        quickBackupNow();
-    }
+    const percentage = Math.min(100, (usedMB / 10) * 100);
+    showSidebarContentModal('Storage Manager', `
+        <div class="report-container storage-manager">
+            <div class="report-header"><h4><i class="fas fa-database text-primary me-2"></i>Storage Manager</h4><span class="report-badge">${percentage.toFixed(0)}% used</span></div>
+            <div class="storage-usage"><div class="storage-bar-bg"><div class="storage-bar-fill" style="width:${percentage}%"></div></div><div class="storage-stats"><span>${usedMB.toFixed(1)} MB used</span><span>10 MB limit</span></div></div>
+            <div class="storage-actions-grid"><button id="storage-backup" class="btn-storage backup"><i class="fas fa-download"></i><span>Backup Data</span><small>Download JSON backup</small></button><button id="storage-restore" class="btn-storage restore"><i class="fas fa-upload"></i><span>Restore Data</span><small>Upload a backup file</small></button><button id="storage-reset" class="btn-storage danger"><i class="fas fa-trash-restore"></i><span>Reset All Data</span><small>This cannot be undone</small></button></div>
+            <div class="storage-info"><i class="fas fa-info-circle"></i> Data is stored locally in this browser. Regular backups are recommended.</div>
+        </div>
+    `, () => {
+        document.getElementById('storage-backup')?.addEventListener('click', backupData);
+        document.getElementById('storage-restore')?.addEventListener('click', () => {
+            const input = document.createElement('input'); input.type = 'file'; input.accept = '.json'; input.onchange = event => restoreData(event.target.files[0]); input.click();
+        });
+        document.getElementById('storage-reset')?.addEventListener('click', resetAllDataConfirmed);
+    });
 }
 
 // Make functions globally available for onclick handlers
@@ -2590,7 +2863,7 @@ function escapeHtml(text) {
 }
 
 // Global state variables, loaded from localStorage or initialized empty
-let currentTable = null;
+let currentTable = localStorage.getItem('selectedTable') || null;
 let orders = {}; // { tableNumber: [item1, item2, ...] }
 let tableTimers = {}; // { tableNumber: { start: timestamp, elapsed: ms, lastUpdated: ms } }
 let salesHistory = []; // [sale1, sale2, ...]
@@ -2598,7 +2871,6 @@ let orderHistory = []; // Same as salesHistory in this simplified version
 let voidDetails = []; // [void1, void2, ...]
 let kotHistory = []; // [kot1, kot2, ...]
 let itemsSold = []; // Aggregated items from sales history
-let removedItems = []; // Not used in this simplified version, kept for compatibility if needed.
 
 let paymentAmount = 0;
 let discount = 0;
@@ -2613,12 +2885,11 @@ let saveTimeout;
 let appendNumberTimeout; // Debounce timeout for number input
 let isProcessingPayment = false;
 let paymentResetTimer = null;
-let cachedTotal = 0;
-let cachedTotalVersion = 0;
 let timerUpdateQueued = false;
 let isFinalizingOrder = false;
 let orderHistoryShowAll = false;
 let offlineActionQueue = [];
+let kitchenElapsedInterval = null;
 
 // NEW: Menu Navigation State
 let currentMenuLevel = 'topLevelSections'; // 'topLevelSections', 'itemsOfSection', 'itemsOfCategory'
@@ -2658,8 +2929,8 @@ function restoreMenuNavigationState() {
     }
 }
 
-// Dummy current user for local-only mode
-let currentUser = { email: 'localuser@example.com', role: 'Staff' }; 
+// Local-only staff identity; this is attribution, not authentication.
+let currentUser = { email: localStorage.getItem('staffName') || 'Local Staff', role: 'Staff' }; 
 
 // Hardcoded menu and extras
 let menuItems = [
@@ -2750,6 +3021,7 @@ let menuItems = [
 { name: "Caramel Latte", price: 260, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/latte_caramel.jpg" },
 { name: "Spanish Latte", price: 280, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/spanish_latte.jpg" },
 { name: "Hot Chocolate", price: 260, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/hot_chocolate.jpg" },
+{ name: "Filter Coffee", price: 280, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/filter_coffee.jpg" },
 
 
    // Moved Cold Coffee OUT of "Cold Drinks" section to be a top-level category
@@ -2762,6 +3034,7 @@ let menuItems = [
 { name: "Iced Hazelnut", price: 290, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_hazelnut_latte.jpg" },
 { name: "Iced Spanish Latte", price: 300, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_spanish_latte.jpg" },
 { name: "Iced Rose Latte", price: 300, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_rose_latte.jpg" },
+{ name: "Iced Filter Coffee", price: 300, category: "Cold Coffee", section: "Bar", type: "drink", image: "images/iced_filter_coffee.jpg" },
 
 
     { name: "Mocha Blended ", price: 320, category: "Frappe / Blended", section: "Bar", type: "drink", image: "images/blended.jpg" },
@@ -2937,6 +3210,16 @@ const ORDER_HISTORY_RETENTION_DAYS = 3;
 // Settings
 let soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
 let speechEnabled = localStorage.getItem('speechEnabled') !== 'false';
+let restaurantName = localStorage.getItem('restaurantName') || 'Taboche Restaurant';
+let restaurantAddress = localStorage.getItem('restaurantAddress') || 'Bhaktapur, Nepal';
+let restaurantPan = localStorage.getItem('restaurantPan') || '600XXXXXX';
+let receiptThankYou = localStorage.getItem('receiptThankYou') || 'Thank you for your visit!';
+let receiptSocialHandle = localStorage.getItem('receiptSocialHandle') || 'Find us on social media @Taboche';
+let staffName = localStorage.getItem('staffName') || 'Local Staff';
+let vatPercent = Math.min(100, Math.max(0, Number(localStorage.getItem('vatPercent')) || 0));
+let serviceChargePercent = Math.min(100, Math.max(0, Number(localStorage.getItem('serviceChargePercent')) || 0));
+let largeCheckoutAmount = Math.min(100000, Math.max(0, Number(localStorage.getItem('largeCheckoutAmount')) || 5000));
+let largeCheckoutItemCount = Math.min(1000, Math.max(0, Number(localStorage.getItem('largeCheckoutItemCount')) || 12));
 const VOID_DETAILS_RETENTION_DAYS = 3;
 const SALES_HISTORY_RETENTION_DAYS = 90;
 const KOT_HISTORY_RETENTION_DAYS = 30;
@@ -3326,9 +3609,11 @@ function updateNetworkStatusIndicator() {
 function updateOfflineQueueBadge() {
     const badge = document.getElementById('offline-queue-badge');
     const pendingCountEl = document.getElementById('pending-count');
+    const offlineCountEl = document.getElementById('offline-queue-count');
     if (!badge || !pendingCountEl) return;
     const count = offlineActionQueue.length;
     pendingCountEl.textContent = count;
+    if (offlineCountEl) offlineCountEl.textContent = count;
     badge.classList.toggle('hidden', count === 0);
 }
 
@@ -3375,6 +3660,9 @@ function enqueueOfflineAction(actionType, payload = {}) {
 function flushOfflineQueue() {
     if (navigator.onLine && offlineActionQueue.length > 0) {
         const count = offlineActionQueue.length;
+        if (offlineActionQueue.some(entry => entry.actionType === 'local-state-sync')) {
+            persistAllData();
+        }
         offlineActionQueue = [];
         persistOfflineQueue();
         updateOfflineQueueBadge();
@@ -3581,10 +3869,12 @@ class NotificationSystem {
     constructor() {
         this.notificationQueue = [];
         this.isShowing = false;
+        this.maxQueueLength = 5;
     }
 
     show(message, type = 'info', duration = 3000) {
         if (!message) return;
+        if (this.notificationQueue.length >= this.maxQueueLength) this.notificationQueue.shift();
         this.notificationQueue.push({ message, type, duration });
         if (!this.isShowing) {
             this.processQueue();
@@ -3670,6 +3960,7 @@ function loadTheme() {
     const theme = localStorage.getItem('theme') || 'light';
     if (theme === 'dark') document.body.classList.add('dark-mode');
     document.getElementById('theme-toggle').className = theme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+    updateSettingsThemeControl(theme === 'dark');
 }
 
 function toggleTheme() {
@@ -3677,6 +3968,13 @@ function toggleTheme() {
     const isDark = document.body.classList.contains('dark-mode');
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
     document.getElementById('theme-toggle').className = isDark ? 'fas fa-moon' : 'fas fa-sun';
+    updateSettingsThemeControl(isDark);
+}
+
+function updateSettingsThemeControl(isDark = document.body.classList.contains('dark-mode')) {
+    const themeButton = document.getElementById('theme-toggle-settings');
+    if (!themeButton) return;
+    themeButton.innerHTML = `<i class="fas ${isDark ? 'fa-sun' : 'fa-moon'}"></i> ${isDark ? 'Light' : 'Dark'}`;
 }
 
 let audioContext;
@@ -3780,6 +4078,8 @@ function playButtonClickSound(button = null) {
 }
 
 function speakText(message) {
+    if (!speechEnabled) return;
+
     if (!('speechSynthesis' in window)) {
         console.warn('Speech synthesis not supported');
         return;
@@ -3884,6 +4184,12 @@ function formatTime(seconds) {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
+function formatElapsedTime(timestamp) {
+    const createdAt = new Date(timestamp).getTime();
+    if (!Number.isFinite(createdAt)) return '00:00';
+    return formatTime(Math.max(0, Math.floor((Date.now() - createdAt) / 1000)));
+}
+
 function updateTableTimers() {
     try {
         if (timerUpdateQueued) return;
@@ -3929,22 +4235,27 @@ function updateTableTimers() {
 }
 
 async function selectTable(tableNumber) {
-    orders[tableNumber] = orders[tableNumber] || [];
-
-    // Auto-finalize pending items on the current table before switching to another table
     if (currentTable && currentTable !== tableNumber && Array.isArray(orders[currentTable]) && orders[currentTable].length) {
-        orders[currentTable].forEach(item => {
-            if (!item.finalized) {
-                item.finalized = true;
-            }
-        });
+        const pendingCount = orders[currentTable].filter(item => !item.finalized).length;
+        if (pendingCount > 0) {
+            const confirmed = await showConfirmModal(
+                'Send Pending Items?',
+                `Table ${currentTable} has ${pendingCount} pending item${pendingCount === 1 ? '' : 's'}. Send them to the kitchen before switching?`
+            );
+            if (!confirmed) return;
+            orders[currentTable].forEach(item => { item.finalized = true; });
+        }
         persistAllData();
     }
+
+    orders[tableNumber] = orders[tableNumber] || [];
+    localStorage.setItem('selectedTable', tableNumber);
 
     showLoadingSpinner();
     currentTable = tableNumber;
     document.getElementById('selected-table').textContent = tableNumber;
     document.getElementById('selected-table-checkout').textContent = tableNumber;
+    loadTableNotes(tableNumber);
 
     // Immediately clear and show loading for order items
     const orderItemsDiv = document.getElementById('order-items');
@@ -4215,11 +4526,6 @@ function renderMenuItemsForCategory(categoryName = null) {
     });
 }
 
-// No stock check without inventory system
-function hasSufficientStock(menuItem) {
-    return true; // Always true as inventory tracking is removed
-}
-
 async function addToOrder(item) {
     if (!currentTable) {
         notifications.show('Please select a table first!', 'warning');
@@ -4293,10 +4599,6 @@ function renderOrderItems() {
             statusBadge = '<span class="pending-kot-badge" style="color:orange; font-size:0.8em; margin-left:5px;">PENDING KOT</span>';
         }
 
-        const removeButtonHTML = !isFinalized
-            ? '<button class="remove-btn" style="background-color: #cc0000; color: white;">Remove</button>'
-            : '';
-
         let comboDetailsHTML = '';
         if (item.type === 'combo' && Array.isArray(item.details) && item.details.length > 0) {
             comboDetailsHTML = `<ul class="combo-details-list" style="margin: 4px 0 0 0; padding-left: 18px; font-size: 0.95em; color: #0a4d6a;">
@@ -4328,7 +4630,6 @@ function renderOrderItems() {
                 <button class="extras-btn" data-name="${escapeHtml(item.name)}"
                         style="background-color: #ff9800; color: white;" ${isFinalized ? 'disabled' : ''}>Extras</button>
                 <button class="void-btn" style="background-color: #ef4444; color: white;">Void</button>
-                ${removeButtonHTML}
             </div>
         `;
 
@@ -4387,8 +4688,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 showExtrasModal();
             } else if (target.classList.contains('void-btn')) {
                 voidItem(index);
-            } else if (target.classList.contains('remove-btn')) {
-                removeOrderItem(index);
             }
         });
 
@@ -4719,7 +5018,7 @@ async function removeOrderItem(index) {
         items: [itemToRemove],
         total: (itemToRemove.price + (itemToRemove.extras?.reduce((sum, extra) => sum + (extra.price || 0), 0) || 0)) * itemToRemove.quantity,
         reason: removalReason,
-        user: currentUser?.email || 'Guest',
+        user: currentUser?.email || staffName,
         timestamp,
         actionType: 'removed'
     };
@@ -4768,25 +5067,69 @@ function showSidebarContentModal(title, contentHTML, setupCallback = null) {
 function closeSidebarContentModal() {
     const modal = document.getElementById('sidebar-content-modal');
     if (modal) modal.style.display = 'none';
+    if (kitchenElapsedInterval) {
+        clearInterval(kitchenElapsedInterval);
+        kitchenElapsedInterval = null;
+    }
+}
+
+function loadTableNotes(table) {
+    const notesInput = document.getElementById('table-notes');
+    if (notesInput) notesInput.value = localStorage.getItem(`table-notes-${table}`) || '';
+}
+
+async function clearAllItems() {
+    if (!currentTable || !orders[currentTable]?.length) {
+        notifications.show('No items to clear.', 'warning');
+        return;
+    }
+
+    const pendingItems = orders[currentTable].filter(item => !item.finalized);
+    if (pendingItems.length === 0) {
+        notifications.show('All items are finalized. Use Void to cancel them.', 'warning');
+        return;
+    }
+
+    const finalizedCount = orders[currentTable].length - pendingItems.length;
+    const confirmed = await showConfirmModal(
+        'Clear Pending Items',
+        `Remove ${pendingItems.length} pending item${pendingItems.length === 1 ? '' : 's'} from this order${finalizedCount > 0 ? `? Finalized items will remain.` : '?'}`
+    );
+    if (!confirmed) return;
+
+    orders[currentTable] = orders[currentTable].filter(item => item.finalized);
+    if (orders[currentTable].length === 0) {
+        delete orders[currentTable];
+        delete tableTimers[currentTable];
+    }
+    persistAllData();
+    renderOrderItems();
+    initializeTables();
+    updateTotal();
+    notifications.show('Pending items cleared.', 'success');
 }
 
 function showSalesReportsContent(e) {
     e.preventDefault();
 
     showSidebarContentModal('Sales Reports', `
-        <div class="report-container">
-            <h4>Sales Report</h4>
-            <div class="report-filter">
-                <input type="date" id="start-date" value="${new Date().toISOString().split('T')[0]}">
-                <input type="date" id="end-date" value="${new Date().toISOString().split('T')[0]}">
-                <button id="generate-report" class="export-btn">Generate Report</button>
+        <div class="report-container sales-report">
+            <div class="report-header"><h4><i class="fas fa-chart-line text-primary me-2"></i>Sales Report</h4><span class="report-badge">Today</span></div>
+            <div class="filter-bar">
+                <div class="filter-group"><label for="start-date"><i class="far fa-calendar-alt"></i> From</label><input type="date" id="start-date" class="filter-input" value="${new Date().toISOString().split('T')[0]}"></div>
+                <div class="filter-group"><label for="end-date"><i class="far fa-calendar-alt"></i> To</label><input type="date" id="end-date" class="filter-input" value="${new Date().toISOString().split('T')[0]}"></div>
+                <button id="generate-report" class="btn-primary-action"><i class="fas fa-sync-alt"></i> Generate</button>
             </div>
-            <hr>
-            <div id="sales-report-content" class="text-center p-4">
-                <p class="text-muted">Select a date range and click "Generate Report" to view sales data.</p>
+            <div class="metrics-grid" id="sales-metrics">
+                <div class="metric-card"><div class="metric-icon"><i class="fas fa-wallet"></i></div><div class="metric-content"><span class="metric-label">Total Sales</span><span class="metric-value" id="total-sales">Rs 0.00</span></div></div>
+                <div class="metric-card"><div class="metric-icon cash"><i class="fas fa-money-bill-wave"></i></div><div class="metric-content"><span class="metric-label">Cash</span><span class="metric-value" id="total-cash">Rs 0.00</span></div></div>
+                <div class="metric-card"><div class="metric-icon mobile"><i class="fas fa-mobile-alt"></i></div><div class="metric-content"><span class="metric-label">Mobile</span><span class="metric-value" id="total-mobile">Rs 0.00</span></div></div>
+                <div class="metric-card"><div class="metric-icon discount"><i class="fas fa-tag"></i></div><div class="metric-content"><span class="metric-label">Discounts</span><span class="metric-value" id="total-discount">Rs 0.00</span></div></div>
+                <div class="metric-card"><div class="metric-icon"><i class="fas fa-receipt"></i></div><div class="metric-content"><span class="metric-label">Transactions</span><span class="metric-value" id="transaction-count">0</span></div></div>
+                <div class="metric-card highlight"><div class="metric-icon"><i class="fas fa-calculator"></i></div><div class="metric-content"><span class="metric-label">Average Order</span><span class="metric-value" id="avg-order">Rs 0.00</span></div></div>
             </div>
-            <button id="export-sales-csv" class="export-btn" style="display:none; margin-top:10px;">Export to CSV</button>
-            <button id="export-sales-pdf" class="export-btn" style="display:none; margin-top:10px; margin-left:10px;">Export to PDF</button>
+            <div id="sales-report-content" class="text-center p-2"></div>
+            <div class="report-actions"><button id="export-sales-csv" class="btn-export" style="display:none"><i class="fas fa-file-csv"></i> CSV</button><button id="export-sales-pdf" class="btn-export pdf" style="display:none"><i class="fas fa-file-pdf"></i> PDF</button></div>
         </div>
     `, () => {
         document.getElementById('generate-report')?.addEventListener('click', generateSalesReport);
@@ -4804,7 +5147,7 @@ function generateSalesReport() {
         hideLoadingSpinner();
         return;
     }
-    reportContentEl.innerHTML = `<p>Loading report...</p>`;
+    reportContentEl.innerHTML = `<div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Loading report...</p></div>`;
     exportButton.style.display = 'none';
     exportPDFButton.style.display = 'none';
 
@@ -4819,19 +5162,11 @@ function generateSalesReport() {
 
     const metrics = calculateSalesMetrics(filteredSales);
 
-    reportContentEl.innerHTML = `
-        <table class="report-table">
-            <thead><tr><th>Metric</th><th>Value</th></tr></thead>
-            <tbody>
-                <tr><td>Total Sales (All Sources)</td><td>Rs ${metrics.totalSales.toFixed(2)}</td></tr>
-                <tr><td>Total Cash Sales (Net)</td><td>Rs ${metrics.totalCash.toFixed(2)}</td></tr>
-                <tr><td>Total Mobile Sales</td><td>Rs ${metrics.totalMobile.toFixed(2)}</td></tr>
-                <tr><td>Total Discount Given</td><td>Rs ${metrics.totalDiscount.toFixed(2)}</td></tr>
-                <tr><td>Total Transactions</td><td>${metrics.transactionCount}</td></tr>
-                <tr><td>Average Transaction Value</td><td>Rs ${metrics.atv.toFixed(2)}</td></tr>
-            </tbody>
-        </table>
-    `;
+    const metricValues = { 'total-sales': metrics.totalSales, 'total-cash': metrics.totalCash, 'total-mobile': metrics.totalMobile, 'total-discount': metrics.totalDiscount, 'avg-order': metrics.atv };
+    Object.entries(metricValues).forEach(([id, value]) => { const element = document.getElementById(id); if (element) element.textContent = `Rs ${value.toFixed(2)}`; });
+    const transactionCount = document.getElementById('transaction-count');
+    if (transactionCount) transactionCount.textContent = metrics.transactionCount;
+    reportContentEl.innerHTML = filteredSales.length ? `<p class="text-muted mb-0"><i class="fas fa-check-circle text-success me-1"></i>${filteredSales.length} transaction${filteredSales.length === 1 ? '' : 's'} in selected period</p>` : '<p class="text-muted mb-0">No sales found for the selected period.</p>';
     if (filteredSales.length > 0) {
         exportButton.style.display = 'block';
         exportPDFButton.style.display = 'block';
@@ -4930,42 +5265,27 @@ function showItemsSoldContent(e) {
         const categoryOptions = categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
 
         return `
-            <div class="items-sold-dashboard report-container">
-                <div class="dashboard-header"><h3>Items Sold Performance</h3></div>
-
-                <div class="report-controls-grid">
-                    <div class="control-group">
-                        <label for="items-sold-start-date">From:</label>
-                        <input type="date" id="items-sold-start-date" class="report-filter-input">
-                    </div>
-                    <div class="control-group">
-                        <label for="items-sold-end-date">To:</label>
-                        <input type="date" id="items-sold-end-date" class="report-filter-input">
-                    </div>
-                    <div class="control-group">
-                        <label for="items-sold-category">Category:</label>
-                        <select id="items-sold-category" class="report-filter-input">
+            <div class="items-sold-dashboard report-container items-sold">
+                <div class="report-header"><h4><i class="fas fa-boxes-stacked text-success me-2"></i>Items Sold</h4><span class="report-badge">Performance</span></div>
+                <div class="filter-bar">
+                    <div class="filter-group"><label for="items-sold-start-date"><i class="far fa-calendar-alt"></i> Date Range</label><div class="date-range"><input type="date" id="items-sold-start-date" class="filter-input"><span class="date-separator">to</span><input type="date" id="items-sold-end-date" class="filter-input"></div></div>
+                    <div class="filter-group"><label for="items-sold-category"><i class="fas fa-tag"></i> Category</label><select id="items-sold-category" class="filter-select">
                             <option value="all">All Categories</option>${categoryOptions}
                         </select>
                     </div>
-                    <div class="control-group">
-                        <label for="items-sold-sort">Sort By:</label>
-                        <select id="items-sold-sort" class="report-filter-input">
+                    <div class="filter-group"><label for="items-sold-sort"><i class="fas fa-arrow-up-wide-short"></i> Sort By</label><select id="items-sold-sort" class="filter-select">
                             <option value="revenue">Revenue</option>
                             <option value="quantity">Quantity</option>
                         </select>
                     </div>
                 </div>
-
-                <div id="items-sold-table-container">
-                    <table class="pro-table report-table mt-3">
-                        <thead><tr><th class="item-name-col">Item</th><th class="numeric-col">Qty</th><th class="numeric-col">Revenue</th></tr></thead>
+                <div id="items-sold-table-container" class="table-responsive">
+                    <table class="modern-table" id="items-sold-table">
+                        <thead><tr><th>Item</th><th class="numeric">Qty Sold</th><th class="numeric">Revenue</th><th class="numeric">% of Total</th></tr></thead>
                         <tbody id="items-sold-tbody"></tbody>
                     </table>
                 </div>
-                <div id="no-data-container" class="text-center p-4" style="display: none;">
-                    <p class="text-muted">No items sold matching your criteria.</p>
-                </div>
+                <div id="no-data-container" class="empty-state" style="display: none;"><i class="fas fa-box-open"></i><p>No items sold in this period</p><span class="text-muted small">Try adjusting your filters</span></div>
                 <button id="export-items-sold-csv" class="export-btn mt-3 w-100">Export Full Report to CSV</button>
             </div>
         `;
@@ -4973,6 +5293,8 @@ function showItemsSoldContent(e) {
 
     const renderReport = () => {
         showLoadingSpinner();
+        const reportBody = document.getElementById('items-sold-tbody');
+        if (reportBody) reportBody.innerHTML = '<tr><td colspan="4"><div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Loading...</p></div></td></tr>';
         const startDateEl = document.getElementById('items-sold-start-date');
         const endDateEl = document.getElementById('items-sold-end-date');
         
@@ -5031,7 +5353,8 @@ function showItemsSoldContent(e) {
         } else {
             document.getElementById('items-sold-table-container').style.display = 'block';
             noDataContainer.style.display = 'none';
-            tbody.innerHTML = displayData.map(item => `<tr><td class="item-name-col">${item.name}</td><td class="numeric-col">${item.quantity.toLocaleString()}</td><td class="numeric-col">Rs ${item.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td></tr>`).join('');
+            const totalRevenue = displayData.reduce((sum, item) => sum + item.totalRevenue, 0);
+            tbody.innerHTML = displayData.map(item => `<tr><td class="item-name-col">${escapeHtml(item.name)}</td><td class="numeric">${item.quantity.toLocaleString()}</td><td class="numeric">Rs ${item.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td><td class="numeric">${totalRevenue ? ((item.totalRevenue / totalRevenue) * 100).toFixed(1) : '0.0'}%</td></tr>`).join('');
         }
         hideLoadingSpinner();
     };
@@ -5107,7 +5430,7 @@ function showItemsSoldContent(e) {
         const today = new Date();
         document.getElementById('items-sold-start-date').valueAsDate = new Date(today.getFullYear(), today.getMonth(), 1);
         document.getElementById('items-sold-end-date').valueAsDate = today;
-        document.querySelectorAll('.report-filter-input').forEach(el => el.addEventListener('change', renderReport));
+        document.querySelectorAll('.filter-input, .filter-select').forEach(el => el.addEventListener('change', renderReport));
         document.getElementById('export-items-sold-csv').addEventListener('click', exportToCSV);
         renderReport();
     });
@@ -5117,44 +5440,30 @@ function showOrderHistoryContent(e) {
     e.preventDefault();
 
     showSidebarContentModal('Order History', `
-        <div class="report-container">
-            <h4>Order History</h4>
-
-            <div class="report-filter order-history-filters">
-                <input type="date" id="history-start-date" value="${new Date().toISOString().split('T')[0]}">
-                <input type="date" id="history-end-date" value="${new Date().toISOString().split('T')[0]}">
-                <select id="history-status-filter">
+        <div class="report-container order-history">
+            <div class="report-header"><h4><i class="fas fa-history text-info me-2"></i>Order History</h4><span class="report-badge" id="order-count-badge">0 orders</span></div>
+            <div class="filter-bar">
+                <div class="filter-group"><label for="history-start-date">Date Range</label><div class="date-range"><input type="date" id="history-start-date" class="filter-input" value="${new Date().toISOString().split('T')[0]}"><span class="date-separator">to</span><input type="date" id="history-end-date" class="filter-input" value="${new Date().toISOString().split('T')[0]}"></div></div>
+                <div class="filter-group"><label for="history-status-filter">Status</label><select id="history-status-filter" class="filter-select">
                     <option value="all">All Statuses</option>
                     <option value="completed">Completed</option>
                     <option value="pending">Pending</option>
                     <option value="voided">Voided</option>
                 </select>
+                </div>
+                <div class="filter-group search-group"><label for="history-search">Search</label><input type="text" id="history-search" class="filter-input" placeholder="Order ID, table, item..."></div>
+                <button id="filter-history" class="btn-primary-action" type="button"><i class="fas fa-filter"></i> Apply</button>
+                <button id="show-all-history" class="btn-export" type="button">Show All</button>
             </div>
-
-            <div class="report-filter order-history-filters">
-                <input type="text" id="history-search" class="history-search" placeholder="Search (ID, Table, Item, Payment)...">
-                <button id="filter-history" class="export-btn" type="button">Filter</button>
-                <button id="show-all-history" class="export-btn" type="button">Show All</button>
-            </div>
-
             <div id="order-history-results">
-                <div class="history-summary">
-                    <div class="summary-card">
-                        <h5>Total Orders</h5>
-                        <p id="total-orders-count">0</p>
-                    </div>
-                    <div class="summary-card">
-                        <h5>Total Revenue</h5>
-                        <p id="total-revenue">Rs 0.00</p>
-                    </div>
-                    <div class="summary-card">
-                        <h5>Avg. Order Value</h5>
-                        <p id="avg-order-value">Rs 0.00</p>
-                    </div>
+                <div class="summary-grid">
+                    <div class="summary-card"><span class="summary-label">Total Orders</span><span class="summary-value" id="total-orders-count">0</span></div>
+                    <div class="summary-card"><span class="summary-label">Revenue</span><span class="summary-value" id="total-revenue">Rs 0.00</span></div>
+                    <div class="summary-card"><span class="summary-label">Average</span><span class="summary-value" id="avg-order-value">Rs 0.00</span></div>
                 </div>
                 <div id="order-history-list"></div>
             </div>
-            <div id="pagination"></div>
+            <div id="pagination" class="modern-pagination"></div>
         </div>
     `, () => {
         document.getElementById('filter-history')?.addEventListener('click', () => renderOrderHistory(1, false));
@@ -5199,6 +5508,8 @@ function renderOrderHistory(pageToShow = currentPage, showAll = orderHistoryShow
         const statusFilterElement = document.getElementById('history-status-filter');
         const searchElement = document.getElementById('history-search');
         if (!startDateElement || !endDateElement || !statusFilterElement || !searchElement) return;
+        const historyLoading = document.getElementById('order-history-list');
+        if (historyLoading) historyLoading.innerHTML = '<div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Loading orders...</p></div>';
 
         const startDate = new Date(startDateElement.value);
         const endDate = new Date(endDateElement.value);
@@ -5275,10 +5586,66 @@ function renderOrderHistoryItem(order) {
             <div class="order-history-actions">
                 <button class="view-receipt-btn" data-order-number="${order.orderNumber}">View Receipt</button>
                 <button class="reprint-btn" data-order-number="${order.orderNumber}">Reprint</button>
+                ${order.status === 'completed' && order.paymentMethods?.length ? `<button class="edit-payment-btn" data-order-number="${escapeHtml(order.orderNumber)}">Edit Payment</button>` : ''}
                 ${order.status !== 'voided' ? `<button class="void-order-btn" data-order-number="${order.orderNumber}">Void Order</button>` : ''}
             </div>
         </div>
     `;
+}
+
+async function editPaymentMethod(orderNumber) {
+    const order = orderHistory.find(item => item.orderNumber === orderNumber);
+    if (!order || order.status !== 'completed' || !Array.isArray(order.paymentMethods) || order.paymentMethods.length === 0) {
+        notifications.show('Payment details are unavailable for this order.', 'warning');
+        return;
+    }
+
+    if (order.paymentMethods.length !== 1) {
+        notifications.show('Editing split payments is not supported yet.', 'warning');
+        return;
+    }
+
+    const currentPayment = order.paymentMethods[0];
+    const currentMethod = currentPayment.method;
+    const requestedMethod = await showPromptModal(
+        'Edit Payment Method',
+        `Order ${orderNumber} is recorded as ${currentMethod}. Enter Cash or Mobile.`,
+        { initialValue: currentMethod, placeholder: 'Cash or Mobile' }
+    );
+    if (!requestedMethod) return;
+
+    const normalizedMethod = requestedMethod.trim().toLowerCase();
+    const method = normalizedMethod === 'cash' ? 'Cash' : normalizedMethod === 'mobile' ? 'Mobile' : null;
+    if (!method) {
+        notifications.show('Payment method must be Cash or Mobile.', 'warning');
+        return;
+    }
+
+    const requestedAmount = await showPromptModal(
+        'Edit Payment Amount',
+        `Enter the actual ${method} payment amount for order ${orderNumber}.`,
+        { initialValue: Number(currentPayment.amount || 0).toFixed(2), placeholder: 'Amount' }
+    );
+    if (!requestedAmount) return;
+
+    const amount = Number(requestedAmount);
+    if (!Number.isFinite(amount) || amount < 0) {
+        notifications.show('Payment amount must be a valid positive number.', 'warning');
+        return;
+    }
+
+    const updatePaymentMethod = sale => {
+        if (sale?.orderNumber === orderNumber && Array.isArray(sale.paymentMethods) && sale.paymentMethods.length === 1) {
+            sale.paymentMethods[0].method = method;
+            sale.paymentMethods[0].amount = Number(amount.toFixed(2));
+            sale.change = Math.max(0, Number((amount - Number(sale.total || 0)).toFixed(2)));
+        }
+    };
+    updatePaymentMethod(order);
+    salesHistory.forEach(updatePaymentMethod);
+    persistAllData();
+    renderOrderHistory(currentPage, orderHistoryShowAll);
+    notifications.show(`Payment updated to ${method} Rs ${amount.toFixed(2)}. Reports will reflect the change.`, 'success');
 }
 
 function matchesSearch(order, query) {
@@ -5317,6 +5684,8 @@ function updateOrderHistorySummaryUI(filteredHistory) {
     document.getElementById('total-orders-count').textContent = totalOrders;
     document.getElementById('total-revenue').textContent = `Rs ${totalRevenue.toFixed(2)}`;
     document.getElementById('avg-order-value').textContent = `Rs ${avgOrderValue.toFixed(2)}`;
+    const badge = document.getElementById('order-count-badge');
+    if (badge) badge.textContent = `${totalOrders} order${totalOrders === 1 ? '' : 's'}`;
 }
 
 function renderOrderRow(item) {
@@ -5411,16 +5780,16 @@ function showVoidDetailsContent(e) {
     if (e) e.preventDefault();
     
     showSidebarContentModal('Void / Remove Details', `
-        <div class="report-container">
-            <h4>Void / Remove Details</h4>
+        <div class="report-container void-details">
+            <div class="report-header"><h4><i class="fas fa-ban text-danger me-2"></i>Void / Removal Log</h4><span class="report-badge warning">Audit Trail</span></div>
             <p class="text-muted">Shows voids and item removals with date, time, table, reason, and staff name.</p>
-            <div class="report-filter">
-                <input type="date" id="void-start-date">
-                <input type="date" id="void-end-date">
-                <button id="filter-voids" class="export-btn">Filter</button>
-                <button id="export-voids" class="export-btn">Export</button>
+            <div class="filter-bar">
+                <div class="filter-group"><label for="void-start-date">From</label><input type="date" id="void-start-date" class="filter-input"></div>
+                <div class="filter-group"><label for="void-end-date">To</label><input type="date" id="void-end-date" class="filter-input"></div>
+                <div class="filter-group"><label for="void-type-filter">Type</label><select id="void-type-filter" class="filter-select"><option value="all">All Types</option><option value="voided">Voided</option><option value="removed">Removed</option></select></div>
+                <button id="filter-voids" class="btn-primary-action">Filter</button><button id="export-voids" class="btn-export"><i class="fas fa-file-csv"></i> Export</button>
             </div>
-            <div id="void-details-list">
+            <div id="void-details-list" class="table-responsive">
                 <p class="text-center text-muted mt-4">Loading void/remove records...</p>
             </div>
         </div>
@@ -5485,7 +5854,8 @@ function renderVoidDetails() {
         const filteredVoids = voidDetails.filter(item => {
             if (!item.timestamp) return false;
             const itemDate = new Date(item.timestamp);
-            return itemDate >= startDate && itemDate <= endDate;
+            const typeFilter = document.getElementById('void-type-filter')?.value || 'all';
+            return itemDate >= startDate && itemDate <= endDate && (typeFilter === 'all' || (item.actionType || 'voided') === typeFilter);
         });
 
         console.log('Filtered void records:', filteredVoids.length);
@@ -5543,6 +5913,7 @@ function renderVoidDetails() {
             
             const table = escapeHtml(String(voidItem.table || 'Unknown'));
             const actionType = voidItem.actionType === 'removed' ? 'Removed' : 'Voided';
+            const actionTypeClass = voidItem.actionType === 'removed' ? 'removed' : 'voided';
             const reason = escapeHtml(voidItem.reason || 'No reason');
             const user = escapeHtml(voidItem.user || 'Unknown');
 
@@ -5550,7 +5921,7 @@ function renderVoidDetails() {
                 <tr>
                     <td class="date-cell">${date}</td>
                     <td class="table-cell"><strong>${table}</strong></td>
-                    <td class="type-cell"><strong>${actionType}</strong></td>
+                    <td class="type-cell"><span class="void-status ${actionTypeClass}">${actionType}</span></td>
                     <td class="items-cell">${itemsList}</td>
                     <td class="amount-cell"><strong>${total}</strong></td>
                     <td class="reason-cell">${reason}</td>
@@ -5597,7 +5968,8 @@ function exportVoidDetails() {
         const filteredVoids = voidDetails.filter(item => {
             if (!item.timestamp) return false;
             const itemDate = new Date(item.timestamp);
-            return itemDate >= new Date(startDate) && itemDate <= endOfDay;
+            const typeFilter = document.getElementById('void-type-filter')?.value || 'all';
+            return itemDate >= new Date(startDate) && itemDate <= endOfDay && (typeFilter === 'all' || (item.actionType || 'voided') === typeFilter);
         });
 
         if (filteredVoids.length === 0) {
@@ -5748,10 +6120,15 @@ function setQuickAmount(amount) {
     const input = document.getElementById('numeric-input');
     if (!input) return;
 
+    const total = calculateTotal();
+    const paidSoFar = paymentMethods.reduce((sum, pm) => sum + pm.amount, 0);
+    if (total > 0.01 && paidSoFar >= total - 0.01) {
+        notifications.show('The bill is already fully paid.', 'info');
+        return;
+    }
+
     let finalAmount;
     if (isNaN(amount)) { // For "Exact" button
-        const total = validateNumericInput(document.getElementById('dialog-total-amount').textContent, 0);
-        const paidSoFar = paymentMethods.reduce((sum, pm) => sum + pm.amount, 0);
         finalAmount = Math.max(0, total - paidSoFar);
     } else {
         finalAmount = validateNumericInput(amount, 0);
@@ -5958,6 +6335,9 @@ function updateChange() {
         completeBtn.style.opacity = canComplete ? '1' : '0.5';
         completeBtn.style.cursor = canComplete ? 'pointer' : 'not-allowed';
     }
+
+    const exactButton = document.querySelector('#quick-amounts button[data-amount="exact"]');
+    if (exactButton) exactButton.disabled = total <= 0.01 || paidSoFar >= total - 0.01;
     
     // Show insufficient message with more clarity
     if (insufficientMsgEl) {
@@ -5974,9 +6354,6 @@ function updateChange() {
 
 // 2. CORE CALCULATION ENGINE
 function calculateTotal() {
-    const VAT_PERCENT = 0; 
-    const SERVICE_CHARGE_PERCENT = 0; 
-    
     const tableKey = currentTable || 'current';
     const currentItems = orders[tableKey] && Array.isArray(orders[tableKey]) ? orders[tableKey] : [];
     const currDiscount = (typeof discount === 'number' && discount >= 0) ? discount : 0;
@@ -6000,9 +6377,9 @@ function calculateTotal() {
     });
 
     const afterDiscount = (discountableTotal * (1 - currDiscount / 100)) + nonDiscountableTotal;
-    const serviceCharge = afterDiscount * (SERVICE_CHARGE_PERCENT / 100);
+    const serviceCharge = afterDiscount * (serviceChargePercent / 100);
     const beforeVAT = afterDiscount + serviceCharge;
-    const vat = beforeVAT * (VAT_PERCENT / 100);
+    const vat = beforeVAT * (vatPercent / 100);
     
     return Number((beforeVAT + vat).toFixed(2));
 }
@@ -6049,7 +6426,7 @@ async function completePayment() {
     try {
         const total = calculateTotal();
         const itemCount = orders[currentTable]?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
-        if (total > 5000 || itemCount > 12) {
+        if (total > largeCheckoutAmount || itemCount > largeCheckoutItemCount) {
             const confirmed = await showConfirmModal('Large checkout', `Large checkout detected: Rs ${total.toFixed(2)} for ${itemCount} item(s). Proceed?`);
             if (!confirmed) {
                 return;
@@ -6069,11 +6446,9 @@ async function completePayment() {
         }
         const paidSoFar = paymentMethods.reduce((sum, pm) => sum + pm.amount, 0);
         if (paidSoFar < total - 0.01 && total > 0.01) {
-            notifications.show("Payment amount is insufficient!", 'error');
-            if (paymentAmount > 0) {
-                paymentMethods.pop();
-            }
+            notifications.show(`Payment is insufficient. Add the remaining Rs ${(total - paidSoFar).toFixed(2)} or adjust the payment amount.`, 'warning');
             renderPaymentMethods();
+            updateChange();
             return;
         }
 
@@ -6092,19 +6467,13 @@ async function completePayment() {
             user: currentUser?.email || 'Guest',
             status: 'completed',
             change: Math.max(0, paidSoFar - total),
-            orderType: 'dine-in'
+            orderType: 'dine-in',
+            vatPercent,
+            serviceChargePercent
         };
 
         salesHistory.push(sale);
         orderHistory.push(sale);
-        
-        // Subtract stock from inventory
-        sale.items.forEach(item => {
-            const menuItem = menuItems.find(m => m.name === item.name);
-            if (menuItem && typeof menuItem.stock === 'number') {
-                menuItem.stock = Math.max(0, menuItem.stock - (Number(item.quantity) || 1));
-            }
-        });
         
         sale.items.forEach(item => {
             const extrasTotal = (item.extras?.reduce((s, e) => s + (Number(e.price) || 0), 0) || 0);
@@ -6158,6 +6527,11 @@ async function completePayment() {
 function updateTotal() {
     const totalEl = document.getElementById('total-amount');
     if (totalEl) totalEl.textContent = calculateTotal().toFixed(2);
+    const itemsEl = document.getElementById('total-items');
+    if (itemsEl) {
+        const items = currentTable && Array.isArray(orders[currentTable]) ? orders[currentTable] : [];
+        itemsEl.textContent = items.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+    }
 }
 
 // =========================================================================
@@ -6509,10 +6883,6 @@ function generateReceipt(order) {
         return;
     }
 
-    const SERVICE_CHARGE_PERCENT = 0;
-    const VAT_PERCENT = 0;
-    const RESTAURANT_PAN= "600XXXXXX";
-
     try {
         const timestamp = order.timestamp ? new Date(order.timestamp) : new Date();
 
@@ -6523,9 +6893,15 @@ function generateReceipt(order) {
         
         const discountAmount = parseFloat(order.discountAmount) || 0;
         const subtotalAfterDiscount = subtotal - discountAmount;
-        const serviceChargeAmount = subtotalAfterDiscount * (SERVICE_CHARGE_PERCENT / 100);
+        const receiptServiceChargePercent = Number.isFinite(Number(order.serviceChargePercent))
+            ? Number(order.serviceChargePercent)
+            : serviceChargePercent;
+        const receiptVatPercent = Number.isFinite(Number(order.vatPercent))
+            ? Number(order.vatPercent)
+            : vatPercent;
+        const serviceChargeAmount = subtotalAfterDiscount * (receiptServiceChargePercent / 100);
         const taxableAmount = subtotalAfterDiscount + serviceChargeAmount;
-        const vatAmount = taxableAmount * (VAT_PERCENT / 100);
+        const vatAmount = taxableAmount * (receiptVatPercent / 100);
         const grandTotal = taxableAmount + vatAmount;
 
         const receiptCSS = `
@@ -6651,9 +7027,9 @@ function generateReceipt(order) {
             <div class="receipt-container">
                 <div class="header-section text-center">
                     <img src="./images/logo-print.png" alt="Logo" onerror="handleImageError(this)">
-                    <h1>Taboche Restaurant</h1>
-                    <p>Bhaktapur, Nepal</p>
-                    <p>PAN: ${RESTAURANT_PAN}</p>
+                    <h1>${escapeHtml(restaurantName)}</h1>
+                    <p>${escapeHtml(restaurantAddress)}</p>
+                    <p>PAN: ${escapeHtml(restaurantPan)}</p>
                 </div>
 
                 <div class="dashed-line"></div>
@@ -6685,8 +7061,8 @@ function generateReceipt(order) {
                 <div class="summary-section">
                     <div class="summary-line"><span>Subtotal</span><span class="text-right">Rs ${subtotal.toFixed(2)}</span></div>
                     ${discountAmount > 0 ? `<div class="summary-line"><span>Discount</span><span class="text-right">-Rs ${discountAmount.toFixed(2)}</span></div>` : ''}
-                    <div class="summary-line"><span>Service Charge (${SERVICE_CHARGE_PERCENT}%)</span><span class="text-right">Rs ${serviceChargeAmount.toFixed(2)}</span></div>
-                    <div class="summary-line"><span>VAT (${VAT_PERCENT}%)</span><span class="text-right">Rs ${vatAmount.toFixed(2)}</span></div>
+                    <div class="summary-line"><span>Service Charge (${receiptServiceChargePercent}%)</span><span class="text-right">Rs ${serviceChargeAmount.toFixed(2)}</span></div>
+                    <div class="summary-line"><span>VAT (${receiptVatPercent}%)</span><span class="text-right">Rs ${vatAmount.toFixed(2)}</span></div>
                     
                     <div class="summary-line grand-total">
                         <span>GRAND TOTAL</span>
@@ -6705,8 +7081,8 @@ function generateReceipt(order) {
                 <div class="dashed-line"></div>
 
                 <div class="footer-section text-center">
-                    <p>Thank you for your visit!</p>
-                    <p>Find us on social media @Taboche</p>
+                    <p>${escapeHtml(receiptThankYou)}</p>
+                    ${receiptSocialHandle ? `<p>${escapeHtml(receiptSocialHandle)}</p>` : ''}
                 </div>
             </div>
         `;
@@ -6735,6 +7111,7 @@ async function resetAllDataConfirmed() {
             await clearLargeStateFromIndexedDB();
             // Re-initialize all global state variables to their default empty states
             currentTable = null;
+            localStorage.removeItem('selectedTable');
             orders = {};
             tableTimers = {};
             salesHistory = [];
@@ -6742,7 +7119,6 @@ async function resetAllDataConfirmed() {
             voidDetails = [];
             kotHistory = [];
             itemsSold = [];
-            removedItems = []; // Not used, but reset for completeness
 
             // Reset menu navigation state
             currentMenuLevel = 'topLevelSections'; // Changed initial level
@@ -6887,7 +7263,8 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // Header Buttons
     document.getElementById("hamburger-menu")?.addEventListener("click", toggleSidebar);
-    document.getElementById("close-sidebar")?.addEventListener("click", toggleSidebar);
+    document.getElementById("close-sidebar")?.addEventListener("click", closeSidebar);
+    document.getElementById("sidebar-overlay")?.addEventListener("click", closeSidebar);
     document.getElementById("theme-toggle")?.addEventListener("click", toggleTheme);
 
     // NEW: Back button for menu navigation
@@ -6899,6 +7276,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("change-table-btn")?.addEventListener("click", changeTable);
     document.getElementById("void-btn")?.addEventListener("click", voidOrder);
     document.getElementById("print-receipt-btn")?.addEventListener("click", printReceipt);
+    document.getElementById("clear-all-btn")?.addEventListener("click", clearAllItems);
 
     // Sidebar Navigation
     document.getElementById("nav-sales-reports")?.addEventListener("click", showSalesReportsContent);
@@ -7021,6 +7399,10 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
+        if (button.classList.contains('edit-payment-btn')) {
+            editPaymentMethod(button.dataset.orderNumber);
+        }
+
         playButtonClickSound(button);
     });
 
@@ -7042,12 +7424,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initial table selection (optional, auto-select first table if none selected)
     if (!currentTable && tableList.length > 0) {
         selectTable(tableList[0]);
+        loadTableNotes(tableList[0]);
     }
 });
 
 // Global event listener for closing modals/sidebars
 document.addEventListener('click', function(e) {
-    const customCloseSelectors = '.close-modal, .close-sidebar, .qr-close-btn';
+    const customCloseSelectors = '.close-modal, .qr-close-btn';
     const customCloseBtn = e.target.closest(customCloseSelectors);
 
     if (customCloseBtn) {
@@ -7062,7 +7445,29 @@ document.addEventListener('click', function(e) {
 // --- UTILITIES ---
 function toggleSidebar(e) {
     e?.preventDefault();
-    document.getElementById('sidebar').classList.toggle('active');
+    const sidebar = document.getElementById('sidebar');
+    setSidebarOpen(!sidebar?.classList.contains('active'));
+}
+
+function closeSidebar(e) {
+    e?.preventDefault();
+    setSidebarOpen(false);
+}
+
+function setSidebarOpen(isOpen) {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    if (!sidebar || !overlay) return;
+
+    if (!isOpen && kitchenElapsedInterval) {
+        clearInterval(kitchenElapsedInterval);
+        kitchenElapsedInterval = null;
+    }
+
+    sidebar.classList.toggle('active', isOpen);
+    overlay.classList.toggle('active', isOpen);
+    overlay.setAttribute('aria-hidden', String(!isOpen));
+    document.body.style.overflow = isOpen ? 'hidden' : '';
 }
 
 function updateDateTime() {
@@ -7125,7 +7530,6 @@ function searchMenu() {
             <img src="${item.image}" alt="${item.name}">
             <p>${item.name}</p>
             <div class="price">Rs ${item.price.toFixed(2)}</div>
-            <div class="stock-info" style="font-size:0.7em">Stock: ${item.stock}</div>
         `;
         div.addEventListener('click', () => addToOrder(item));
         menu.appendChild(div);
@@ -7134,26 +7538,24 @@ function searchMenu() {
 
 // Kitchen Display View
 function showKitchenView() {
+    if (kitchenElapsedInterval) clearInterval(kitchenElapsedInterval);
     const pendingKOTs = kotHistory.filter(k => k.status === 'pending');
     const content = `
-        <div class="kitchen-view">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h4>Pending Orders</h4>
-                <input type="text" id="kitchen-search" placeholder="Search table..." class="form-control" style="max-width: 200px;">
+        <div class="report-container kitchen-view">
+            <div class="report-header"><h4><i class="fas fa-utensils text-warning me-2"></i>Kitchen Display</h4><div><span class="report-badge">${pendingKOTs.length} pending</span><button id="kitchen-refresh" class="btn-icon" type="button" aria-label="Refresh kitchen display"><i class="fas fa-sync-alt"></i></button></div></div>
+            <div class="filter-bar">
+                <div class="filter-group search-group"><label for="kitchen-search">Search</label><input type="text" id="kitchen-search" placeholder="Table or item..." class="filter-input"></div>
+                <div class="filter-group"><label for="kitchen-type-filter">Section</label><select id="kitchen-type-filter" class="filter-select"><option value="all">All Sections</option><option value="kitchen">Kitchen</option><option value="bar">Bar</option></select></div>
             </div>
-            <div id="kitchen-orders">
+            <div id="kitchen-orders" class="kot-grid">
                 ${pendingKOTs.length === 0 ? '<p>No pending orders</p>' : 
                     pendingKOTs.map(kot => `
-                        <div class="kot-card mb-3 p-3 border rounded">
-                            <h5>Table ${kot.table} - ${kot.type}</h5>
-                            <p><strong>KOT:</strong> ${kot.kotNumber}</p>
-                            <p><strong>Items:</strong></p>
-                            <ul>
-                                ${kot.items.map(item => `<li>${item.name} x${item.quantity}</li>`).join('')}
-                            </ul>
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-success btn-sm" onclick="markKOTReady('${kot.kotId}')">Mark Ready</button>
-                                <button class="btn btn-primary btn-sm" onclick="printKOTFromView('${kot.kotId}')">Print KOT</button>
+                        <div class="kot-card" data-kot-type="${kot.type}">
+                            <div class="kot-header"><div class="kot-info"><span class="kot-number">${escapeHtml(kot.kotNumber)}</span><span class="kot-type ${kot.type}">${kot.type}</span></div><span class="kot-table">Table ${escapeHtml(String(kot.table))}</span></div>
+                            <div class="kot-body"><div class="kot-items">${kot.items.map(item => `<div class="kot-item"><span class="kot-item-name">${escapeHtml(item.name)}</span><span class="kot-item-qty">x${item.quantity}</span>${item.extras?.length ? `<span class="kot-item-extras">+ ${item.extras.map(extra => escapeHtml(extra.name)).join(', ')}</span>` : ''}</div>`).join('')}</div><div class="kot-timer" data-created-at="${escapeHtml(kot.timestamp)}"><i class="fas fa-clock"></i> <span>${formatElapsedTime(kot.timestamp)}</span></div></div>
+                            <div class="kot-actions">
+                                <button class="btn-ready" onclick="markKOTReady('${kot.kotId}')"><i class="fas fa-check"></i> Ready</button>
+                                <button class="btn-print" onclick="printKOTFromView('${kot.kotId}')"><i class="fas fa-print"></i> Print</button>
                             </div>
                         </div>
                     `).join('')
@@ -7163,6 +7565,7 @@ function showKitchenView() {
     `;
     
     showSidebarContentModal('Kitchen Display', content, () => {
+        document.getElementById('kitchen-refresh')?.addEventListener('click', showKitchenView);
         // Add search functionality
         const searchInput = document.getElementById('kitchen-search');
         const ordersContainer = document.getElementById('kitchen-orders');
@@ -7173,12 +7576,19 @@ function showKitchenView() {
                 const cards = ordersContainer.querySelectorAll('.kot-card');
                 
                 cards.forEach(card => {
-                    const tableText = card.querySelector('h5').textContent.toLowerCase();
-                    const itemsText = Array.from(card.querySelectorAll('li')).map(li => li.textContent.toLowerCase()).join(' ');
-                    const isVisible = !searchTerm || tableText.includes(searchTerm) || itemsText.includes(searchTerm);
+                    const cardText = card.textContent.toLowerCase();
+                    const typeFilter = document.getElementById('kitchen-type-filter')?.value || 'all';
+                    const isVisible = (!searchTerm || cardText.includes(searchTerm)) && (typeFilter === 'all' || card.dataset.kotType === typeFilter);
                     card.style.display = isVisible ? 'block' : 'none';
                 });
             });
+            document.getElementById('kitchen-type-filter')?.addEventListener('change', () => searchInput.dispatchEvent(new Event('input')));
+            kitchenElapsedInterval = setInterval(() => {
+                ordersContainer.querySelectorAll('.kot-timer').forEach(timer => {
+                    const elapsed = timer.querySelector('span');
+                    if (elapsed) elapsed.textContent = formatElapsedTime(timer.dataset.createdAt);
+                });
+            }, 1000);
         }
     });
 }
@@ -7210,21 +7620,30 @@ window.printKOTFromView = printKOTFromView;
 // Settings Panel
 function showSettings() {
     const content = `
-        <div class="settings-panel">
-            <h4>Settings</h4>
-            <div class="mb-3">
-                <label class="form-check-label">
-                    <input type="checkbox" class="form-check-input" id="sound-toggle" ${soundEnabled ? 'checked' : ''}>
-                    Enable Sound Effects
-                </label>
-            </div>
-            <div class="mb-3">
-                <label class="form-check-label">
-                    <input type="checkbox" class="form-check-input" id="speech-toggle" ${speechEnabled ? 'checked' : ''}>
-                    Enable Voice Feedback
-                </label>
-            </div>
-            <button id="save-settings" class="btn btn-primary">Save Settings</button>
+        <div class="report-container settings-panel">
+            <div class="report-header"><h4><i class="fas fa-cog text-secondary me-2"></i>Settings</h4><span class="report-badge">Preferences</span></div>
+            <div class="settings-section"><h5><i class="fas fa-volume-up me-2"></i>Audio</h5><div class="settings-group">
+                <div class="setting-item"><div class="setting-info"><span class="setting-label">Sound Effects</span><span class="setting-desc">Button clicks and notifications</span></div><label class="toggle-switch"><input type="checkbox" id="sound-toggle" ${soundEnabled ? 'checked' : ''}><span class="toggle-slider"></span></label></div>
+                <div class="setting-item"><div class="setting-info"><span class="setting-label">Voice Feedback</span><span class="setting-desc">Order confirmations and alerts</span></div><label class="toggle-switch"><input type="checkbox" id="speech-toggle" ${speechEnabled ? 'checked' : ''}><span class="toggle-slider"></span></label></div>
+            </div></div>
+            <div class="settings-section"><h5><i class="fas fa-palette me-2"></i>Appearance</h5><div class="settings-group"><div class="setting-item"><div class="setting-info"><span class="setting-label">Dark Mode</span><span class="setting-desc">Switch the interface theme</span></div><button id="theme-toggle-settings" class="btn-secondary"><i class="fas fa-moon"></i> Toggle</button></div></div></div>
+            <div class="settings-section"><h5><i class="fas fa-receipt me-2"></i>Charges</h5><div class="settings-group">
+                <div class="setting-item"><div class="setting-info"><span class="setting-label">VAT (%)</span><span class="setting-desc">Applied to the discounted subtotal</span></div><input id="vat-percent-setting" class="filter-input" type="number" min="0" max="100" step="0.01" value="${vatPercent}"></div>
+                <div class="setting-item"><div class="setting-info"><span class="setting-label">Service Charge (%)</span><span class="setting-desc">Applied before VAT</span></div><input id="service-charge-percent-setting" class="filter-input" type="number" min="0" max="100" step="0.01" value="${serviceChargePercent}"></div>
+            </div></div>
+            <div class="settings-section"><h5><i class="fas fa-triangle-exclamation me-2"></i>Checkout Warning</h5><div class="settings-group">
+                <div class="setting-item"><div class="setting-info"><span class="setting-label">Amount Threshold (Rs)</span><span class="setting-desc">Ask for confirmation above this amount</span></div><input id="large-checkout-amount-setting" class="filter-input" type="number" min="0" max="100000" step="1" value="${largeCheckoutAmount}"></div>
+                <div class="setting-item"><div class="setting-info"><span class="setting-label">Item Count Threshold</span><span class="setting-desc">Ask for confirmation above this item count</span></div><input id="large-checkout-item-count-setting" class="filter-input" type="number" min="0" max="1000" step="1" value="${largeCheckoutItemCount}"></div>
+            </div></div>
+            <div class="settings-section"><h5><i class="fas fa-store me-2"></i>Receipt & Staff</h5><div class="settings-group">
+                <div class="setting-item"><div class="setting-info"><span class="setting-label">Restaurant Name</span><span class="setting-desc">Shown at the top of printed receipts</span></div><input id="restaurant-name-setting" class="filter-input" type="text" maxlength="80" value="${escapeHtml(restaurantName)}"></div>
+                <div class="setting-item"><div class="setting-info"><span class="setting-label">Address</span><span class="setting-desc">Shown below the restaurant name</span></div><input id="restaurant-address-setting" class="filter-input" type="text" maxlength="120" value="${escapeHtml(restaurantAddress)}"></div>
+                <div class="setting-item"><div class="setting-info"><span class="setting-label">PAN</span><span class="setting-desc">Shown on printed receipts</span></div><input id="restaurant-pan-setting" class="filter-input" type="text" maxlength="40" value="${escapeHtml(restaurantPan)}"></div>
+                <div class="setting-item"><div class="setting-info"><span class="setting-label">Thank-you Message</span><span class="setting-desc">Receipt closing message</span></div><input id="receipt-thank-you-setting" class="filter-input" type="text" maxlength="120" value="${escapeHtml(receiptThankYou)}"></div>
+                <div class="setting-item"><div class="setting-info"><span class="setting-label">Social Handle</span><span class="setting-desc">Optional receipt footer line</span></div><input id="receipt-social-setting" class="filter-input" type="text" maxlength="120" value="${escapeHtml(receiptSocialHandle)}"></div>
+                <div class="setting-item"><div class="setting-info"><span class="setting-label">Staff Name</span><span class="setting-desc">Used for local action attribution</span></div><input id="staff-name-setting" class="filter-input" type="text" maxlength="80" value="${escapeHtml(staffName)}"></div>
+            </div></div>
+            <div class="settings-actions"><button id="save-settings" class="btn-primary-action"><i class="fas fa-save"></i> Save Settings</button></div>
         </div>
     `;
     
@@ -7235,9 +7654,42 @@ function showSettings() {
         document.getElementById('speech-toggle')?.addEventListener('change', (e) => {
             speechEnabled = e.target.checked;
         });
+        document.getElementById('theme-toggle-settings')?.addEventListener('click', toggleTheme);
         document.getElementById('save-settings')?.addEventListener('click', () => {
+            const vatInput = document.getElementById('vat-percent-setting');
+            const serviceChargeInput = document.getElementById('service-charge-percent-setting');
+            const largeAmountInput = document.getElementById('large-checkout-amount-setting');
+            const largeItemCountInput = document.getElementById('large-checkout-item-count-setting');
+            const restaurantNameInput = document.getElementById('restaurant-name-setting');
+            const restaurantAddressInput = document.getElementById('restaurant-address-setting');
+            const restaurantPanInput = document.getElementById('restaurant-pan-setting');
+            const receiptThankYouInput = document.getElementById('receipt-thank-you-setting');
+            const receiptSocialInput = document.getElementById('receipt-social-setting');
+            const staffNameInput = document.getElementById('staff-name-setting');
+            vatPercent = Math.min(100, Math.max(0, Number(vatInput?.value) || 0));
+            serviceChargePercent = Math.min(100, Math.max(0, Number(serviceChargeInput?.value) || 0));
+            largeCheckoutAmount = Math.min(100000, Math.max(0, Number(largeAmountInput?.value) || 0));
+            largeCheckoutItemCount = Math.min(1000, Math.max(0, Number(largeItemCountInput?.value) || 0));
+            restaurantName = restaurantNameInput?.value.trim() || 'Taboche Restaurant';
+            restaurantAddress = restaurantAddressInput?.value.trim() || 'Bhaktapur, Nepal';
+            restaurantPan = restaurantPanInput?.value.trim() || '600XXXXXX';
+            receiptThankYou = receiptThankYouInput?.value.trim() || 'Thank you for your visit!';
+            receiptSocialHandle = receiptSocialInput?.value.trim() || '';
+            staffName = staffNameInput?.value.trim() || 'Local Staff';
+            currentUser.email = staffName;
             localStorage.setItem('soundEnabled', soundEnabled);
             localStorage.setItem('speechEnabled', speechEnabled);
+            localStorage.setItem('vatPercent', String(vatPercent));
+            localStorage.setItem('serviceChargePercent', String(serviceChargePercent));
+            localStorage.setItem('largeCheckoutAmount', String(largeCheckoutAmount));
+            localStorage.setItem('largeCheckoutItemCount', String(largeCheckoutItemCount));
+            localStorage.setItem('restaurantName', restaurantName);
+            localStorage.setItem('restaurantAddress', restaurantAddress);
+            localStorage.setItem('restaurantPan', restaurantPan);
+            localStorage.setItem('receiptThankYou', receiptThankYou);
+            localStorage.setItem('receiptSocialHandle', receiptSocialHandle);
+            localStorage.setItem('staffName', staffName);
+            updateTotal();
             notifications.show('Settings saved', 'success');
             closeSidebarContentModal();
         });
@@ -7246,53 +7698,53 @@ function showSettings() {
 
 // Table Merge Feature
 async function mergeTables() {
-    const confirmed = await showConfirmModal('Merge Tables', 
-        'Merging tables will combine orders. This action cannot be undone. Continue?');
-    if (!confirmed) return;
-    
-    const sourceTable = await showPromptModal('Merge Tables', 'Enter source table number to merge from:');
-    if (!sourceTable || !tableList.includes(sourceTable)) {
-        notifications.show('Invalid source table', 'error');
-        return;
-    }
-    
-    const targetTable = await showPromptModal('Merge Tables', `Merge Table ${sourceTable} into which table?`);
-    if (!targetTable || !tableList.includes(targetTable)) {
-        notifications.show('Invalid target table', 'error');
-        return;
-    }
-    
-    if (!orders[sourceTable]?.length) {
-        notifications.show(`Table ${sourceTable} has no order to merge`, 'warning');
-        return;
-    }
-    
-    // Merge items
-    orders[targetTable] = orders[targetTable] || [];
-    orders[sourceTable].forEach(item => {
-        const existing = orders[targetTable].find(i => i.name === item.name && i.price === item.price);
-        if (existing) {
-            existing.quantity += item.quantity;
-        } else {
-            orders[targetTable].push({...item});
+    const occupiedTables = tableList.filter(table => orders[table]?.length);
+    const tableOptions = (tables, emptyLabel) => `<option value="">${emptyLabel}</option>${tables.map(table => `<option value="${table}">Table ${table}${orders[table]?.length ? ` (${orders[table].reduce((sum, item) => sum + item.quantity, 0)} items)` : ''}</option>`).join('')}`;
+    showSidebarContentModal('Merge Tables', `
+        <div class="report-container merge-tables">
+            <div class="report-header"><h4><i class="fas fa-object-ungroup text-warning me-2"></i>Merge Tables</h4><span class="report-badge warning">Cannot be undone</span></div>
+            <div class="merge-info"><p>Select a source table and target table. All source items will move to the target.</p><div class="alert-warning"><i class="fas fa-exclamation-triangle"></i><span>Review the selections carefully before merging.</span></div></div>
+            <div class="merge-selectors"><div class="merge-select"><label for="merge-source">Source Table</label><select id="merge-source" class="filter-select">${tableOptions(occupiedTables, 'Select occupied table...')}</select></div><div class="merge-arrow"><i class="fas fa-arrow-right"></i></div><div class="merge-select"><label for="merge-target">Target Table</label><select id="merge-target" class="filter-select">${tableOptions(tableList, 'Select target table...')}</select></div></div>
+            <button id="execute-merge" class="btn-warning-action" disabled><i class="fas fa-object-ungroup"></i> Merge Tables</button>
+        </div>
+    `, () => {
+        const source = document.getElementById('merge-source');
+        const target = document.getElementById('merge-target');
+        const execute = document.getElementById('execute-merge');
+        const updateMergeState = () => { execute.disabled = !source.value || !target.value || source.value === target.value; };
+        if (currentTable && occupiedTables.includes(currentTable)) {
+            source.value = currentTable;
+            target.value = '';
         }
+        updateMergeState();
+        source?.addEventListener('change', updateMergeState); target?.addEventListener('change', updateMergeState);
+        execute?.addEventListener('click', async () => {
+            const confirmed = await showConfirmModal('Merge Tables', 'Merging tables will combine orders. This action cannot be undone. Continue?');
+            if (!confirmed) return;
+            const sourceTable = source.value; const targetTable = target.value;
+            if (!orders[sourceTable]?.length || (orders[targetTable]?.length && sourceTable === targetTable)) return;
+            orders[targetTable] = orders[targetTable] || [];
+            orders[sourceTable].forEach(item => { const existing = orders[targetTable].find(existingItem => existingItem.name === item.name && existingItem.price === item.price); if (existing) existing.quantity += item.quantity; else orders[targetTable].push({ ...item }); });
+            delete orders[sourceTable]; delete tableTimers[sourceTable]; persistAllData(); renderOrderItems(); initializeTables(); updateTotal(); closeSidebarContentModal(); notifications.show(`Table ${sourceTable} merged into ${targetTable}`, 'success');
+        });
     });
-    
-    delete orders[sourceTable];
-    delete tableTimers[sourceTable];
-    persistAllData();
-    renderOrderItems();
-    initializeTables();
-    updateTotal();
-    notifications.show(`Table ${sourceTable} merged into ${targetTable}`, 'success');
 }
 
 // Keyboard Shortcuts
 document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.getElementById('sidebar')?.classList.contains('active')) {
+        closeSidebar(e);
+        return;
+    }
+
     // Ctrl+F for search focus
     if (e.ctrlKey && e.key === 'f') {
         e.preventDefault();
         document.getElementById('search')?.focus();
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        if (currentTable && orders[currentTable]?.length) finalizeOrder();
     }
     // F1 for help
     if (e.key === 'F1') {
@@ -7315,21 +7767,11 @@ document.addEventListener('keydown', (e) => {
 
 function showHelpModal() {
     const content = `
-        <div class="help-modal">
-            <h4>Keyboard Shortcuts</h4>
-            <ul>
-                <li><kbd>Ctrl+F</kbd> - Focus search bar</li>
-                <li><kbd>F1</kbd> - Show this help</li>
-                <li><kbd>Ctrl+Shift+C</kbd> - Open checkout</li>
-                <li><kbd>Ctrl+Alt+M</kbd> - Merge tables</li>
-            </ul>
-            <h4>Tips</h4>
-            <ul>
-                <li>Use the sidebar for reports and utilities</li>
-                <li>Search works across all menu items</li>
-                <li>Tables show timers when occupied</li>
-                <li>Use extras for item customization</li>
-            </ul>
+        <div class="report-container help-modal">
+            <div class="report-header"><h4><i class="fas fa-circle-question text-info me-2"></i>Help & Shortcuts</h4></div>
+            <div class="help-grid"><div><h5><i class="fas fa-keyboard me-2"></i>Keyboard Shortcuts</h5><div class="shortcut-list">
+                <div class="shortcut-item"><kbd>Ctrl</kbd> + <kbd>F</kbd><span>Focus search bar</span></div><div class="shortcut-item"><kbd>F1</kbd><span>Open this help</span></div><div class="shortcut-item"><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd><span>Open checkout</span></div><div class="shortcut-item"><kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>M</kbd><span>Merge tables</span></div><div class="shortcut-item"><kbd>Esc</kbd><span>Close modals or sidebar</span></div>
+            </div></div><div><h5><i class="fas fa-lightbulb me-2"></i>Tips</h5><ul class="tips-list"><li><i class="fas fa-check-circle text-success me-2"></i>Use the sidebar for reports and utilities</li><li><i class="fas fa-check-circle text-success me-2"></i>Search works across all menu items</li><li><i class="fas fa-check-circle text-success me-2"></i>Tables show timers when occupied</li><li><i class="fas fa-check-circle text-success me-2"></i>Finalize orders to send to kitchen</li></ul></div></div>
         </div>
     `;
     showSidebarContentModal('Help', content);
