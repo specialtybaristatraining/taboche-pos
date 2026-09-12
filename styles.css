@@ -2538,6 +2538,14 @@ kbd {
         .executive-card.primary { background:linear-gradient(145deg,#eff6ff,#dbeafe); border-color:#93c5fd; }
         .executive-card .metric-value { display:block; margin-top:.25rem; font-size:1.35rem; }
         .executive-card .metric-subvalue { display:block; margin-top:.3rem; }
+        .payment-tally { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.75rem; margin-bottom:1rem; }
+        .payment-tally-card { display:flex; align-items:center; justify-content:space-between; gap:1rem; min-height:74px; padding:.85rem 1rem; border-radius:12px; color:#fff; box-shadow:0 5px 14px rgba(15,23,42,.08); }
+        .payment-tally-card.cash { background:linear-gradient(135deg,#15803d,#16a34a); }
+        .payment-tally-card.mobile { background:linear-gradient(135deg,#1d4ed8,#2563eb); }
+        .payment-tally-card .metric-label { display:block; color:rgba(255,255,255,.86); font-size:.72rem; font-weight:800; text-transform:uppercase; }
+        .payment-tally-card .metric-label i { margin-right:.3rem; }
+        .payment-tally-card strong { display:block; margin-top:.2rem; font-size:1.35rem; }
+        .payment-tally-card small { color:rgba(255,255,255,.78); font-size:.7rem; text-align:right; }
         .trend-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.5rem; margin-top:.6rem; }
         .trend-card { display:flex; justify-content:space-between; gap:.5rem; padding:.55rem .7rem; border-radius:8px; background:#f8fafc; border:1px solid #e2e8f0; font-size:.75rem; }
         .trend-card.positive strong { color:#15803d; }.trend-card.negative strong { color:#b91c1c; }
@@ -2546,7 +2554,7 @@ kbd {
         .dashboard-section > summary::-webkit-details-marker { display:none; }.dashboard-section > summary:after { content:'+'; color:#64748b; font-size:1.1rem; }.dashboard-section[open] > summary:after { content:'-'; }
         body.dark-mode .executive-card,body.dark-mode .trend-card { background:#0f172a; border-color:#334155; }
         @media(max-width:900px){.executive-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
-        @media(max-width:520px){.executive-summary,.trend-grid{grid-template-columns:1fr}.executive-card{min-height:78px}}
+        @media(max-width:520px){.executive-summary,.trend-grid,.payment-tally{grid-template-columns:1fr}.executive-card{min-height:78px}.payment-tally-card{align-items:flex-start; flex-direction:column; gap:.2rem}.payment-tally-card small{text-align:left}}
         .sales-report { padding:0; overflow:hidden; }
         .sales-report-header { padding:1.4rem 1.5rem 1.15rem; color:#fff; background:linear-gradient(135deg,#1d4ed8,#2563eb); }
         .sales-report-header h3 { margin:0; font-size:1.65rem; font-weight:800; letter-spacing:-.01em; }
