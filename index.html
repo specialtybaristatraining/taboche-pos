@@ -5361,6 +5361,9 @@ function showSidebarContentModal(title, contentHTML, setupCallback = null) {
 function closeSidebarContentModal() {
     const modal = document.getElementById('sidebar-content-modal');
     if (modal) modal.style.display = 'none';
+    const contentArea = document.getElementById('modal-content-area');
+    if (contentArea) contentArea.replaceChildren();
+    modal?.querySelector('.modal-content')?.classList.remove('sales-report-modal');
     if (kitchenElapsedInterval) {
         clearInterval(kitchenElapsedInterval);
         kitchenElapsedInterval = null;
@@ -7893,7 +7896,8 @@ document.addEventListener("DOMContentLoaded", () => {
             
             // AUTO-REFRESH: If Kitchen View is open, refresh it
             const modalContentArea = document.getElementById('modal-content-area');
-            if (modalContentArea && modalContentArea.querySelector('.kitchen-view')) {
+            const sidebarContentModal = document.getElementById('sidebar-content-modal');
+            if (sidebarContentModal?.style.display === 'block' && modalContentArea?.querySelector('.kitchen-view')) {
                 showKitchenView();
             }
         }
