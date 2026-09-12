@@ -1,11 +1,12 @@
-const CACHE_NAME = 'taboche-pos-v2'; // Incremented version
+const CACHE_NAME = 'taboche-pos-v3';
 const urlsToCache = [
   './',
   './index.html',
   './manifest.json',
   './images/logo.png',
   './images/logo-print.png',
-  './images/qr.jpeg',
+  './qr.jpeg',
+  './qr.png',
   // Add CSS and JS if they become external files
 ];
 
@@ -51,7 +52,7 @@ self.addEventListener('fetch', event => {
   // For HTML pages - network first, then cache
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request)
+      fetch(event.request, { cache: 'no-cache' })
         .then(response => {
           // Cache the fresh copy
           const responseClone = response.clone();
@@ -68,30 +69,10 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // For images and static assets - cache first, then network
+  // For images - network first so updated menu photos reach installed devices.
   if (event.request.destination === 'image' ||
       event.request.url.includes('/images/')) {
-    event.respondWith(
-      caches.match(event.request)
-        .then(cachedResponse => {
-          if (cachedResponse) {
-            return cachedResponse;
-          }
-          // If not in cache, fetch from network
-          return fetch(event.request).then(response => {
-            // Cache the new image
-            const responseClone = response.clone();
-            caches.open(CACHE_NAME).then(cache => {
-              cache.put(event.request, responseClone);
-            });
-            return response;
-          });
-        })
-        .catch(() => {
-          // Return a fallback image if available
-          return caches.match('./images/logo.png');
-        })
-    );
+    event.respondWith(networkFirst(event.request, './images/logo.png'));
     return;
   }
 
@@ -164,3 +145,18 @@ self.addEventListener('notificationclick', event => {
     clients.openWindow('./')
   );
 });
+
+async function networkFirst(request, fallbackUrl = null) {
+  try {
+    const response = await fetch(request, { cache: 'no-cache' });
+    if (response.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      await cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) return cachedResponse;
+    return fallbackUrl ? caches.match(fallbackUrl) : Response.error();
+  }
+}
