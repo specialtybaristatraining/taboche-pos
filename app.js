@@ -715,6 +715,7 @@ class NotificationSystem {
     }
 }
 const notifications = new NotificationSystem();
+var auditLog = Array.isArray(window.auditLog) ? window.auditLog : [];
 
 function logAudit(action, details = {}) {
     const entry = {
