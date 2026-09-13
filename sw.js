@@ -1,4 +1,4 @@
-const CACHE_NAME = 'taboche-pos-v3';
+const CACHE_NAME = 'taboche-pos-v5';
 const urlsToCache = [
   './',
   './index.html',
@@ -7,6 +7,11 @@ const urlsToCache = [
   './images/logo-print.png',
   './qr.jpeg',
   './qr.png',
+  './js/state.js',
+  './js/storage.js',
+  './js/cloud-sync.js',
+  './app.js',
+  './styles.css',
   // Add CSS and JS if they become external files
 ];
 
