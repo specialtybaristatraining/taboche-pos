@@ -1196,6 +1196,7 @@ function isActiveSale(sale) {
 }
 
 const SETTLEMENT_GUARD_KEY = 'pos-last-settlement';
+const SETTLEMENT_RESERVATION_TTL_MS = 15000;
 const CURRENT_SHIFT_KEY = 'pos-current-shift';
 const SHIFT_REPORTS_KEY = 'pos-shift-reports';
 
@@ -1343,7 +1344,11 @@ function reserveSettlement(table, items) {
     }
 
     if (previous && previous.fingerprint === fingerprint) {
-        return { duplicate: true, fingerprint };
+        const age = now - Number(previous.timestamp || 0);
+        if (age >= 0 && age < SETTLEMENT_RESERVATION_TTL_MS) {
+            return { duplicate: true, fingerprint };
+        }
+        localStorage.removeItem(SETTLEMENT_GUARD_KEY);
     }
 
     localStorage.setItem(SETTLEMENT_GUARD_KEY, JSON.stringify({ fingerprint, timestamp: now }));
@@ -2054,6 +2059,7 @@ function updateOrderQuantity(index, quantity) {
         removeOrderItem(index);
     } else {
         persistAllData();
+        releaseSettlementReservation(settlementReservation.fingerprint);
         renderOrderItems();
         initializeTables();
     }

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'taboche-pos-v5';
+const CACHE_NAME = 'taboche-pos-v6';
 const urlsToCache = [
   './',
   './index.html',
