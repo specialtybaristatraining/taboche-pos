@@ -4218,6 +4218,7 @@ async function completePayment() {
         delete orders[currentTable];
         if (tableTimers[currentTable]) delete tableTimers[currentTable];
         currentTable = null;
+        localStorage.removeItem('selectedTable');
         const selectedTableEl = document.getElementById('selected-table');
         const selectedTableCheckoutEl = document.getElementById('selected-table-checkout');
         if (selectedTableEl) selectedTableEl.textContent = '-';
@@ -4543,6 +4544,7 @@ async function voidOrder() {
     delete orders[tableToVoid];
     delete tableTimers[tableToVoid];
     currentTable = null;
+    localStorage.removeItem('selectedTable');
 
     persistAllData();
     renderOrderItems();
