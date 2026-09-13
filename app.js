@@ -4439,7 +4439,7 @@ async function voidItem(index) {
     }
 
     showLoadingSpinner();
-    
+    try {
     const itemToVoid = { ...orders[currentTable][index] };
     if ((Number(itemToVoid.sentQuantity) || 0) > 0) {
         kotHistory.forEach(kot => {
@@ -4488,7 +4488,11 @@ async function voidItem(index) {
     renderOrderItems();
     initializeTables();
     notifications.show(`${itemToVoid.name} has been voided.`, 'success');
-    hideLoadingSpinner();
+    } catch (error) {
+        handleCriticalError('Voiding item', error);
+    } finally {
+        hideLoadingSpinner();
+    }
 }
 
 async function voidOrder() {
@@ -4504,6 +4508,7 @@ async function voidOrder() {
     }
 
     showLoadingSpinner();
+    try {
     const tableToVoid = currentTable;
     const orderToVoid = { ...orders[tableToVoid] }; // Make a copy for logging
 
@@ -4544,7 +4549,11 @@ async function voidOrder() {
     initializeTables();
     document.getElementById('selected-table').textContent = '-';
     notifications.show(`Order for Table ${tableToVoid} has been voided.`, 'success');
-    hideLoadingSpinner();
+    } catch (error) {
+        handleCriticalError('Voiding order', error);
+    } finally {
+        hideLoadingSpinner();
+    }
 }
 
 async function voidOrderFromHistory(orderToVoid) {
