@@ -257,7 +257,8 @@ async function saveLargeStateToIndexedDB() {
             { key: 'salesHistory', value: salesHistory },
             { key: 'orderHistory', value: orderHistory },
             { key: 'voidDetails', value: voidDetails },
-            { key: 'kotHistory', value: kotHistory }
+            { key: 'kotHistory', value: kotHistory },
+            { key: 'auditLog', value: auditLog }
         ];
         records.forEach(record => store.put(record));
         await new Promise((resolve, reject) => {
@@ -281,11 +282,12 @@ async function loadLargeStateFromIndexedDB() {
             request.onsuccess = () => resolve(request.result ? request.result.value : null);
             request.onerror = () => resolve(null);
         });
-        const [loadedSales, loadedOrderHistory, loadedVoids, loadedKots] = await Promise.all([
+        const [loadedSales, loadedOrderHistory, loadedVoids, loadedKots, loadedAudit] = await Promise.all([
             readStore('salesHistory'),
             readStore('orderHistory'),
             readStore('voidDetails'),
-            readStore('kotHistory')
+            readStore('kotHistory'),
+            readStore('auditLog')
         ]);
 
         if (Array.isArray(loadedSales)) salesHistory = loadedSales;
@@ -294,6 +296,7 @@ async function loadLargeStateFromIndexedDB() {
             : createOrderHistorySnapshot(salesHistory);
         if (Array.isArray(loadedVoids)) voidDetails = loadedVoids;
         if (Array.isArray(loadedKots)) kotHistory = loadedKots;
+        if (Array.isArray(loadedAudit)) auditLog = loadedAudit;
         db.close();
     } catch (error) {
         console.warn('IndexedDB load failed, staying on localStorage.', error);
@@ -357,7 +360,8 @@ function loadFromLocalStorage() {
             tableTimers: getFromLocalStorage('tableTimers') || {},
             salesHistory: getFromLocalStorage('salesHistory') ?? salesHistory,
             voidDetails: getFromLocalStorage('voidDetails') ?? voidDetails,
-            kotHistory: getFromLocalStorage('kotHistory') ?? kotHistory
+            kotHistory: getFromLocalStorage('kotHistory') ?? kotHistory,
+            auditLog: getFromLocalStorage('auditLog') ?? auditLog
         });
 
         orders = normalized.orders || {};
@@ -366,6 +370,7 @@ function loadFromLocalStorage() {
         orderHistory = createOrderHistorySnapshot(salesHistory);
         voidDetails = normalized.voidDetails || [];
         kotHistory = normalized.kotHistory || [];
+        auditLog = normalized.auditLog || [];
     } catch (error) {
         handleCriticalError('Loading state from localStorage', error);
         orders = {};
@@ -374,6 +379,7 @@ function loadFromLocalStorage() {
         orderHistory = [];
         voidDetails = [];
         kotHistory = [];
+        auditLog = [];
     }
 }
 
@@ -381,13 +387,11 @@ function loadFromLocalStorage() {
 function persistAllData() {
     try {
         trimHistoryIfNeeded();
-        if (!navigator.onLine) {
-            enqueueOfflineAction('local-state-sync', { orderCount: Object.keys(orders).length });
-        }
-        const normalized = compressDataState({ orders, tableTimers, salesHistory, orderHistory, voidDetails, kotHistory });
+        const normalized = compressDataState({ orders, tableTimers, salesHistory, orderHistory, voidDetails, kotHistory, auditLog });
 
         saveToLocalStorage('orders', normalized.orders);
         saveToLocalStorage('tableTimers', normalized.tableTimers);
+        saveToLocalStorage('auditLog', normalized.auditLog);
         ['salesHistory', 'orderHistory', 'voidDetails', 'kotHistory'].forEach(key => localStorage.removeItem(key));
 
         orders = normalized.orders;
@@ -396,6 +400,7 @@ function persistAllData() {
         orderHistory = normalized.orderHistory || createOrderHistorySnapshot(salesHistory);
         voidDetails = normalized.voidDetails;
         kotHistory = normalized.kotHistory;
+        auditLog = normalized.auditLog;
         saveLargeStateToIndexedDB();
 
         posSyncChannel?.postMessage('data-changed');
@@ -425,6 +430,7 @@ function trimHistoryIfNeeded() {
     const voidRetentionDate = Date.now() - VOID_DETAILS_RETENTION_DAYS * 24 * 60 * 60 * 1000;
     const salesRetentionDate = Date.now() - SALES_HISTORY_RETENTION_DAYS * 24 * 60 * 60 * 1000;
     const kotRetentionDate = Date.now() - KOT_HISTORY_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+    const auditRetentionDate = Date.now() - 180 * 24 * 60 * 60 * 1000;
 
     orderHistory = orderHistory.filter(order => {
         const created = order?.timestamp ? new Date(order.timestamp).getTime() : Date.now();
@@ -442,6 +448,10 @@ function trimHistoryIfNeeded() {
         const created = kot?.timestamp ? new Date(kot.timestamp).getTime() : Date.now();
         return created >= kotRetentionDate;
     });
+    auditLog = auditLog.filter(entry => {
+        const created = entry?.timestamp ? new Date(entry.timestamp).getTime() : Date.now();
+        return created >= auditRetentionDate;
+    }).slice(-5000);
 
     if (orderHistory.length > MAX_HISTORY_ITEMS) {
         orderHistory = orderHistory.slice(-MAX_HISTORY_ITEMS);

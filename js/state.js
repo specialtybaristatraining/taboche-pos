@@ -6,6 +6,7 @@ function migrateStoredData(data = {}) {
         orderHistory: [],
         voidDetails: [],
         kotHistory: [],
+        auditLog: [],
         ...data
     };
 
@@ -37,9 +38,10 @@ function migrateStoredData(data = {}) {
     next.orderHistory = Array.isArray(next.orderHistory) ? next.orderHistory : [];
     next.voidDetails = Array.isArray(next.voidDetails) ? next.voidDetails : [];
     next.kotHistory = Array.isArray(next.kotHistory) ? next.kotHistory : [];
+    next.auditLog = Array.isArray(next.auditLog) ? next.auditLog : [];
 
-    if (!next.schemaVersion || next.schemaVersion < 2) {
-        next.schemaVersion = 2;
+    if (!next.schemaVersion || next.schemaVersion < 3) {
+        next.schemaVersion = 3;
     }
 
     return next;
@@ -52,6 +54,7 @@ function compressDataState(data = {}) {
     next.kotHistory = (next.kotHistory || []).filter(entry => entry && typeof entry === 'object');
     next.orderHistory = (next.orderHistory || []).filter(entry => entry && typeof entry === 'object');
     next.salesHistory = (next.salesHistory || []).filter(entry => entry && typeof entry === 'object');
+    next.auditLog = (next.auditLog || []).filter(entry => entry && typeof entry === 'object').slice(-5000);
 
     return next;
 }
@@ -79,10 +82,11 @@ let salesHistory = []; // [sale1, sale2, ...]
 let orderHistory = []; // Independent snapshots used by the history view
 let voidDetails = []; // [void1, void2, ...]
 let kotHistory = []; // [kot1, kot2, ...]
+let auditLog = []; // Append-only operational audit records
 let paymentAmount = 0;
 let discount = 0;
 let discountCodeApplied = null;
-let paymentMethods = [];
+let paymentAllocations = [];
 let currentItemIndex = null;
 let currentPage = 1;
 const itemsPerPage = 10;
@@ -101,7 +105,6 @@ let paymentResetTimer = null;
 let timerUpdateQueued = false;
 let isFinalizingOrder = false;
 let orderHistoryShowAll = false;
-let offlineActionQueue = [];
 let kitchenElapsedInterval = null;
 let activeChartInstances = {};
 let suppressMenuItemClickUntil = 0;

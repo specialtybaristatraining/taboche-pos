@@ -3,9 +3,89 @@
     'use strict';
 
     const CDN_URL = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+    const QUEUE_STORAGE_KEY = 'cloudSyncQueue';
+    const DEAD_LETTER_STORAGE_KEY = 'cloudSyncDeadLetter';
+    const MAX_ATTEMPTS = 5;
+    const RETRY_BACKOFF_MS = 5000;
+    const FLUSH_INTERVAL_MS = 15000;
     let client = null;
     let isReady = false;
-    const queue = [];
+    let queue = loadQueue();
+    let deadLetter = loadDeadLetter();
+    let activeConfigKey = '';
+    let flushIntervalId = null;
+
+    function loadQueue() {
+        try {
+            const stored = JSON.parse(localStorage.getItem(QUEUE_STORAGE_KEY) || '[]');
+            return Array.isArray(stored) ? stored.map(entry => entry.payload ? entry : ({
+                payload: entry,
+                attempts: 0,
+                lastAttemptAt: 0
+            })) : [];
+        } catch (error) {
+            console.warn('[CloudSync] queue load failed:', error);
+            return [];
+        }
+    }
+
+    function persistQueue() {
+        try {
+            localStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(queue));
+            window.dispatchEvent(new CustomEvent('cloud-sync-queue-changed', {
+                detail: { queued: queue.length }
+            }));
+        } catch (error) {
+            console.warn('[CloudSync] queue persistence failed:', error);
+        }
+    }
+
+    function loadDeadLetter() {
+        try {
+            const stored = JSON.parse(localStorage.getItem(DEAD_LETTER_STORAGE_KEY) || '[]');
+            return Array.isArray(stored) ? stored : [];
+        } catch (error) {
+            console.warn('[CloudSync] dead-letter load failed:', error);
+            return [];
+        }
+    }
+
+    function persistDeadLetter() {
+        try {
+            localStorage.setItem(DEAD_LETTER_STORAGE_KEY, JSON.stringify(deadLetter));
+        } catch (error) {
+            console.warn('[CloudSync] dead-letter persistence failed:', error);
+        }
+    }
+
+    function moveToDeadLetter(entry, error) {
+        if (deadLetter.some(item =>
+            item.payload?.store_id === entry.payload?.store_id &&
+            item.payload?.order_number === entry.payload?.order_number
+        )) return;
+        deadLetter.push({
+            ...entry,
+            failedAt: new Date().toISOString(),
+            lastError: String(error?.message || error || 'Cloud sync failed')
+        });
+        persistDeadLetter();
+    }
+
+    function requeueDeadLetter() {
+        if (deadLetter.length === 0) return;
+        deadLetter.forEach(entry => enqueue(entry.payload));
+        deadLetter = [];
+        persistDeadLetter();
+    }
+
+    function enqueue(payload) {
+        const duplicate = queue.some(item =>
+            item.payload?.store_id === payload.store_id && item.payload?.order_number === payload.order_number
+        );
+        if (duplicate) return;
+        queue.push({ payload, attempts: 0, lastAttemptAt: 0 });
+        persistQueue();
+    }
 
     function log(...args) {
         if (location.hostname === 'localhost' || localStorage.getItem('pos-debug') === '1') {
@@ -37,11 +117,22 @@
     }
 
     async function init() {
-        if (isReady) return true;
         const config = getConfig();
         if (!config.url || !config.key || !config.storeId) {
             log('Not configured. Skipping init.');
             return false;
+        }
+        const configKey = `${config.url}|${config.key}|${config.storeId}`;
+        if (isReady && configKey === activeConfigKey) {
+            requeueDeadLetter();
+            await flushQueue(true);
+            return true;
+        }
+        if (isReady && configKey !== activeConfigKey) {
+            isReady = false;
+            client = null;
+            if (flushIntervalId) clearInterval(flushIntervalId);
+            flushIntervalId = null;
         }
         try {
             await loadSupabaseLib();
@@ -49,6 +140,8 @@
                 auth: { persistSession: false }
             });
             isReady = true;
+            activeConfigKey = configKey;
+            if (!flushIntervalId) flushIntervalId = setInterval(flushQueue, FLUSH_INTERVAL_MS);
             log('Ready for store:', config.storeId);
             await flushQueue();
             return true;
@@ -75,35 +168,75 @@
         };
 
         if (!isReady && !(await init())) {
-            queue.push(payload);
+            enqueue(payload);
             log('Queued:', payload.order_number);
             return false;
         }
 
         try {
-            const { error } = await client.from('sales').insert(payload);
+            const { error } = await client
+                .from('sales')
+                .upsert(payload, { onConflict: 'store_id,order_number' });
             if (error) throw error;
             log('Synced:', payload.order_number);
             return true;
         } catch (error) {
             console.warn('[CloudSync] insert failed, queued:', error);
-            queue.push(payload);
+            enqueue(payload);
             return false;
         }
     }
 
-    async function flushQueue() {
+    async function flushQueue(resetAttempts = false) {
         if (!isReady || queue.length === 0) return;
-        const pending = queue.splice(0);
-        for (const payload of pending) {
+        const now = Date.now();
+        const anyReady = resetAttempts || queue.some(entry =>
+            entry.attempts < MAX_ATTEMPTS &&
+            now - (Number(entry.lastAttemptAt) || 0) >= RETRY_BACKOFF_MS * (2 ** entry.attempts)
+        );
+        if (!anyReady) return;
+        const pending = [...queue];
+        const failed = [];
+        for (const entry of pending) {
+            const current = resetAttempts && entry.attempts >= MAX_ATTEMPTS
+                ? { ...entry, attempts: 0, lastAttemptAt: 0 }
+                : entry;
+            if (current.attempts >= MAX_ATTEMPTS) {
+                moveToDeadLetter(current, 'Maximum retry attempts reached');
+                continue;
+            }
+
+            const elapsed = Date.now() - (Number(current.lastAttemptAt) || 0);
+            const backoff = RETRY_BACKOFF_MS * (2 ** current.attempts);
+            if (elapsed < backoff) {
+                failed.push(current);
+                continue;
+            }
+
+            const attempt = {
+                ...current,
+                attempts: current.attempts + 1,
+                lastAttemptAt: Date.now()
+            };
             try {
-                const { error } = await client.from('sales').insert(payload);
+                const { error } = await client
+                    .from('sales')
+                    .upsert(attempt.payload, { onConflict: 'store_id,order_number' });
                 if (error) throw error;
             } catch (error) {
                 console.warn('[CloudSync] flush failed, requeueing:', error);
-                queue.push(payload);
+                if (attempt.attempts >= MAX_ATTEMPTS) {
+                    moveToDeadLetter(attempt, error);
+                    window.dispatchEvent(new CustomEvent('cloud-sync-failing', {
+                        detail: { orderNumber: attempt.payload.order_number, deadLetter: true }
+                    }));
+                } else {
+                    failed.push(attempt);
+                }
             }
         }
+        queue = failed;
+        persistQueue();
     }
 
     window.CloudSync = {
@@ -116,6 +249,7 @@
             return {
                 ready: isReady,
                 queued: queue.length,
+                deadLetter: deadLetter.length,
                 storeId: config.storeId,
                 configured: Boolean(config.url && config.key && config.storeId)
             };
@@ -127,6 +261,5 @@
     } else {
         init();
     }
-    setInterval(flushQueue, 60000);
-    window.addEventListener('online', flushQueue);
+    window.addEventListener('online', () => flushQueue(true));
 })();
