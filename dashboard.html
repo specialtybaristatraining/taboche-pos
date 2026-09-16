@@ -1620,6 +1620,10 @@ function renderFeed(sales){
    REALTIME
    ========================================================== */
 function setupRealtime(storeKeys) {
+  const subscriptionKey = storeKeys.join(',');
+  if (state.realtimeSubscriptionKey === subscriptionKey) return;
+  state.realtimeSubscriptionKey = subscriptionKey;
+
   // clean previous
   state.realtimeChannels.forEach(ch => {
     try { ch.unsubscribe(); } catch(e){}
@@ -1770,9 +1774,20 @@ document.getElementById('export-btn').addEventListener('click',exportCSV);
 let autoTimer=null;
 function startAuto(){
   if(autoTimer)clearInterval(autoTimer);
+  if(document.hidden || !state.autoRefresh)return;
   autoTimer=setInterval(()=>refresh(true),30000);
 }
 startAuto();
+
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){
+    clearInterval(autoTimer);
+    autoTimer=null;
+  }else if(state.autoRefresh){
+    startAuto();
+    refresh(true);
+  }
+});
 
 document.getElementById('auto-toggle').addEventListener('click',e=>{
   state.autoRefresh=!state.autoRefresh;

@@ -44,6 +44,10 @@ Then open the provided localhost URL.
 - PWA installation is available on mobile devices
 - Offline functionality is fully supported
 
+## Supabase Setup
+
+Run `supabase-sales-idempotency.sql` once against each Supabase project before connecting the POS. Without the unique index, CloudSync upserts will fail.
+
 ## Browser Support
 
 - Chrome/Edge: Full PWA support

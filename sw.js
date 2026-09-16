@@ -77,7 +77,7 @@ self.addEventListener('fetch', event => {
   // For images - network first so updated menu photos reach installed devices.
   if (event.request.destination === 'image' ||
       event.request.url.includes('/images/')) {
-    event.respondWith(networkFirst(event.request, './images/logo.png'));
+    event.respondWith(cacheFirst(event.request, event));
     return;
   }
 
@@ -163,5 +163,28 @@ async function networkFirst(request, fallbackUrl = null) {
     const cachedResponse = await caches.match(request);
     if (cachedResponse) return cachedResponse;
     return fallbackUrl ? caches.match(fallbackUrl) : Response.error();
+  }
+}
+
+async function cacheFirst(request, event) {
+  const cache = await caches.open(CACHE_NAME);
+  const cachedResponse = await cache.match(request);
+  if (cachedResponse) {
+    const refresh = fetch(request)
+      .then(response => {
+        if (response.ok) return cache.put(request, response.clone());
+        return null;
+      })
+      .catch(() => {});
+    event.waitUntil(refresh);
+    return cachedResponse;
+  }
+
+  try {
+    const response = await fetch(request);
+    if (response.ok) await cache.put(request, response.clone());
+    return response;
+  } catch {
+    return cache.match('./images/logo.png');
   }
 }

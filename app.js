@@ -12,13 +12,6 @@ const DEBUG = (
     localStorage.getItem('pos-debug') === '1'
 );
 
-if (!DEBUG) {
-    const noop = () => {};
-    console.log = noop;
-    console.info = noop;
-    console.debug = noop;
-}
-
 // =========================================================================
 
 // NEW: Menu Navigation State
@@ -364,6 +357,7 @@ function updateNetworkStatusIndicator() {
     indicator.textContent = online ? 'Online' : 'Offline';
     indicator.classList.toggle('online', online);
     indicator.classList.toggle('offline', !online);
+    document.getElementById('offline-banner')?.classList.toggle('active', !online);
 }
 
 function updateOfflineQueueBadge() {
@@ -371,64 +365,24 @@ function updateOfflineQueueBadge() {
     const pendingCountEl = document.getElementById('pending-count');
     const offlineCountEl = document.getElementById('offline-queue-count');
     if (!badge || !pendingCountEl) return;
-    const count = offlineActionQueue.length;
+    const count = window.CloudSync?.getStatus?.().queued || 0;
     pendingCountEl.textContent = count;
     if (offlineCountEl) offlineCountEl.textContent = count;
     badge.classList.toggle('hidden', count === 0);
 }
 
 function loadOfflineQueue() {
-    try {
-        const stored = getFromLocalStorage('offlineActionQueue');
-        offlineActionQueue = Array.isArray(stored) ? stored : [];
-    } catch (error) {
-        console.warn('Unable to load offline queue:', error);
-        offlineActionQueue = [];
-    }
     updateOfflineQueueBadge();
 }
 
 function persistOfflineQueue() {
-    try {
-        saveToLocalStorage('offlineActionQueue', offlineActionQueue);
-    } catch (error) {
-        console.warn('Unable to persist offline queue:', error);
-    }
-}
-
-function enqueueOfflineAction(actionType, payload = {}) {
-    if (navigator.onLine) return;
-
-    const lastEntry = offlineActionQueue[offlineActionQueue.length - 1];
-    const now = Date.now();
-    const lastTimestamp = lastEntry?.timestamp ? new Date(lastEntry.timestamp).getTime() : 0;
-    if (lastEntry && lastEntry.actionType === actionType && now - lastTimestamp < 5000) {
-        return;
-    }
-
-    offlineActionQueue.push({
-        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-        actionType,
-        payload,
-        timestamp: new Date().toISOString()
-    });
-
-    persistOfflineQueue();
     updateOfflineQueueBadge();
 }
 
 function flushOfflineQueue() {
-    if (navigator.onLine && offlineActionQueue.length > 0) {
-        const count = offlineActionQueue.length;
-        if (offlineActionQueue.some(entry => entry.actionType === 'local-state-sync')) {
-            persistAllData();
-        }
-        offlineActionQueue = [];
-        persistOfflineQueue();
+    if (navigator.onLine) {
+        window.CloudSync?.flush?.();
         updateOfflineQueueBadge();
-        if (count > 0) {
-            notifications.show(`${count} pending action${count === 1 ? '' : 's'} cleared.`, 'success', 4000);
-        }
     }
 }
 
@@ -718,7 +672,11 @@ class NotificationSystem {
     }
 }
 const notifications = new NotificationSystem();
-var auditLog = Array.isArray(window.auditLog) ? window.auditLog : [];
+window.addEventListener('cloud-sync-queue-changed', () => updateOfflineQueueBadge());
+window.addEventListener('cloud-sync-failing', () => {
+    const failed = window.CloudSync?.getStatus?.().deadLetter || 0;
+    notifications.show(`Cloud sync failed for ${failed} sale${failed === 1 ? '' : 's'}. Check Settings before retrying.`, 'error', 8000);
+});
 
 function logAudit(action, details = {}) {
     const entry = {
@@ -1193,10 +1151,6 @@ function initializePinLock() {
 function generateOrderId() {
     const now = new Date();
     return `TAB-${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
-}
-
-function isActiveSale(sale) {
-    return sale && (sale.status === 'completed' || !sale.status);
 }
 
 const SETTLEMENT_GUARD_KEY = 'pos-last-settlement';
@@ -3683,12 +3637,12 @@ function persistCheckoutState() {
         paymentAmount,
         discount,
         discountCodeApplied,
-        paymentMethods: paymentMethods.map(pm => ({ ...pm }))
+        paymentMethods: paymentAllocations.map(pm => ({ ...pm }))
     });
 }
 
 function resetCheckoutState() {
-    paymentMethods = [];
+    paymentAllocations = [];
     paymentAmount = 0;
     discount = 0;
     discountCodeApplied = null;
@@ -3709,7 +3663,7 @@ function showCheckoutDialog() {
 
     const restoredCheckoutState = restoreCheckoutState();
     if (restoredCheckoutState && restoredCheckoutState.currentTable === currentTable) {
-        paymentMethods = Array.isArray(restoredCheckoutState.paymentMethods) ? restoredCheckoutState.paymentMethods : [];
+        paymentAllocations = Array.isArray(restoredCheckoutState.paymentMethods) ? restoredCheckoutState.paymentMethods : [];
         paymentAmount = typeof restoredCheckoutState.paymentAmount === 'number' ? restoredCheckoutState.paymentAmount : 0;
         discount = typeof restoredCheckoutState.discount === 'number' ? restoredCheckoutState.discount : 0;
         discountCodeApplied = restoredCheckoutState.discountCodeApplied || null;
@@ -3788,7 +3742,7 @@ function setQuickAmount(amount) {
     if (!input) return;
 
     const total = calculateTotal();
-    const paidSoFar = paymentMethods.reduce((sum, pm) => sum + pm.amount, 0);
+    const paidSoFar = paymentAllocations.reduce((sum, pm) => sum + pm.amount, 0);
     if (total > 0.01 && paidSoFar >= total - 0.01) {
         notifications.show('The bill is already fully paid.', 'info');
         return;
@@ -3888,16 +3842,16 @@ async function clearDiscount() {
 
 function processPayment(method) {
     const total = calculateTotal();
-    const paidSoFar = paymentMethods.reduce((sum, pm) => sum + pm.amount, 0);
+    const paidSoFar = paymentAllocations.reduce((sum, pm) => sum + pm.amount, 0);
     const remainingDue = Math.max(0, total - paidSoFar);
 
     if (total <= 0.01) {
-        if (paymentMethods.some(pm => pm.method === method)) {
+        if (paymentAllocations.some(pm => pm.method === method)) {
             notifications.show(`${method} payment is already recorded.`, 'info');
             return;
         }
 
-        paymentMethods.push({ method, amount: 0 });
+        paymentAllocations.push({ method, amount: 0 });
         renderPaymentMethods();
         updateChange();
         persistCheckoutState();
@@ -3923,7 +3877,7 @@ function processPayment(method) {
         return;
     }
 
-    paymentMethods.push({ method, amount: paymentAmount });
+    paymentAllocations.push({ method, amount: paymentAmount });
     renderPaymentMethods();
     paymentAmount = 0;
     document.getElementById('numeric-input').value = '0';
@@ -3942,7 +3896,7 @@ function renderPaymentMethods() {
         return;
     }
 
-    paymentList.innerHTML = paymentMethods.map((pm, index) => `
+    paymentList.innerHTML = paymentAllocations.map((pm, index) => `
         <li>
             ${pm.method}: Rs ${pm.amount.toFixed(2)}
             <button class="remove-payment-btn" data-index="${index}">Remove</button>
@@ -3954,7 +3908,7 @@ function renderPaymentMethods() {
         paymentList.dataset.listenersAdded = 'true';
     }
 
-    const hasMobilePayment = paymentMethods.some(pm => pm.method === 'Mobile');
+    const hasMobilePayment = paymentAllocations.some(pm => pm.method === 'Mobile');
     if (hasMobilePayment) {
         displayQRCode();
     } else {
@@ -3972,12 +3926,12 @@ function handlePaymentListClick(event) {
 }
 
 function removePayment(index) {
-    if (index < 0 || index >= paymentMethods.length) {
+    if (index < 0 || index >= paymentAllocations.length) {
         console.error("Invalid payment method index:", index);
         return;
     }
     
-    paymentMethods.splice(index, 1);
+    paymentAllocations.splice(index, 1);
     renderPaymentMethods();
     updateChange(); // Recalculates remaining due, change amount, and button states
     persistCheckoutState();
@@ -3985,7 +3939,7 @@ function removePayment(index) {
 
 function updateChange() {
     const exactTotal = roundToTwo(calculateTotal());
-    const paidSoFar = roundToTwo(paymentMethods.reduce((sum, pm) => sum + (Number(pm.amount) || 0), 0));
+    const paidSoFar = roundToTwo(paymentAllocations.reduce((sum, pm) => sum + (Number(pm.amount) || 0), 0));
 
     const remainingDue = Math.max(0, roundToTwo(exactTotal - paidSoFar));
     const changeAmount = Math.max(0, roundToTwo(paidSoFar - exactTotal));
@@ -4000,7 +3954,7 @@ function updateChange() {
     
     // Completion requires both enough recorded payment and a selected method.
     if (completeBtn) {
-        const hasPaymentMethod = paymentMethods.length > 0;
+        const hasPaymentMethod = paymentAllocations.length > 0;
         const canComplete = hasPaymentMethod && paidSoFar >= exactTotal - 0.01;
         completeBtn.disabled = !canComplete;
         completeBtn.style.opacity = canComplete ? '1' : '0.5';
@@ -4148,7 +4102,7 @@ async function completePayment() {
         }
 
         if (paymentAmount > 0) {
-            paymentMethods.push({ method: 'Cash', amount: paymentAmount });
+            paymentAllocations.push({ method: 'Cash', amount: paymentAmount });
             paymentAmount = 0;
             document.getElementById('numeric-input').value = '0';
             renderPaymentMethods();
@@ -4158,11 +4112,11 @@ async function completePayment() {
             notifications.show("No order to complete!", 'warning');
             return;
         }
-        if (paymentMethods.length === 0) {
+        if (paymentAllocations.length === 0) {
             notifications.show('Select Cash or Mobile before completing payment.', 'warning');
             return;
         }
-        const paidSoFar = roundToTwo(paymentMethods.reduce((sum, pm) => sum + (Number(pm.amount) || 0), 0));
+        const paidSoFar = roundToTwo(paymentAllocations.reduce((sum, pm) => sum + (Number(pm.amount) || 0), 0));
         const exactTotal = roundToTwo(total);
         if (paidSoFar < exactTotal && exactTotal > 0) {
             const difference = roundToTwo(exactTotal - paidSoFar);
@@ -4196,7 +4150,7 @@ async function completePayment() {
             table: currentTable,
             items: JSON.parse(JSON.stringify(orders[currentTable])),
             total,
-            paymentMethods: JSON.parse(JSON.stringify(paymentMethods)),
+            paymentMethods: JSON.parse(JSON.stringify(paymentAllocations)),
             discount: discountCodeApplied || (discount ? `${discount}%` : 'None'),
             discountAmount: saleAmounts.discountAmount,
             serviceChargeAmount: saleAmounts.serviceChargeAmount,
@@ -4893,7 +4847,7 @@ async function resetAllDataConfirmed() {
             logAudit('data.reset', { reason: 'manual reset' });
             [
                 'orders', 'tableTimers', 'salesHistory', 'orderHistory', 'voidDetails',
-                'kotHistory', 'offlineActionQueue', 'customMenuItems',
+                'kotHistory', 'customMenuItems',
                 'selectedTable', SETTLEMENT_GUARD_KEY, 'pos_last_shift_close',
                 CURRENT_SHIFT_KEY, SHIFT_REPORTS_KEY
             ].forEach(key => localStorage.removeItem(key));
@@ -5222,9 +5176,11 @@ document.addEventListener("DOMContentLoaded", () => {
         updateNetworkStatusIndicator();
         flushOfflineQueue();
         notifications.show('Back online', 'success');
+        document.getElementById('offline-banner')?.classList.remove('active');
     });
     window.addEventListener('offline', () => {
         updateNetworkStatusIndicator();
+        document.getElementById('offline-banner')?.classList.add('active');
         notifications.show('Offline mode - data saved locally', 'warning');
     });
 
