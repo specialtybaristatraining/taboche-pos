@@ -535,7 +535,10 @@ function showPromptModal(title, message, options = {}) {
         if (modalContent) {
             modalContent.focus();
         }
-        inputEl.focus();
+        requestAnimationFrame(() => {
+            inputEl.focus({ preventScroll: true });
+            inputEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        });
 
         const handleKeydown = (event) => {
             if (event.key === 'Escape') {
@@ -2284,7 +2287,10 @@ function showNotesModal() {
     closeBtn.onclick = () => closeNotesModal();
     
     modal.style.display = 'block';
-    textarea.focus();
+    requestAnimationFrame(() => {
+        textarea.focus({ preventScroll: true });
+        textarea.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    });
 }
 
 async function saveNotes() {

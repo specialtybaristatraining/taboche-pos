@@ -2025,10 +2025,17 @@ body.modal-open {
         max-height: 100%;
         position: relative;
         top: auto;
+        min-height: 0;
+    }
+
+    .order-items {
+        overflow-y: auto;
+        overscroll-behavior: contain;
     }
 
     .order-footer {
         padding: 0.35rem 0.4rem;
+        flex-shrink: 0;
     }
 
     .order-footer-buttons {
