@@ -721,11 +721,9 @@ class NotificationSystem {
 const notifications = new NotificationSystem();
 
 function positionNotificationsBelowHeader() {
-    const header = document.querySelector('header');
     const notificationToast = document.getElementById('notification-toast');
-    if (!header || !notificationToast) return;
-    const headerBottom = Math.max(0, header.getBoundingClientRect().bottom);
-    notificationToast.style.setProperty('--notification-top', `${headerBottom + 8}px`);
+    if (!notificationToast) return;
+    notificationToast.style.top = '0.5rem';
 }
 
 positionNotificationsBelowHeader();
