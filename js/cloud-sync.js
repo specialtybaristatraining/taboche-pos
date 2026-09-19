@@ -88,6 +88,17 @@
         persistQueue();
     }
 
+    function removeQueuedSale(payload) {
+        const remaining = queue.filter(item => !(
+            item.payload?.store_id === payload.store_id &&
+            item.payload?.order_number === payload.order_number
+        ));
+        if (remaining.length !== queue.length) {
+            queue = remaining;
+            persistQueue();
+        }
+    }
+
     function log(...args) {
         if (location.hostname === 'localhost' || localStorage.getItem('pos-debug') === '1') {
             console.log('[CloudSync]', ...args);
@@ -183,10 +194,8 @@
         }
 
         try {
-            const { error } = await client
-                .from('sales')
-                .upsert(payload, { onConflict: 'store_id,order_number' });
-            if (error) throw error;
+            await writeSale(payload);
+            removeQueuedSale(payload);
             log('Synced:', payload.order_number);
             return true;
         } catch (error) {
@@ -195,6 +204,36 @@
             enqueue(payload);
             return false;
         }
+    }
+
+    async function writeSale(payload) {
+        const { error } = await client
+            .from('sales')
+            .upsert(payload, { onConflict: 'store_id,order_number' });
+        if (!error) return;
+        if (error.code !== '42P10') throw error;
+
+        const { data: existing, error: lookupError } = await client
+            .from('sales')
+            .select('id')
+            .eq('store_id', payload.store_id)
+            .eq('order_number', payload.order_number)
+            .maybeSingle();
+        if (lookupError) throw lookupError;
+
+        if (existing?.id != null) {
+            const { error: updateError } = await client
+                .from('sales')
+                .update(payload)
+                .eq('id', existing.id);
+            if (updateError) throw updateError;
+            return;
+        }
+
+        const { error: insertError } = await client
+            .from('sales')
+            .insert(payload);
+        if (insertError) throw insertError;
     }
 
     async function syncHistoricalSales(sales = globalThis.salesHistory) {
@@ -236,10 +275,7 @@
                 lastAttemptAt: Date.now()
             };
             try {
-                const { error } = await client
-                    .from('sales')
-                    .upsert(attempt.payload, { onConflict: 'store_id,order_number' });
-                if (error) throw error;
+                await writeSale(attempt.payload);
             } catch (error) {
                 lastError = String(error?.message || error || 'Sale sync failed');
                 console.warn('[CloudSync] flush failed, requeueing:', error);
