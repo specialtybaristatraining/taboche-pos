@@ -4957,6 +4957,9 @@ document.addEventListener("DOMContentLoaded", () => {
         trimHistoryIfNeeded();
         renderOrderItems();
         initializeTables();
+        window.CloudSync?.syncHistoricalSales?.(salesHistory).catch(error => {
+            console.warn('[CloudSync] historical sales sync failed:', error);
+        });
     }).catch(async (error) => {
         console.warn('IndexedDB data load skipped:', error);
         const shouldReset = await showConfirmModal('IndexedDB issue', 'IndexedDB is unavailable or corrupted. Reset it and continue with local storage?');
