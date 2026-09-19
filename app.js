@@ -56,6 +56,48 @@ function restoreMenuNavigationState() {
 // Local-only staff identity; this is attribution, not authentication.
 let currentUser = { email: localStorage.getItem('staffName') || 'Local Staff', role: 'Staff' }; 
 
+const SYNC_DATA_KEYS = ['orders', 'tableTimers', 'salesHistory', 'orderHistory', 'voidDetails', 'kotHistory'];
+let externalSyncTimer = null;
+let lastExternalSyncSnapshot = null;
+
+function getExternalSyncSnapshot() {
+    return SYNC_DATA_KEYS.map(key => `${key}:${localStorage.getItem(key) || ''}`).join('|');
+}
+
+function scheduleExternalDataRefresh() {
+    if (externalSyncTimer) clearTimeout(externalSyncTimer);
+    externalSyncTimer = setTimeout(() => {
+        externalSyncTimer = null;
+
+        const snapshot = getExternalSyncSnapshot();
+        if (snapshot === lastExternalSyncSnapshot) return;
+        lastExternalSyncSnapshot = snapshot;
+
+        const checkoutModal = document.getElementById('checkout-dialog');
+        if (isProcessingPayment || checkoutModal?.style.display === 'block') return;
+
+        const previousPendingKotCount = kotHistory.filter(kot => kot.status === 'pending').length;
+        loadFromLocalStorage();
+        renderOrderItems();
+        updateTotal();
+        initializeTables();
+        if (document.getElementById('order-history-list')) renderOrderHistory();
+        renderVoidDetails();
+
+        const currentPendingKotCount = kotHistory.filter(kot => kot.status === 'pending').length;
+        if (currentPendingKotCount > previousPendingKotCount) {
+            playKitchenAlertSound();
+            notifications.show('New Kitchen Order Ticket received!', 'info');
+        }
+
+        const modalContentArea = document.getElementById('modal-content-area');
+        const sidebarContentModal = document.getElementById('sidebar-content-modal');
+        if (sidebarContentModal?.style.display === 'block' && modalContentArea?.querySelector('.kitchen-view')) {
+            showKitchenView();
+        }
+    }, 80);
+}
+
 // Hardcoded menu and extras
 let menuItems = [
     // ================== FOOD GROUPS ==================
@@ -4937,43 +4979,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // Set up BroadcastChannel for real-time sync across tabs
     if (posSyncChannel) posSyncChannel.onmessage = (event) => {
         if (event.data === 'data-changed') {
-            const checkoutModal = document.getElementById('checkout-dialog');
-            if (isProcessingPayment || checkoutModal?.style.display === 'block') return;
-            const previousPendingKotCount = kotHistory.filter(kot => kot.status === 'pending').length;
-            loadFromLocalStorage();
-            renderOrderItems();
-            updateTotal();
-            initializeTables();
-            if (document.getElementById('order-history-list')) renderOrderHistory();
-            renderVoidDetails();
-
-            const currentPendingKotCount = kotHistory.filter(kot => kot.status === 'pending').length;
-            if (currentPendingKotCount > previousPendingKotCount) {
-                playKitchenAlertSound();
-                notifications.show('New Kitchen Order Ticket received!', 'info');
-            }
-            
-            // AUTO-REFRESH: If Kitchen View is open, refresh it
-            const modalContentArea = document.getElementById('modal-content-area');
-            const sidebarContentModal = document.getElementById('sidebar-content-modal');
-            if (sidebarContentModal?.style.display === 'block' && modalContentArea?.querySelector('.kitchen-view')) {
-                showKitchenView();
-            }
+            scheduleExternalDataRefresh();
         }
     };
 
     // Listen for changes in localStorage from other tabs/windows
     window.addEventListener('storage', (e) => {
-        if (e.key === 'orders' || e.key === 'tableTimers' || e.key === 'salesHistory' || e.key === 'orderHistory' || e.key === 'voidDetails' || e.key === 'kotHistory') {
-            const checkoutModal = document.getElementById('checkout-dialog');
-            if (isProcessingPayment || checkoutModal?.style.display === 'block') return;
-            loadFromLocalStorage();
-            renderOrderItems();
-            updateTotal();
-            initializeTables();
-            if (document.getElementById('order-history-list')) renderOrderHistory();
-            renderVoidDetails();
-        }
+        if (SYNC_DATA_KEYS.includes(e.key)) scheduleExternalDataRefresh();
     });
 
     // Set up basic UI elements and intervals
