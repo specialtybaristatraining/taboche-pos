@@ -6069,6 +6069,7 @@ function showSettings() {
             if (statusEl) statusEl.textContent = ok ? `Connected - ${status.storeId}` : `Connection failed: ${status.lastError || 'check URL, key, table, and permissions'}`;
             if (button) {
                 button.textContent = ok ? 'Disconnect' : 'Connect';
+                button.dataset.cloudAction = ok ? 'disconnect' : 'connect';
                 button.disabled = false;
             }
         };
@@ -6188,7 +6189,17 @@ function showSettings() {
             localStorage.setItem('store-id', document.getElementById('store-id-setting')?.value.trim() || '');
             localStorage.setItem('supabase-url', document.getElementById('supabase-url-setting')?.value.trim() || '');
             localStorage.setItem('supabase-key', document.getElementById('supabase-key-setting')?.value.trim() || '');
-            if (window.CloudSync) await window.CloudSync.init();
+            const cloudConnected = window.CloudSync ? await window.CloudSync.init() : false;
+            const cloudStatus = window.CloudSync?.getStatus?.() || {};
+            const cloudStatusEl = document.getElementById('cloud-sync-status');
+            const cloudButton = document.getElementById('cloud-sync-toggle');
+            if (cloudStatusEl) cloudStatusEl.textContent = cloudConnected
+                ? `Connected - ${cloudStatus.storeId}`
+                : `Connection failed: ${cloudStatus.lastError || 'check URL, key, table, and permissions'}`;
+            if (cloudButton) {
+                cloudButton.textContent = cloudConnected ? 'Disconnect' : 'Connect';
+                cloudButton.dataset.cloudAction = cloudConnected ? 'disconnect' : 'connect';
+            }
             updateTotal();
             notifications.show('Settings saved', 'success');
             closeSidebarContentModal();
@@ -6196,10 +6207,11 @@ function showSettings() {
         document.getElementById('cloud-sync-toggle')?.addEventListener('click', async (event) => {
             const statusEl = document.getElementById('cloud-sync-status');
             const button = event.currentTarget;
-            if (window.CloudSync?.isReady()) {
+            if (button.dataset.cloudAction === 'disconnect' || window.CloudSync?.isReady()) {
                 if (window.CloudSync) window.CloudSync.disconnect();
                 if (statusEl) statusEl.textContent = 'Not connected';
                 button.textContent = 'Connect';
+                button.dataset.cloudAction = 'connect';
                 notifications.show('Cloud sync disconnected. Settings were cleared.', 'info');
                 return;
             }
@@ -6227,6 +6239,7 @@ function showSettings() {
             const status = window.CloudSync.getStatus();
             if (statusEl) statusEl.textContent = ok ? `Connected - ${status.storeId}` : `Connection failed: ${status.lastError || 'check URL, key, table, and permissions'}`;
             button.textContent = ok ? 'Disconnect' : 'Connect';
+            button.dataset.cloudAction = ok ? 'disconnect' : 'connect';
             button.disabled = false;
             notifications.show(ok ? 'Cloud settings saved and connected.' : 'Cloud settings saved, but connection failed. Check URL and key.', ok ? 'success' : 'error');
         });
