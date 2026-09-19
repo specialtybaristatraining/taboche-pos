@@ -6066,7 +6066,7 @@ function showSettings() {
                     console.warn('[CloudSync] historical sales sync failed:', error);
                 });
             }
-            if (statusEl) statusEl.textContent = ok ? `Connected - ${status.storeId}` : 'Saved - connection failed';
+            if (statusEl) statusEl.textContent = ok ? `Connected - ${status.storeId}` : `Connection failed: ${status.lastError || 'check URL, key, table, and permissions'}`;
             if (button) {
                 button.textContent = ok ? 'Disconnect' : 'Connect';
                 button.disabled = false;
@@ -6225,7 +6225,7 @@ function showSettings() {
             button.disabled = true;
             const ok = await window.CloudSync.init();
             const status = window.CloudSync.getStatus();
-            if (statusEl) statusEl.textContent = ok ? `Connected - ${status.storeId}` : 'Saved - connection failed';
+            if (statusEl) statusEl.textContent = ok ? `Connected - ${status.storeId}` : `Connection failed: ${status.lastError || 'check URL, key, table, and permissions'}`;
             button.textContent = ok ? 'Disconnect' : 'Connect';
             button.disabled = false;
             notifications.show(ok ? 'Cloud settings saved and connected.' : 'Cloud settings saved, but connection failed. Check URL and key.', ok ? 'success' : 'error');

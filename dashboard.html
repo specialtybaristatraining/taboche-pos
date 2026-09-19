@@ -1029,15 +1029,91 @@ const state = {
 
 const clients = {};
 
+function getConfiguredPosStore() {
+  try {
+    const url = (localStorage.getItem('supabase-url') || '').trim();
+    const key = (localStorage.getItem('supabase-key') || '').trim();
+    const storeId = (localStorage.getItem('store-id') || '').trim();
+    if (!url || !key || !storeId) return null;
+    STORES.pos = { name: storeId, short: storeId, color: '#f59e0b', url, key };
+    return 'pos';
+  } catch (error) {
+    console.warn('POS cloud configuration unavailable:', error);
+    return null;
+  }
+}
+
 /* ==========================================================
    DATA LAYER
    ========================================================== */
 function getClient(key){
+  getConfiguredPosStore();
   if(clients[key]) return clients[key];
   const cfg = STORES[key];
   if(!cfg?.url || !cfg?.key || cfg.key.startsWith('PASTE_')) return null;
   clients[key] = window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:false}});
   return clients[key];
+}
+
+function getDashboardStoreKeys() {
+  const posStore = getConfiguredPosStore();
+  if (state.store === 'both') return posStore ? ['pos'] : ['bhaktapur', 'royaljava'];
+  return state.store === 'pos' && posStore ? ['pos'] : [state.store];
+}
+
+function loadLocalSales() {
+  return new Promise(resolve => {
+    try {
+      const localSales = JSON.parse(localStorage.getItem('salesHistory') || 'null');
+      if (Array.isArray(localSales)) {
+        resolve(localSales.map(sale => ({
+          order_number: sale.orderNumber,
+          total: sale.total,
+          payment_method: Array.isArray(sale.paymentMethods) ? sale.paymentMethods.map(payment => payment.method).join('+') : 'Cash',
+          staff_name: sale.user || 'Local Staff',
+          items: sale.items || [],
+          created_at: sale.timestamp,
+          store_id: 'pos',
+          dashboard_store: 'pos'
+        })));
+        return;
+      }
+
+      if (!window.indexedDB) {
+        resolve([]);
+        return;
+      }
+      const request = indexedDB.open('taboche-pos-db', 1);
+      request.onerror = () => resolve([]);
+      request.onsuccess = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains('largeState')) {
+          db.close();
+          resolve([]);
+          return;
+        }
+        const read = db.transaction('largeState', 'readonly').objectStore('largeState').get('salesHistory');
+        read.onerror = () => { db.close(); resolve([]); };
+        read.onsuccess = () => {
+          const sales = Array.isArray(read.result?.value) ? read.result.value : [];
+          db.close();
+          resolve(sales.map(sale => ({
+            order_number: sale.orderNumber,
+            total: sale.total,
+            payment_method: Array.isArray(sale.paymentMethods) ? sale.paymentMethods.map(payment => payment.method).join('+') : 'Cash',
+            staff_name: sale.user || 'Local Staff',
+            items: sale.items || [],
+            created_at: sale.timestamp,
+            store_id: 'pos',
+            dashboard_store: 'pos'
+          })));
+        };
+      };
+    } catch (error) {
+      console.warn('Local POS sales unavailable:', error);
+      resolve([]);
+    }
+  });
 }
 
 function startOfDay(d){const x=new Date(d);x.setHours(0,0,0,0);return x}
@@ -1086,8 +1162,24 @@ async function fetchRange(storeKey,from,to){
 }
 
 async function loadAll(storeKeys,range){
-  const results=await Promise.all(storeKeys.map(k=>fetchRange(k,range.from,range.to)));
-  return results.flat();
+  let cloudSales = [];
+  try {
+    const results=await Promise.all(storeKeys.map(k=>fetchRange(k,range.from,range.to)));
+    cloudSales = results.flat();
+  } catch (error) {
+    console.warn('Cloud sales unavailable; checking local POS data:', error);
+  }
+  if (cloudSales.length > 0) return cloudSales;
+  const localSales = await loadLocalSales();
+  const localRangeSales = localSales.filter(sale => {
+    const created = new Date(sale.created_at);
+    return created >= range.from && created <= range.to;
+  });
+  if (localRangeSales.length > 0) {
+    const status = document.getElementById('status-text');
+    if (status) status.textContent = 'Local POS data';
+  }
+  return localRangeSales;
 }
 
 /* ==========================================================
@@ -1673,7 +1765,7 @@ async function refresh(silent = false){
   try{
     const range=getRange();
     const prev=prevRange(range);
-    const keys=state.store==='both'?['bhaktapur','royaljava']:[state.store];
+    const keys=getDashboardStoreKeys();
 
     const [cur,prv]=await Promise.all([
       loadAll(keys,range),
@@ -1694,7 +1786,12 @@ async function refresh(silent = false){
     // setup realtime only once per store set
     setupRealtime(keys);
 
-    const storeLabel=state.store==='both'?'Both stores':STORES[state.store].name;
+    document.querySelectorAll('#store-tabs .seg-btn').forEach(button => {
+      button.classList.toggle('active', button.dataset.store === state.store);
+    });
+    const storeLabel=state.store==='both'
+      ? (keys.length === 1 && keys[0] === 'pos' ? 'POS store' : 'Both stores')
+      : (STORES[state.store]?.name || state.store);
     document.getElementById('brand-sub').textContent=`Live · ${storeLabel}`;
     document.getElementById('chart-meta').textContent=range.label;
     document.getElementById('both-count').textContent=cur.length;
