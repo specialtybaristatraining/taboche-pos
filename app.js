@@ -2363,6 +2363,7 @@ function showSidebarContentModal(title, contentHTML, setupCallback = null) {
     modalContent?.classList.toggle('sales-report-modal', hasDedicatedReportHeader);
     updatedContentArea.innerHTML = `${hasDedicatedReportHeader ? '' : `<h3>${escapeHtml(title)}</h3>`}${contentHTML}`;
     modal.style.display = 'block';
+    document.documentElement.classList.add('modal-open');
     document.body.classList.add('modal-open');
     if (setupCallback) setupCallback();
     closeSidebar();
@@ -2371,6 +2372,7 @@ function showSidebarContentModal(title, contentHTML, setupCallback = null) {
 function closeSidebarContentModal() {
     const modal = document.getElementById('sidebar-content-modal');
     if (modal) modal.style.display = 'none';
+    document.documentElement.classList.remove('modal-open');
     document.body.classList.remove('modal-open');
     const contentArea = document.getElementById('modal-content-area');
     if (contentArea) contentArea.replaceChildren();
@@ -3690,6 +3692,7 @@ function showCheckoutDialog() {
     
     const checkoutDialog = document.getElementById('checkout-dialog');
     if (checkoutDialog) checkoutDialog.style.display = 'block';
+    document.documentElement.classList.add('modal-open');
     document.body.classList.add('modal-open');
     persistCheckoutState();
 }
@@ -3697,6 +3700,7 @@ function showCheckoutDialog() {
 function closeCheckoutDialog() {
     const checkoutDialog = document.getElementById('checkout-dialog');
     if (checkoutDialog) checkoutDialog.style.display = 'none';
+    document.documentElement.classList.remove('modal-open');
     document.body.classList.remove('modal-open');
     closeQRCodeDialog();
     resetCheckoutState();

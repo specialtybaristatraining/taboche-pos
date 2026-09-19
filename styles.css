@@ -1249,6 +1249,7 @@ body.dark-mode .sidebar-content::-webkit-scrollbar-thumb {
     -webkit-overflow-scrolling: touch;
 }
 
+html.modal-open,
 body.modal-open {
     overflow: hidden;
     touch-action: none;
