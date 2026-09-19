@@ -719,6 +719,10 @@ window.addEventListener('cloud-sync-failing', () => {
     const failed = window.CloudSync?.getStatus?.().deadLetter || 0;
     notifications.show(`Cloud sync failed for ${failed} sale${failed === 1 ? '' : 's'}. Check Settings before retrying.`, 'error', 8000);
 });
+window.addEventListener('cloud-sync-error', event => {
+    const message = event.detail?.message || 'Cloud sync failed.';
+    notifications.show(`Cloud sync error: ${message}`, 'error', 10000);
+});
 
 function logAudit(action, details = {}) {
     const entry = {
@@ -6191,6 +6195,11 @@ function showSettings() {
             localStorage.setItem('supabase-key', document.getElementById('supabase-key-setting')?.value.trim() || '');
             const cloudConnected = window.CloudSync ? await window.CloudSync.init() : false;
             const cloudStatus = window.CloudSync?.getStatus?.() || {};
+            if (cloudConnected) {
+                window.CloudSync.syncHistoricalSales?.(salesHistory).catch(error => {
+                    console.warn('[CloudSync] historical sales sync failed:', error);
+                });
+            }
             const cloudStatusEl = document.getElementById('cloud-sync-status');
             const cloudButton = document.getElementById('cloud-sync-toggle');
             if (cloudStatusEl) cloudStatusEl.textContent = cloudConnected
@@ -6237,6 +6246,11 @@ function showSettings() {
             button.disabled = true;
             const ok = await window.CloudSync.init();
             const status = window.CloudSync.getStatus();
+            if (ok) {
+                window.CloudSync.syncHistoricalSales?.(salesHistory).catch(error => {
+                    console.warn('[CloudSync] historical sales sync failed:', error);
+                });
+            }
             if (statusEl) statusEl.textContent = ok ? `Connected - ${status.storeId}` : `Connection failed: ${status.lastError || 'check URL, key, table, and permissions'}`;
             button.textContent = ok ? 'Disconnect' : 'Connect';
             button.dataset.cloudAction = ok ? 'disconnect' : 'connect';
