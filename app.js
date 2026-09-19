@@ -5945,7 +5945,7 @@ function showSettings() {
                 <div class="setting-item"><div class="setting-info"><span class="setting-label">Store ID</span><span class="setting-desc">A unique identifier for this branch</span></div><input id="store-id-setting" class="filter-input" type="text" maxlength="30" value="${escapeHtml(localStorage.getItem('store-id') || '')}"></div>
                 <div class="setting-item"><div class="setting-info"><span class="setting-label">Supabase URL</span><span class="setting-desc">Project Data API URL</span></div><input id="supabase-url-setting" class="filter-input" type="url" maxlength="120" value="${escapeHtml(localStorage.getItem('supabase-url') || '')}"></div>
                 <div class="setting-item"><div class="setting-info"><span class="setting-label">Supabase Publishable Key</span><span class="setting-desc">Stored only on this device</span></div><input id="supabase-key-setting" class="filter-input" type="password" maxlength="300" value="${escapeHtml(localStorage.getItem('supabase-key') || '')}"></div>
-                <div class="setting-item"><div class="setting-info"><span class="setting-label">Sync Status</span><span class="setting-desc" id="cloud-sync-status">Not tested</span></div><button id="test-cloud-sync" class="btn-secondary" type="button">Test</button></div>
+                <div class="setting-item"><div class="setting-info"><span class="setting-label">Sync Status</span><span class="setting-desc" id="cloud-sync-status">Not connected</span></div><button id="connect-cloud-sync" class="btn-secondary" type="button">Connect</button></div>
             </div></div>
             <div class="settings-section">
                 <h5><i class="fas fa-lock me-2"></i>Staff PIN Lock</h5>
@@ -6116,13 +6116,13 @@ function showSettings() {
             notifications.show('Settings saved', 'success');
             closeSidebarContentModal();
         });
-        document.getElementById('test-cloud-sync')?.addEventListener('click', async () => {
+        document.getElementById('connect-cloud-sync')?.addEventListener('click', async () => {
             const statusEl = document.getElementById('cloud-sync-status');
             if (!window.CloudSync) {
                 if (statusEl) statusEl.textContent = 'Cloud sync unavailable';
                 return;
             }
-            if (statusEl) statusEl.textContent = 'Testing...';
+            if (statusEl) statusEl.textContent = 'Connecting...';
             const ok = await window.CloudSync.init();
             const status = window.CloudSync.getStatus();
             if (statusEl) statusEl.textContent = ok ? `Ready - ${status.storeId}` : 'Failed - check settings';

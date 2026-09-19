@@ -1077,7 +1077,7 @@ async function fetchRange(storeKey,from,to){
     .order('created_at',{ascending:false})
     .limit(5000);
   if(error){console.warn('fetch error',storeKey,error);return []}
-  return data||[];
+  return (data||[]).map(s=>({...s,dashboard_store:storeKey}));
 }
 
 async function loadAll(storeKeys,range){
@@ -1122,7 +1122,7 @@ function aggregate(sales){
     sr.orders++;sr.total+=amt;
     staff.set(st,sr);
 
-    const sk=s.store_id||'unknown';
+    const sk=s.dashboard_store||s.store_id||'unknown';
     stores.set(sk,(stores.get(sk)||0)+amt);
 
     const d=new Date(s.created_at);
