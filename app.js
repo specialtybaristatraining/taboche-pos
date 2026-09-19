@@ -6061,6 +6061,11 @@ function showSettings() {
             }
             const ok = await window.CloudSync.init();
             const status = window.CloudSync.getStatus();
+            if (ok) {
+                window.CloudSync.syncHistoricalSales?.(salesHistory).catch(error => {
+                    console.warn('[CloudSync] historical sales sync failed:', error);
+                });
+            }
             if (statusEl) statusEl.textContent = ok ? `Connected - ${status.storeId}` : 'Saved - connection failed';
             if (button) {
                 button.textContent = ok ? 'Disconnect' : 'Connect';

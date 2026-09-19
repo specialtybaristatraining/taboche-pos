@@ -1076,7 +1076,12 @@ async function fetchRange(storeKey,from,to){
     .lte('created_at',to.toISOString())
     .order('created_at',{ascending:false})
     .limit(5000);
-  if(error){console.warn('fetch error',storeKey,error);return []}
+  if(error){
+    console.warn('fetch error',storeKey,error);
+    const status=document.getElementById('status-text');
+    if(status) status.textContent=`${storeKey}: ${error.message||'query failed'}`;
+    throw error;
+  }
   return (data||[]).map(s=>({...s,dashboard_store:storeKey}));
 }
 
