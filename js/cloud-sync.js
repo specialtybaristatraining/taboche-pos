@@ -14,6 +14,7 @@
     let deadLetter = loadDeadLetter();
     let activeConfigKey = '';
     let flushIntervalId = null;
+    let lastError = '';
 
     function loadQueue() {
         try {
@@ -139,13 +140,20 @@
             client = window.supabase.createClient(config.url, config.key, {
                 auth: { persistSession: false }
             });
+            const { error: accessError } = await client
+                .from('sales')
+                .select('order_number')
+                .limit(1);
+            if (accessError) throw accessError;
             isReady = true;
+            lastError = '';
             activeConfigKey = configKey;
             if (!flushIntervalId) flushIntervalId = setInterval(flushQueue, FLUSH_INTERVAL_MS);
             log('Ready for store:', config.storeId);
             await flushQueue();
             return true;
         } catch (error) {
+            lastError = String(error?.message || error || 'Cloud connection failed');
             console.warn('[CloudSync] init failed:', error);
             isReady = false;
             return false;
@@ -161,6 +169,7 @@
             store_id: config.storeId,
             items: Array.isArray(sale.items) ? sale.items : [],
             total: Number(sale.total) || 0,
+            created_at: sale.timestamp || sale.created_at || new Date().toISOString(),
             payment_method: Array.isArray(sale.paymentMethods)
                 ? sale.paymentMethods.map(payment => payment.method).join('+') || 'Cash'
                 : (sale.payment_method || 'Cash'),
@@ -181,9 +190,17 @@
             log('Synced:', payload.order_number);
             return true;
         } catch (error) {
+            lastError = String(error?.message || error || 'Sale sync failed');
             console.warn('[CloudSync] insert failed, queued:', error);
             enqueue(payload);
             return false;
+        }
+    }
+
+    async function syncHistoricalSales(sales = globalThis.salesHistory) {
+        if (!Array.isArray(sales) || sales.length === 0) return;
+        for (const sale of sales) {
+            await insertSale(sale);
         }
     }
 
@@ -224,7 +241,11 @@
                     .upsert(attempt.payload, { onConflict: 'store_id,order_number' });
                 if (error) throw error;
             } catch (error) {
+                lastError = String(error?.message || error || 'Sale sync failed');
                 console.warn('[CloudSync] flush failed, requeueing:', error);
+                window.dispatchEvent(new CustomEvent('cloud-sync-error', {
+                    detail: { message: lastError, orderNumber: attempt.payload.order_number }
+                }));
                 if (attempt.attempts >= MAX_ATTEMPTS) {
                     moveToDeadLetter(attempt, error);
                     window.dispatchEvent(new CustomEvent('cloud-sync-failing', {
@@ -239,9 +260,23 @@
         persistQueue();
     }
 
+    function disconnect() {
+        lastError = '';
+        isReady = false;
+        client = null;
+        activeConfigKey = '';
+        if (flushIntervalId) clearInterval(flushIntervalId);
+        flushIntervalId = null;
+        localStorage.removeItem('store-id');
+        localStorage.removeItem('supabase-url');
+        localStorage.removeItem('supabase-key');
+    }
+
     window.CloudSync = {
         init,
+        disconnect,
         insertSale,
+        syncHistoricalSales,
         flush: flushQueue,
         isReady: () => isReady,
         getStatus: () => {
@@ -250,6 +285,7 @@
                 ready: isReady,
                 queued: queue.length,
                 deadLetter: deadLetter.length,
+                lastError,
                 storeId: config.storeId,
                 configured: Boolean(config.url && config.key && config.storeId)
             };
