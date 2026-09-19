@@ -5945,7 +5945,7 @@ function showSettings() {
                 <div class="setting-item"><div class="setting-info"><span class="setting-label">Store ID</span><span class="setting-desc">A unique identifier for this branch</span></div><input id="store-id-setting" class="filter-input" type="text" maxlength="30" value="${escapeHtml(localStorage.getItem('store-id') || '')}"></div>
                 <div class="setting-item"><div class="setting-info"><span class="setting-label">Supabase URL</span><span class="setting-desc">Project Data API URL</span></div><input id="supabase-url-setting" class="filter-input" type="url" maxlength="120" value="${escapeHtml(localStorage.getItem('supabase-url') || '')}"></div>
                 <div class="setting-item"><div class="setting-info"><span class="setting-label">Supabase Publishable Key</span><span class="setting-desc">Stored only on this device</span></div><input id="supabase-key-setting" class="filter-input" type="password" maxlength="300" value="${escapeHtml(localStorage.getItem('supabase-key') || '')}"></div>
-                <div class="setting-item"><div class="setting-info"><span class="setting-label">Sync Status</span><span class="setting-desc" id="cloud-sync-status">Not connected</span></div><button id="connect-cloud-sync" class="btn-secondary" type="button">Connect</button></div>
+                <div class="setting-item"><div class="setting-info"><span class="setting-label">Sync Status</span><span class="setting-desc" id="cloud-sync-status">Not connected</span></div><div class="settings-actions"><button id="connect-cloud-sync" class="btn-secondary" type="button">Connect</button><button id="disconnect-cloud-sync" class="btn-warning-action" type="button">Disconnect</button></div></div>
             </div></div>
             <div class="settings-section">
                 <h5><i class="fas fa-lock me-2"></i>Staff PIN Lock</h5>
@@ -6132,7 +6132,7 @@ function showSettings() {
             localStorage.setItem('store-id', document.getElementById('store-id-setting')?.value.trim() || '');
             localStorage.setItem('supabase-url', document.getElementById('supabase-url-setting')?.value.trim() || '');
             localStorage.setItem('supabase-key', document.getElementById('supabase-key-setting')?.value.trim() || '');
-            if (window.CloudSync) window.CloudSync.init();
+            if (window.CloudSync) await window.CloudSync.init();
             updateTotal();
             notifications.show('Settings saved', 'success');
             closeSidebarContentModal();
@@ -6166,6 +6166,14 @@ function showSettings() {
             button.textContent = ok ? 'Connected' : 'Connect';
             button.disabled = false;
             notifications.show(ok ? 'Cloud settings saved and connected.' : 'Cloud settings saved, but connection failed. Check URL and key.', ok ? 'success' : 'error');
+        });
+        document.getElementById('disconnect-cloud-sync')?.addEventListener('click', () => {
+            if (window.CloudSync) window.CloudSync.disconnect();
+            const statusEl = document.getElementById('cloud-sync-status');
+            const connectButton = document.getElementById('connect-cloud-sync');
+            if (statusEl) statusEl.textContent = 'Not connected';
+            if (connectButton) connectButton.textContent = 'Connect';
+            notifications.show('Cloud sync disconnected. Settings were cleared.', 'info');
         });
     });
 }
