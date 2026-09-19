@@ -5996,6 +5996,27 @@ function showSettings() {
             document.querySelectorAll('.settings-tab').forEach(item => item.classList.toggle('active', item === tab));
             settingsSections.forEach((section, index) => { section.hidden = !visibleSections.includes(index); });
         }));
+        const refreshCloudConnectionStatus = async () => {
+            const statusEl = document.getElementById('cloud-sync-status');
+            const button = document.getElementById('connect-cloud-sync');
+            const configured = localStorage.getItem('store-id') &&
+                localStorage.getItem('supabase-url') &&
+                localStorage.getItem('supabase-key');
+            if (!configured || !window.CloudSync) return;
+            if (statusEl) statusEl.textContent = 'Checking connection...';
+            if (button) {
+                button.textContent = 'Connecting...';
+                button.disabled = true;
+            }
+            const ok = await window.CloudSync.init();
+            const status = window.CloudSync.getStatus();
+            if (statusEl) statusEl.textContent = ok ? `Connected - ${status.storeId}` : 'Saved - connection failed';
+            if (button) {
+                button.textContent = ok ? 'Connected' : 'Connect';
+                button.disabled = false;
+            }
+        };
+        refreshCloudConnectionStatus();
         document.getElementById('sound-toggle')?.addEventListener('change', (e) => {
             soundEnabled = e.target.checked;
         });
