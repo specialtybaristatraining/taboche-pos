@@ -213,14 +213,16 @@
         if (!error) return;
         if (error.code !== '42P10') throw error;
 
-        const { data: existing, error: lookupError } = await client
+        const { data: existingRows, error: lookupError } = await client
             .from('sales')
             .select('id')
             .eq('store_id', payload.store_id)
             .eq('order_number', payload.order_number)
-            .maybeSingle();
+            .order('id', { ascending: false })
+            .limit(1);
         if (lookupError) throw lookupError;
 
+        const existing = existingRows?.[0];
         if (existing?.id != null) {
             const { error: updateError } = await client
                 .from('sales')
