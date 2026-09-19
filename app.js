@@ -1610,7 +1610,7 @@ function renderMenuNavigation() {
 
     if (currentMenuLevel === 'topLevelSections') {
         backButton.style.display = 'none';
-        menuSectionTitle.textContent = 'Select Section or Category';
+        menuSectionTitle.textContent = '';
 
         const sectionNames = Object.keys(menuSections).sort();
         const topLevelDrinkCategoriesOrder = [
@@ -2471,8 +2471,9 @@ function showSalesReportsContent(e) {
             const activeTab = button.dataset.salesTab;
             document.querySelectorAll('.sales-report-tab').forEach(tab => tab.classList.toggle('active', tab === button));
             document.querySelectorAll('[data-sales-tab-section]').forEach(section => {
-                section.hidden = section.dataset.salesTabSection !== activeTab && section.dataset.salesTabSection !== 'overview';
+                section.hidden = section.dataset.salesTabSection !== activeTab;
             });
+            activeChartInstances['sales-trend-chart']?.resize?.();
         }));
         const exportToggle = document.getElementById('sales-export-toggle');
         const exportMenu = document.getElementById('sales-export-menu');
@@ -2553,7 +2554,12 @@ function generateSalesReport() {
     metrics.voidReasons = collectVoidReasons(startDate, endDate);
 
     reportContentEl.innerHTML = reportSales.length ? buildSalesAnalysisHTML(metrics, reportSales) : '<div class="empty-state"><i class="fas fa-receipt"></i><p>No sales in the selected period.</p></div>';
-    if (reportSales.length > 0) renderSalesCharts(metrics);
+    if (reportSales.length > 0) {
+        document.querySelectorAll('[data-sales-tab-section]').forEach(section => {
+            section.hidden = section.dataset.salesTabSection !== 'overview';
+        });
+        renderSalesCharts(metrics);
+    }
     if (reportSales.length > 0) {
         exportButton.style.display = 'block';
         if (excelButton) excelButton.style.display = 'block';
@@ -2778,8 +2784,21 @@ function buildSalesAnalysisHTML(metrics, reportSales = []) {
     const bestItemRows = metrics.topItems.map(([name, item], index) => `<tr><td><strong>${index + 1}. ${escapeHtml(name)}</strong></td><td class="numeric">${item.quantity}</td><td class="numeric">Rs ${item.revenue.toFixed(2)}</td></tr>`).join('');
     const staffRows = Object.entries(metrics.staffTotals).sort((a, b) => b[1].revenue - a[1].revenue).map(([staff, data]) => `<tr><td>${escapeHtml(staff)}</td><td class="numeric">${data.transactions}</td><td class="numeric">Rs ${data.revenue.toFixed(2)}</td><td class="numeric">Rs ${(data.revenue / Math.max(1, data.transactions)).toFixed(2)}</td></tr>`).join('');
     const comparisons = metrics.comparisons || { today: { current: 0, previous: 0, change: 0 }, week: { current: 0, previous: 0, change: 0 } };
-    const changeText = (change, previous) => previous ? `${change >= 0 ? '+' : '-'}Rs ${Math.abs(change).toFixed(2)} (${change >= 0 ? '+' : ''}${((change / previous) * 100).toFixed(1)}%)` : 'New';
-    const trendCard = (label, currentLabel, previousLabel, comparison) => `<div class="trend-card ${comparison.change >= 0 ? 'positive' : 'negative'}"><span><strong>${label}</strong><br>${currentLabel}: Rs ${comparison.current.toFixed(2)}<br>${previousLabel}: Rs ${comparison.previous.toFixed(2)}</span><strong>Change: ${changeText(comparison.current - comparison.previous, comparison.previous)}</strong></div>`;
+    const trendCard = (label, currentLabel, previousLabel, comparison) => {
+        const change = comparison.current - comparison.previous;
+        const hasPrevious = comparison.previous > 0;
+        const changeClass = change > 0 ? 'positive' : change < 0 ? 'negative' : 'neutral';
+        const samePeriod = comparison.current === comparison.previous && comparison.current > 0;
+        const changeLabel = samePeriod
+            ? 'Same'
+            : hasPrevious
+            ? `${change >= 0 ? '+' : '-'}Rs ${Math.abs(change).toFixed(2)} (${change >= 0 ? '+' : ''}${((change / comparison.previous) * 100).toFixed(1)}%)`
+            : 'New';
+        return `<div class="trend-card ${changeClass}">
+            <div class="trend-card-heading"><span>${escapeHtml(label)}</span><span class="trend-change">${changeLabel}</span></div>
+            <div class="trend-card-values"><div><small>${escapeHtml(currentLabel)}</small><strong>Rs ${comparison.current.toFixed(2)}</strong></div><div><small>${escapeHtml(previousLabel)}</small><strong>Rs ${comparison.previous.toFixed(2)}</strong></div></div>
+        </div>`;
+    };
     const peakHour = Object.entries(metrics.hourlyTotals).sort((a, b) => b[1] - a[1])[0];
     const orderRows = reportSales.map(sale => {
         const breakdown = calculateSaleBreakdown(sale);
@@ -2792,14 +2811,14 @@ function buildSalesAnalysisHTML(metrics, reportSales = []) {
         <div class="payment-tally" data-sales-tab-section="overview"><div class="payment-tally-card cash"><div><span class="metric-label"><i class="fas fa-money-bill-wave"></i> Net Cash Collected</span><strong>Rs ${metrics.totalCash.toFixed(2)}</strong></div><small>Cash tendered less change</small></div><div class="payment-tally-card mobile"><div><span class="metric-label"><i class="fas fa-mobile-screen-button"></i> Mobile Collected</span><strong>Rs ${metrics.totalMobile.toFixed(2)}</strong></div><small>Supported digital payments</small></div></div>
         <div class="trend-grid" data-sales-tab-section="overview">${trendCard('Today vs yesterday', 'Today', 'Yesterday', comparisons.today)}${trendCard('Week to date vs same days last week', 'This week', 'Last week', comparisons.week)}</div>
         <section class="report-panel trend-panel" data-sales-tab-section="trends"><div class="report-panel-title"><h4><i class="fas fa-chart-line text-primary me-2"></i>Sales Trend</h4><small>Hourly revenue</small></div><div class="trend-chart-wrap"><canvas id="sales-trend-chart"></canvas></div></section>
-        <section class="report-panel"><div class="report-panel-title"><h4><i class="fas fa-credit-card text-primary me-2"></i>Payment Split</h4><small>Completed transactions</small></div><div class="payment-panel-grid"><div class="report-table-wrap"><table class="modern-table"><thead><tr><th>Method</th><th class="numeric">Total</th><th class="numeric">Share</th></tr></thead><tbody>${paymentRows}</tbody></table></div><div class="payment-chart-wrap"><canvas id="payment-chart"></canvas></div></div></section>
-        <section class="report-panel" data-sales-tab-section="overview"><div class="report-panel-title"><h4><i class="fas fa-layer-group text-primary me-2"></i>Category Revenue</h4><small>Revenue and quantity sold</small></div><div class="category-grid">${categoryCards || '<div class="empty-state">No category sales</div>'}</div></section>
+        <section class="report-panel" data-sales-tab-section="overview"><div class="report-panel-title"><h4><i class="fas fa-credit-card text-primary me-2"></i>Payment Split</h4><small>Completed transactions</small></div><div class="payment-panel-grid"><div class="report-table-wrap payment-split-wrap"><table class="modern-table payment-split-table"><thead><tr><th>Method</th><th class="numeric">Total</th><th class="numeric">Share</th></tr></thead><tbody>${paymentRows}</tbody></table></div><div class="payment-chart-wrap"><canvas id="payment-chart"></canvas></div></div></section>
+        <section class="report-panel" data-sales-tab-section="items"><div class="report-panel-title"><h4><i class="fas fa-layer-group text-primary me-2"></i>Category Revenue</h4><small>Revenue and quantity sold</small></div><div class="category-grid">${categoryCards || '<div class="empty-state">No category sales</div>'}</div></section>
         <section class="report-panel" data-sales-tab-section="items"><div class="report-panel-title"><h4><i class="fas fa-ranking-star text-primary me-2"></i>Best Selling Items</h4><small>Top 5 by quantity</small></div><div class="report-table-wrap"><table class="modern-table"><thead><tr><th>Item</th><th class="numeric">Qty Sold</th><th class="numeric">Revenue</th></tr></thead><tbody>${bestItemRows || '<tr><td colspan="3">No items sold</td></tr>'}</tbody></table></div></section>
         <section class="report-panel" data-sales-tab-section="staff"><div class="report-panel-title"><h4><i class="fas fa-users text-primary me-2"></i>Staff Performance</h4><small>Orders, sales and average bill</small></div><div class="report-table-wrap"><table class="modern-table"><thead><tr><th>Staff</th><th class="numeric">Orders</th><th class="numeric">Sales</th><th class="numeric">Avg Bill</th></tr></thead><tbody>${staffRows || '<tr><td colspan="4">No staff sales</td></tr>'}</tbody></table></div></section>
         <section class="report-panel" data-sales-tab-section="overview"><div class="report-panel-title"><h4><i class="fas fa-tags text-warning me-2"></i>Discount Summary</h4><small>Applied discounts</small></div><div class="discount-grid"><div class="discount-card"><span>Total Discount</span><strong>Rs ${metrics.totalDiscount.toFixed(2)}</strong></div><div class="discount-card"><span>Discounted Orders</span><strong>${metrics.discountedTransactions}</strong></div><div class="discount-card"><span>Most Used</span><strong>${escapeHtml(metrics.mostUsedDiscount)}</strong></div></div></section>
         <section class="report-panel" data-sales-tab-section="overview"><div class="report-panel-title"><h4><i class="fas fa-calculator text-primary me-2"></i>Accounting Summary</h4><small>VAT added at checkout</small></div><div class="report-footer-summary"><div><span>Gross Sales</span><strong>Rs ${metrics.grossSales.toFixed(2)}</strong></div><div><span>Discounts</span><strong>- Rs ${metrics.totalDiscount.toFixed(2)}</strong></div><div><span>Net Sales</span><strong>Rs ${metrics.netSales.toFixed(2)}</strong></div><div><span>Service Charge</span><strong>Rs ${metrics.totalServiceCharge.toFixed(2)}</strong></div><div><span>VAT</span><strong>Rs ${metrics.totalVat.toFixed(2)}</strong></div><div><span>Total Collected</span><strong>Rs ${metrics.totalSales.toFixed(2)}</strong></div></div></section>
         <section class="report-panel" data-sales-tab-section="overview"><div class="report-panel-title"><h4><i class="fas fa-cash-register text-primary me-2"></i>Cash Reconciliation</h4><small>Drawer count can be completed at shift close</small></div><div class="report-footer-summary"><div><span>Cash Tendered</span><strong>Rs ${(metrics.totalCash + reportSales.filter(isActiveSale).reduce((sum, sale) => sum + Number(sale.change || 0), 0)).toFixed(2)}</strong></div><div><span>Change Given</span><strong>Rs ${reportSales.filter(isActiveSale).reduce((sum, sale) => sum + Number(sale.change || 0), 0).toFixed(2)}</strong></div><div><span>Net Cash Collected</span><strong>Rs ${metrics.totalCash.toFixed(2)}</strong></div><div><span>Expected / Actual Drawer</span><strong>Not counted</strong></div><div><span>Over / Short</span><strong>Not counted</strong></div></div></section>
-        <section class="report-panel" data-sales-tab-section="overview"><div class="report-panel-title"><h4><i class="fas fa-receipt text-primary me-2"></i>Order Detail</h4><small>Completed, voided, and refunded records</small></div><div class="report-table-wrap"><table class="modern-table"><thead><tr><th>Order #</th><th>Time</th><th>Table</th><th>Items</th><th>Qty</th><th>Gross</th><th>Discount</th><th>VAT</th><th>Net / Total</th><th>Payment</th><th>Status</th><th>Staff</th></tr></thead><tbody>${orderRows || '<tr><td colspan="12">No sales in selected period.</td></tr>'}</tbody></table></div></section>
+        <section class="report-panel order-detail-panel" data-sales-tab-section="overview"><div class="report-panel-title"><h4><i class="fas fa-receipt text-primary me-2"></i>Order Detail</h4><small>Completed, voided, and refunded records</small></div><div class="report-table-wrap order-detail-wrap"><table class="modern-table order-detail-table"><thead><tr><th>Order #</th><th>Time</th><th>Table</th><th>Items</th><th>Qty</th><th>Gross</th><th>Discount</th><th>VAT</th><th>Net / Total</th><th>Payment</th><th>Status</th><th>Staff</th></tr></thead><tbody>${orderRows || '<tr><td colspan="12">No sales in selected period.</td></tr>'}</tbody></table></div></section>
         <section class="report-panel" data-sales-tab-section="overview"><div class="report-panel-title"><h4><i class="fas fa-flag text-warning me-2"></i>Voids and Refunds</h4><small>Amount, reason, staff, and time</small></div><div class="report-table-wrap"><table class="modern-table"><thead><tr><th>Status</th><th>Order #</th><th>Amount</th><th>Reason</th><th>Staff</th><th>Time</th></tr></thead><tbody>${voidRefundDetails || '<tr><td colspan="6">No voids or refunds.</td></tr>'}</tbody></table></div></section>
         <p class="report-generated text-muted mt-3 mb-0"><i class="fas fa-clock me-1"></i>Report generated on ${new Date().toLocaleString('en-GB')}</p>
     </div>`;
@@ -2907,8 +2926,8 @@ function showItemsSoldContent(e) {
         return `
             <div class="items-sold-dashboard report-container items-sold">
                 <div class="report-header"><h4><i class="fas fa-boxes-stacked text-success me-2"></i>Items Sold</h4><span class="report-badge">Performance</span></div>
-                <div class="filter-bar">
-                    <div class="filter-group"><label for="items-sold-start-date"><i class="far fa-calendar-alt"></i> Date Range</label><div class="date-range"><input type="date" id="items-sold-start-date" class="filter-input"><span class="date-separator">to</span><input type="date" id="items-sold-end-date" class="filter-input"></div></div>
+                <div class="filter-bar items-sold-filters">
+                    <div class="filter-group items-sold-date-group"><label><i class="far fa-calendar-alt"></i> Date Range</label><div class="date-range"><div class="date-field"><span>From</span><input type="date" id="items-sold-start-date" class="filter-input" aria-label="Items sold start date"></div><span class="date-separator">to</span><div class="date-field"><span>To</span><input type="date" id="items-sold-end-date" class="filter-input" aria-label="Items sold end date"></div></div></div>
                     <div class="filter-group"><label for="items-sold-category"><i class="fas fa-tag"></i> Category</label><select id="items-sold-category" class="filter-select">
                             <option value="all">All Categories</option>${categoryOptions}
                         </select>
@@ -2926,7 +2945,7 @@ function showItemsSoldContent(e) {
                     </table>
                 </div>
                 <div id="no-data-container" class="empty-state" style="display: none;"><i class="fas fa-box-open"></i><p>No items sold in this period</p><span class="text-muted small">Try adjusting your filters</span></div>
-                <button id="export-items-sold-csv" class="export-btn mt-3 w-100">Export Full Report to CSV</button>
+                <button id="export-items-sold-csv" class="export-btn items-sold-export mt-3 w-100"><i class="fas fa-file-csv"></i> Export Full Report to CSV</button>
             </div>
         `;
     };
@@ -3082,8 +3101,8 @@ function showOrderHistoryContent(e) {
     showSidebarContentModal('Order History', `
         <div class="report-container order-history">
             <div class="report-header"><h4><i class="fas fa-history text-info me-2"></i>Order History</h4><span class="report-badge" id="order-count-badge">0 orders</span></div>
-            <div class="filter-bar">
-                <div class="filter-group"><label for="history-start-date">Date Range</label><div class="date-range"><input type="date" id="history-start-date" class="filter-input" value="${toLocalISODate()}"><span class="date-separator">to</span><input type="date" id="history-end-date" class="filter-input" value="${toLocalISODate()}"></div></div>
+            <div class="filter-bar order-history-filters">
+                <div class="filter-group"><label for="history-start-date"><i class="fas fa-calendar-days"></i> Date Range</label><div class="date-range"><input type="date" id="history-start-date" class="filter-input" value="${toLocalISODate()}"><span class="date-separator">to</span><input type="date" id="history-end-date" class="filter-input" value="${toLocalISODate()}"></div></div>
                 <div class="filter-group"><label for="history-status-filter">Status</label><select id="history-status-filter" class="filter-select">
                     <option value="all">All Statuses</option>
                     <option value="completed">Completed</option>
@@ -3091,17 +3110,17 @@ function showOrderHistoryContent(e) {
                     <option value="voided">Voided</option>
                 </select>
                 </div>
-                <div class="filter-group search-group"><label for="history-search">Search</label><input type="text" id="history-search" class="filter-input" placeholder="Order ID, table, item..."></div>
-                <button id="filter-history" class="btn-primary-action" type="button"><i class="fas fa-filter"></i> Apply</button>
-                <button id="show-all-history" class="btn-export" type="button">Show All</button>
+                <div class="filter-group search-group"><label for="history-search"><i class="fas fa-magnifying-glass"></i> Search</label><input type="text" id="history-search" class="filter-input" placeholder="Order ID, table, item..."></div>
+                <div class="history-filter-actions"><button id="filter-history" class="btn-primary-action" type="button"><i class="fas fa-filter"></i> Apply Filters</button>
+                <button id="show-all-history" class="btn-export" type="button"><i class="fas fa-list"></i> Show All</button></div>
             </div>
             <div id="order-history-results">
                 <div class="summary-grid">
-                    <div class="summary-card"><span class="summary-label">Total Orders</span><span class="summary-value" id="total-orders-count">0</span></div>
-                    <div class="summary-card"><span class="summary-label">Completed Orders</span><span class="summary-value" id="completed-orders-count">0</span></div>
-                    <div class="summary-card"><span class="summary-label">Voided Orders</span><span class="summary-value" id="voided-orders-count">0</span></div>
-                    <div class="summary-card"><span class="summary-label">Revenue</span><span class="summary-value" id="total-revenue">Rs 0.00</span></div>
-                    <div class="summary-card"><span class="summary-label">Average</span><span class="summary-value" id="avg-order-value">Rs 0.00</span></div>
+                    <div class="summary-card history-summary-total"><i class="fas fa-receipt"></i><span class="summary-label">Total Orders</span><span class="summary-value" id="total-orders-count">0</span></div>
+                    <div class="summary-card history-summary-completed"><i class="fas fa-circle-check"></i><span class="summary-label">Completed Orders</span><span class="summary-value" id="completed-orders-count">0</span></div>
+                    <div class="summary-card history-summary-voided"><i class="fas fa-ban"></i><span class="summary-label">Voided Orders</span><span class="summary-value" id="voided-orders-count">0</span></div>
+                    <div class="summary-card history-summary-revenue"><i class="fas fa-coins"></i><span class="summary-label">Revenue</span><span class="summary-value" id="total-revenue">Rs 0.00</span></div>
+                    <div class="summary-card history-summary-average"><i class="fas fa-chart-line"></i><span class="summary-label">Average Order</span><span class="summary-value" id="avg-order-value">Rs 0.00</span></div>
                 </div>
                 <div id="order-history-list"></div>
             </div>
@@ -3212,19 +3231,24 @@ function renderOrderHistoryItem(order) {
                 <strong>Order ID: #${escapeHtml(String(order.orderNumber || 'N/A'))}</strong>
                 <span class="order-history-status ${statusClass}">${status}</span>
             </div>
-            <div class="order-history-audit">
-                <div class="order-history-audit-line"><span class="order-history-audit-label">Table:</span><span>${escapeHtml(tableLabel)}</span></div>
-                <div class="order-history-audit-line"><span class="order-history-audit-label">Items:</span><span>${itemSummary}</span></div>
-                <div class="order-history-audit-line"><span class="order-history-audit-label">Payment Method:</span><span>${escapeHtml(paymentLabel)}</span></div>
-                <div class="order-history-audit-line"><span class="order-history-audit-label">Date &amp; Time:</span><span>${escapeHtml(timestamp)}</span></div>
-                <div class="order-history-audit-line"><span class="order-history-audit-label">Total:</span><strong>Rs ${Number(order.total || 0).toFixed(2)}</strong></div>
+            <div class="order-history-meta">
+                <span><i class="fas fa-calendar-days"></i> Date &amp; Time: ${escapeHtml(timestamp)}</span>
+                <span><i class="fas fa-chair"></i> Table: ${escapeHtml(tableLabel)}</span>
+            </div>
+            <div class="order-history-items-line">
+                <span class="order-history-line-label">Items:</span>
+                <span>${itemSummary}</span>
+            </div>
+            <div class="order-history-payment-line">
+                <span><span class="order-history-line-label">Payment Method:</span> ${escapeHtml(paymentLabel)}</span>
+                <strong>Total: Rs ${Number(order.total || 0).toFixed(2)}</strong>
             </div>
             <div class="order-history-actions">
-                <button class="view-receipt-btn" data-order-number="${order.orderNumber}">View Receipt</button>
-                ${order.status === 'completed' && order.paymentMethods?.length ? `<button class="edit-payment-btn" data-order-number="${escapeHtml(order.orderNumber)}">Edit Payment</button>` : ''}
+                <button class="view-receipt-btn" data-order-number="${escapeHtml(order.orderNumber)}"><i class="fas fa-receipt"></i> View Receipt</button>
+                ${order.status === 'completed' && order.paymentMethods?.length ? `<button class="edit-payment-btn" data-order-number="${escapeHtml(order.orderNumber)}"><i class="fas fa-pen"></i> Edit Payment</button>` : ''}
                 ${order.status === 'completed'
-                    ? `<button class="void-order-btn" data-order-number="${escapeHtml(order.orderNumber)}">Void Order</button>`
-                    : `<button class="void-reason-btn" data-order-number="${escapeHtml(order.orderNumber)}">Void Reason</button>`}
+                    ? `<button class="void-order-btn" data-order-number="${escapeHtml(order.orderNumber)}"><i class="fas fa-ban"></i> Void Order</button>`
+                    : `<button class="void-reason-btn" data-order-number="${escapeHtml(order.orderNumber)}"><i class="fas fa-circle-info"></i> Void Reason</button>`}
             </div>
         </div>
     `;
@@ -3901,9 +3925,9 @@ function renderPaymentMethods() {
     }
 
     paymentList.innerHTML = paymentAllocations.map((pm, index) => `
-        <li>
-            ${pm.method}: Rs ${pm.amount.toFixed(2)}
-            <button class="remove-payment-btn" data-index="${index}">Remove</button>
+        <li class="payment-method-${pm.method.toLowerCase()}">
+            <span><i class="fas ${pm.method === 'Cash' ? 'fa-money-bill-wave' : 'fa-mobile-screen-button'}"></i> ${pm.method}<strong>Rs ${pm.amount.toFixed(2)}</strong></span>
+            <button class="remove-payment-btn" data-index="${index}"><i class="fas fa-xmark"></i> Remove</button>
         </li>
     `).join('');
 
@@ -3961,9 +3985,17 @@ function updateChange() {
         const hasPaymentMethod = paymentAllocations.length > 0;
         const canComplete = hasPaymentMethod && paidSoFar >= exactTotal - 0.01;
         completeBtn.disabled = !canComplete;
+        completeBtn.classList.toggle('payment-ready', canComplete);
         completeBtn.style.opacity = canComplete ? '1' : '0.5';
         completeBtn.style.cursor = canComplete ? 'pointer' : 'not-allowed';
     }
+
+    [remainingDueEl, changeAmountEl].forEach(element => {
+        if (!element) return;
+        element.classList.remove('payment-value-updated');
+        void element.offsetWidth;
+        element.classList.add('payment-value-updated');
+    });
 
     const exactButton = document.querySelector('#quick-amounts button[data-amount="exact"]');
     if (exactButton) exactButton.disabled = exactTotal <= 0.01 || paidSoFar >= exactTotal - 0.01;
@@ -5949,7 +5981,7 @@ function showSettings() {
                 <div class="setting-item"><div class="setting-info"><span class="setting-label">Store ID</span><span class="setting-desc">A unique identifier for this branch</span></div><input id="store-id-setting" class="filter-input" type="text" maxlength="30" value="${escapeHtml(localStorage.getItem('store-id') || '')}"></div>
                 <div class="setting-item"><div class="setting-info"><span class="setting-label">Supabase URL</span><span class="setting-desc">Project Data API URL</span></div><input id="supabase-url-setting" class="filter-input" type="url" maxlength="120" value="${escapeHtml(localStorage.getItem('supabase-url') || '')}"></div>
                 <div class="setting-item"><div class="setting-info"><span class="setting-label">Supabase Publishable Key</span><span class="setting-desc">Stored only on this device</span></div><input id="supabase-key-setting" class="filter-input" type="password" maxlength="300" value="${escapeHtml(localStorage.getItem('supabase-key') || '')}"></div>
-                <div class="setting-item"><div class="setting-info"><span class="setting-label">Sync Status</span><span class="setting-desc" id="cloud-sync-status">Not connected</span></div><div class="settings-actions"><button id="connect-cloud-sync" class="btn-secondary" type="button">Connect</button><button id="disconnect-cloud-sync" class="btn-warning-action" type="button">Disconnect</button></div></div>
+                <div class="setting-item"><div class="setting-info"><span class="setting-label">Sync Status</span><span class="setting-desc" id="cloud-sync-status">Not connected</span></div><button id="cloud-sync-toggle" class="btn-secondary" type="button">Connect</button></div>
             </div></div>
             <div class="settings-section">
                 <h5><i class="fas fa-lock me-2"></i>Staff PIN Lock</h5>
@@ -6002,7 +6034,7 @@ function showSettings() {
         }));
         const refreshCloudConnectionStatus = async () => {
             const statusEl = document.getElementById('cloud-sync-status');
-            const button = document.getElementById('connect-cloud-sync');
+            const button = document.getElementById('cloud-sync-toggle');
             const configured = localStorage.getItem('store-id') &&
                 localStorage.getItem('supabase-url') &&
                 localStorage.getItem('supabase-key');
@@ -6016,7 +6048,7 @@ function showSettings() {
             const status = window.CloudSync.getStatus();
             if (statusEl) statusEl.textContent = ok ? `Connected - ${status.storeId}` : 'Saved - connection failed';
             if (button) {
-                button.textContent = ok ? 'Connected' : 'Connect';
+                button.textContent = ok ? 'Disconnect' : 'Connect';
                 button.disabled = false;
             }
         };
@@ -6141,9 +6173,16 @@ function showSettings() {
             notifications.show('Settings saved', 'success');
             closeSidebarContentModal();
         });
-        document.getElementById('connect-cloud-sync')?.addEventListener('click', async (event) => {
+        document.getElementById('cloud-sync-toggle')?.addEventListener('click', async (event) => {
             const statusEl = document.getElementById('cloud-sync-status');
             const button = event.currentTarget;
+            if (window.CloudSync?.isReady()) {
+                if (window.CloudSync) window.CloudSync.disconnect();
+                if (statusEl) statusEl.textContent = 'Not connected';
+                button.textContent = 'Connect';
+                notifications.show('Cloud sync disconnected. Settings were cleared.', 'info');
+                return;
+            }
             const storeId = document.getElementById('store-id-setting')?.value.trim() || '';
             const supabaseUrl = document.getElementById('supabase-url-setting')?.value.trim() || '';
             const supabaseKey = document.getElementById('supabase-key-setting')?.value.trim() || '';
@@ -6167,17 +6206,9 @@ function showSettings() {
             const ok = await window.CloudSync.init();
             const status = window.CloudSync.getStatus();
             if (statusEl) statusEl.textContent = ok ? `Connected - ${status.storeId}` : 'Saved - connection failed';
-            button.textContent = ok ? 'Connected' : 'Connect';
+            button.textContent = ok ? 'Disconnect' : 'Connect';
             button.disabled = false;
             notifications.show(ok ? 'Cloud settings saved and connected.' : 'Cloud settings saved, but connection failed. Check URL and key.', ok ? 'success' : 'error');
-        });
-        document.getElementById('disconnect-cloud-sync')?.addEventListener('click', () => {
-            if (window.CloudSync) window.CloudSync.disconnect();
-            const statusEl = document.getElementById('cloud-sync-status');
-            const connectButton = document.getElementById('connect-cloud-sync');
-            if (statusEl) statusEl.textContent = 'Not connected';
-            if (connectButton) connectButton.textContent = 'Connect';
-            notifications.show('Cloud sync disconnected. Settings were cleared.', 'info');
         });
     });
 }
