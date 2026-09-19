@@ -1,4 +1,4 @@
-const CACHE_NAME = 'taboche-pos-v7';
+const CACHE_NAME = 'taboche-pos-v8';
 const urlsToCache = [
   './',
   './index.html',
@@ -78,6 +78,12 @@ self.addEventListener('fetch', event => {
   if (event.request.destination === 'image' ||
       event.request.url.includes('/images/')) {
     event.respondWith(cacheFirst(event.request, event));
+    return;
+  }
+
+  // Always prefer fresh application code so sync fixes reach installed tablets.
+  if (['script', 'style'].includes(event.request.destination)) {
+    event.respondWith(networkFirst(event.request));
     return;
   }
 
