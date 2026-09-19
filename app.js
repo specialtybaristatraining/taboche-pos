@@ -719,6 +719,18 @@ class NotificationSystem {
     }
 }
 const notifications = new NotificationSystem();
+
+function positionNotificationsBelowHeader() {
+    const header = document.querySelector('header');
+    const notificationToast = document.getElementById('notification-toast');
+    if (!header || !notificationToast) return;
+    const headerBottom = Math.max(0, header.getBoundingClientRect().bottom);
+    notificationToast.style.setProperty('--notification-top', `${headerBottom + 8}px`);
+}
+
+positionNotificationsBelowHeader();
+window.addEventListener('resize', positionNotificationsBelowHeader);
+window.addEventListener('orientationchange', positionNotificationsBelowHeader);
 window.addEventListener('cloud-sync-queue-changed', () => updateOfflineQueueBadge());
 window.addEventListener('cloud-sync-failing', () => {
     const failed = window.CloudSync?.getStatus?.().deadLetter || 0;
