@@ -629,10 +629,15 @@ class NotificationSystem {
         this.activeCount = 0;
         this.maxVisible = 3;
         this.maxQueueLength = 5;
+        this.recentMessages = new Map();
     }
 
     show(message, type = 'info', duration = 2400) {
         if (!message) return;
+        const messageKey = `${type}:${String(message)}`;
+        const lastShown = this.recentMessages.get(messageKey) || 0;
+        if (Date.now() - lastShown < 10000) return;
+        this.recentMessages.set(messageKey, Date.now());
         if (this.notificationQueue.length >= this.maxQueueLength) this.notificationQueue.shift();
         const baseDuration = Math.max(3000, String(message).length * 45);
         this.notificationQueue.push({
