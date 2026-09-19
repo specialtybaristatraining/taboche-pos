@@ -6116,17 +6116,35 @@ function showSettings() {
             notifications.show('Settings saved', 'success');
             closeSidebarContentModal();
         });
-        document.getElementById('connect-cloud-sync')?.addEventListener('click', async () => {
+        document.getElementById('connect-cloud-sync')?.addEventListener('click', async (event) => {
             const statusEl = document.getElementById('cloud-sync-status');
+            const button = event.currentTarget;
+            const storeId = document.getElementById('store-id-setting')?.value.trim() || '';
+            const supabaseUrl = document.getElementById('supabase-url-setting')?.value.trim() || '';
+            const supabaseKey = document.getElementById('supabase-key-setting')?.value.trim() || '';
+
+            localStorage.setItem('store-id', storeId);
+            localStorage.setItem('supabase-url', supabaseUrl);
+            localStorage.setItem('supabase-key', supabaseKey);
+
             if (!window.CloudSync) {
                 if (statusEl) statusEl.textContent = 'Cloud sync unavailable';
                 return;
             }
+            if (!storeId || !supabaseUrl || !supabaseKey) {
+                if (statusEl) statusEl.textContent = 'Enter Store ID, URL, and key';
+                button.textContent = 'Connect';
+                notifications.show('Enter the Store ID, Supabase URL, and publishable key.', 'warning');
+                return;
+            }
             if (statusEl) statusEl.textContent = 'Connecting...';
+            button.disabled = true;
             const ok = await window.CloudSync.init();
             const status = window.CloudSync.getStatus();
-            if (statusEl) statusEl.textContent = ok ? `Ready - ${status.storeId}` : 'Failed - check settings';
-            notifications.show(ok ? 'Cloud sync connected.' : 'Cloud sync failed. Check URL and key.', ok ? 'success' : 'error');
+            if (statusEl) statusEl.textContent = ok ? `Connected - ${status.storeId}` : 'Saved - connection failed';
+            button.textContent = ok ? 'Connected' : 'Connect';
+            button.disabled = false;
+            notifications.show(ok ? 'Cloud settings saved and connected.' : 'Cloud settings saved, but connection failed. Check URL and key.', ok ? 'success' : 'error');
         });
     });
 }
