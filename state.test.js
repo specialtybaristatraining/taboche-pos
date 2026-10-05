@@ -77,6 +77,16 @@ describe('production state', () => {
     expect(isActiveSale(null)).toBe(null);
   });
 
+  it('summarizes loyalty coffees separately from paid items', () => {
+    const { getLoyaltyFreeCoffeeSummary } = loadProductionState();
+    const summary = getLoyaltyFreeCoffeeSummary([
+      { name: 'Latte', quantity: 1, price: 190, loyaltyFree: true },
+      { name: 'Americano', quantity: 2, price: 150 }
+    ]);
+
+    expect(summary).toEqual({ quantity: 1, value: 190 });
+  });
+
   it('creates an independent order-history snapshot', () => {
     const { createOrderHistorySnapshot } = loadProductionState();
     const sale = { orderNumber: 'A-1', items: [{ name: 'Tea', extras: [{ name: 'Milk' }] }] };

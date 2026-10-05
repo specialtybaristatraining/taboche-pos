@@ -1,71 +1,93 @@
-# Taboche — Restaurant & Coffee Shop
+# Taboche POS System
 
-Premium specialty coffee and authentic cuisine in Bhaktapur, Nepal. Located peacefully by Siddhapokhari.
+A modern, fast, and organized Point of Sale (POS) system built for restaurants and cafes.
 
-## About
+## Features
 
-Experience the finest specialty coffee in Bhaktapur at Taboche. We serve **100% Arabica beans** and are run by **three brothers** trained at **Costa Coffee UAE** and **The Coffee Bean & Tea Leaf Malaysia**.
+- 🏪 **Table Management**: Track multiple tables with timers
+- 🍽️ **Menu System**: Categorized menu with search functionality
+- 🧾 **Order Management**: Real-time order tracking and KOT printing
+- 💰 **Payment Processing**: Multiple payment methods with change calculation
+- 📊 **Reports**: Sales reports, order history, and item analytics
+- 💾 **Data Backup**: Export/import system data
+- 📱 **PWA Ready**: Installable on mobile devices with offline support
+- 🎨 **Dark Mode**: Toggle between light and dark themes
 
-## Contact
+## Local Development
 
-- 📍 Opposite Siddhapokhari, Bhaktapur 44800, Nepal
-- ☎️ +977-9824926296
-- 🌐 https://taboche.netlify.app/
-- 🕐 Daily 07:00 AM – 08:00 PM
+### Option 1: Python Server (Recommended)
+```bash
+cd "path/to/taboche-pos"
+python -m http.server 8000
+```
+Then open `http://localhost:8000` in your browser.
 
-## Services
+### Option 2: Node.js Server
+```bash
+npx serve .
+```
+Then open the provided localhost URL.
 
-Dine-in, Takeaway, Delivery, Outdoor seating, Table service, Breakfast, Brunch, Lunch, Dinner, NFC mobile payments, Family friendly.
+## GitHub Pages Deployment
 
-## Social
+1. **Fork or clone this repository**
+2. **Enable GitHub Pages**:
+   - Go to repository Settings → Pages
+   - Source: "Deploy from a branch"
+   - Branch: `main` (or your default branch)
+   - Folder: `/ (root)`
+3. **Access your site** at `https://yourusername.github.io/repository-name/`
 
-- [Facebook](https://www.facebook.com/tabochebhaktapur)
-- [Instagram](https://www.instagram.com/taboche_bhaktapur/)
-- [TikTok](https://www.tiktok.com/@taboche7)
+### Important Notes for GitHub Pages:
+- Service Workers work on HTTPS (automatically enabled)
+- All paths are relative and will work correctly
+- PWA installation is available on mobile devices
+- Offline functionality is fully supported
 
-## Menu Highlights
+## Supabase Setup
 
-- **Hot Coffee**: Americano, Latte, Cappuccino, Vanilla Latte, Hazelnut Latte, Caramel Latte, Hot Chocolate
-- **Signature Iced**: Hibiscus (Roselle), Iced Mocha
-- **Tea**: Ilam Greens, Earl Grey, Jasmine, Chamomile, Butterfly Pea
-- **Food**: Mo Mo, Burgers, Pizza, Wraps, Keema Noodles
+Run `supabase-sales-idempotency.sql` once against each Supabase project before connecting the POS. Without the unique index, CloudSync upserts will fail.
 
-All prices in Nepali Rupees (रू).
+## Browser Support
 
-## Files
+- Chrome/Edge: Full PWA support
+- Firefox: Full functionality (PWA limited)
+- Safari: Full functionality (PWA limited)
+- Mobile browsers: Optimized touch interface
 
-| File | Purpose |
-|------|---------|
-| `index.html` | Main page |
-| `styles.css` | All styles |
-| `script.js` | All JS (menu, forms, PWA) |
-| `loyalty/loyalty.html` | Server-backed loyalty card and reward claim |
-| `loyalty/loyalty.css` | Loyalty page styles |
-| `loyalty/loyalty.js` | Stamp, reward-code claim, and countdown interactions |
-| `netlify/functions/` | Loyalty stamp, reward issue/redeem, and staff functions |
-| `supabase-loyalty-rewards.sql` | Reward ledger, atomic RPCs, and rate-limit schema |
-| `theme.js` | Early theme bootstrap to prevent a dark-mode flash |
-| `sw.js` | Service worker |
-| `manifest.webmanifest` | PWA manifest |
-| `offline.html` | Offline fallback page |
-| `404.html` | Branded not-found page |
-| `success.html` | Native reservation fallback page |
-| `captions.vtt` | Gallery video captions |
-| `robots.txt` | Crawler access rules |
-| `sitemap.xml` | Search-engine sitemap |
-| `_headers` | Netlify security headers |
+## File Structure
 
-## Loyalty Deployment
+```
+taboche-pos/
+├── index.html          # Main application
+├── manifest.json       # PWA manifest
+├── sw.js              # Service worker
+├── images/            # Menu item images and logos
+└── README.md          # This file
+```
 
-Before deploying the loyalty functions, run `supabase-loyalty-rewards.sql` in the existing Supabase SQL editor. It creates the reward ledger and imports existing `cards.free_drinks` balances. Configure `LOYALTY_TOKEN_SECRET`, `SUPABASE_URL`, and `SUPABASE_SERVICE_ROLE` in the Netlify environment; keep the service-role key server-side only. The POS and loyalty card should use the `tabochebhakatpur.netlify.app` deployment until the separate canonical-site deployment is configured to serve these same routes and Supabase project.
+## Usage
 
-## Local Admin Utilities
+1. **Tables**: Click table buttons to select active table
+2. **Menu**: Browse categories or search for items
+3. **Orders**: Add items, modify quantities, add extras
+4. **Checkout**: Process payments and print receipts
+5. **Reports**: Access via sidebar menu
 
-Reservation copies are stored in the current browser; the form also opens WhatsApp and can submit through Netlify Forms when deployed there. These browser utilities are not access-controlled security features.
+## Data Management
 
-For local troubleshooting, add `?admin=1` to the page URL, then open DevTools (F12) and use:
+- **Auto-save**: All changes saved automatically to browser storage
+- **Backup**: Export data via sidebar → Backup Data
+- **Restore**: Import data via sidebar → Restore Data
+- **Reset**: Clear all data via sidebar → Reset All Data
 
-```javascript
-tabocheAdmin.viewReservations();   // Log all reservations
-tabocheAdmin.exportReservations(); // Download JSON
-tabocheAdmin.clearReservations();  // Delete all (requires confirmation)
+## Offline Support
+
+When deployed on HTTPS (GitHub Pages), the app works offline:
+- Cached menu and images
+- Local data storage
+- Background sync for orders (when online)
+
+## Contributing
+
+Feel free to submit issues and enhancement requests!

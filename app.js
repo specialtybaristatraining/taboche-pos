@@ -176,6 +176,13 @@ let menuItems = [
     
     { name: "Chocolate Muffin", price: 150, category: "Breakfast", section: "Kitchen", type: "food", image: "images/chocolate_muffin.jpg" },
 
+    // ================== COMBO PAIRINGS ==================
+    { name: "Classic Pairing - Americano + Warm Brownie", cardTitle: "Classic Pairing", cardDescription: "Americano + Warm Brownie", price: 330, category: "Combo", section: "Kitchen", type: "food", image: "images/brownie_walnut.jpg" },
+    { name: "Muffin Pairing (Banana) - Americano + Warm Banana Muffin", cardTitle: "Banana Muffin Pairing", cardDescription: "Americano + Warm Banana Muffin", price: 280, category: "Combo", section: "Kitchen", type: "food", image: "images/banana_muffin.jpg" },
+    { name: "Muffin Pairing (Chocolate) - Americano + Warm Chocolate Muffin", cardTitle: "Chocolate Muffin Pairing", cardDescription: "Americano + Warm Chocolate Muffin", price: 280, category: "Combo", section: "Kitchen", type: "food", image: "images/chocolate_muffin.jpg" },
+    { name: "Patty Pairing - Americano + Chicken Patty", cardTitle: "Patty Pairing", cardDescription: "Americano + Chicken Patty", price: 280, category: "Combo", section: "Kitchen", type: "food", image: "images/chicken_pie.jpg" },
+    { name: "Sandwich Pairing - Americano + Chi Sandwich", cardTitle: "Sandwich Pairing", cardDescription: "Americano + Chi Sandwich", price: 450, category: "Combo", section: "Kitchen", type: "food", image: "images/chi_toasty_salsa.jpg" },
+
 // ================== DRINK GROUPS (now section "Bar", type "drink") ==================
 { name: "Americano", price: 150, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/americano.jpg" },
 { name: "Espresso", price: 140, category: "Hot Coffee", section: "Bar", type: "drink", image: "images/espresso.jpg" },
@@ -326,24 +333,86 @@ function toggleItemStock(itemName) {
 window.toggleItemStock = toggleItemStock;
 
 let extras = [
-    // Food Extras
-    { name: "Cheese", price: 75, image: "images/cheese.jpg", type: "food" },
-    { name: "Sausage", price: 40, image: "images/buff_sausage.jpg", type: "food" },
-    { name: "Extra Chicken", price: 120, image: "images/extra_chicken.jpg", type: "food" },
-    { name: "Extra Buff", price: 100, image: "images/extra_buff.jpg", type: "food" },
-    { name: "Egg", price: 50, image: "images/egg.jpg", type: "food" },
-    { name: "Salad", price: 75, image: "images/salad.jpg", type: "food" },
-    { name: "Toast", price: 75, image: "images/chi_toasty_salsa.jpg", type: "food" },
+    // ==================== BURGER & SANDWICH ====================
+    { name: "Extra Cheese Slice",  price: 75,  group: "Burgers & Sandwiches", appliesTo: { categories: ["Burger with Fries", "Breakfast"] } },
+    { name: "Extra Chicken Patty", price: 150, group: "Burgers & Sandwiches", appliesTo: { categories: ["Burger with Fries", "Wrap with Fries"] } },
+    { name: "Extra Buff Patty",    price: 130, group: "Burgers & Sandwiches", appliesTo: { categories: ["Burger with Fries", "Wrap with Fries"] } },
+    { name: "Add Fried Egg",       price: 50,  group: "Burgers & Sandwiches", appliesTo: { categories: ["Burger with Fries", "Breakfast"] } },
+    { name: "Add Sausage",         price: 60,  group: "Burgers & Sandwiches", appliesTo: { categories: ["Burger with Fries", "Breakfast"] } },
+    { name: "Add Bacon",           price: 120, group: "Burgers & Sandwiches", appliesTo: { categories: ["Burger with Fries"] } },
+    { name: "Extra Lettuce",       price: 30,  group: "Burgers & Sandwiches", appliesTo: { categories: ["Burger with Fries", "Wrap with Fries"] } },
+    { name: "Extra Tomato",        price: 30,  group: "Burgers & Sandwiches", appliesTo: { categories: ["Burger with Fries", "Wrap with Fries"] } },
+    { name: "Extra Onion",         price: 30,  group: "Burgers & Sandwiches", appliesTo: { categories: ["Burger with Fries", "Wrap with Fries"] } },
+    { name: "Extra Pickles",       price: 40,  group: "Burgers & Sandwiches", appliesTo: { categories: ["Burger with Fries"] } },
+    { name: "Extra BBQ Sauce",     price: 40,  group: "Burgers & Sandwiches", appliesTo: { categories: ["Burger with Fries", "Wings"] } },
+    { name: "Extra Mayo",          price: 30,  group: "Burgers & Sandwiches", appliesTo: { categories: ["Burger with Fries", "Wrap with Fries", "French Fry"] } },
+    { name: "Extra Ketchup",       price: 25,  group: "Burgers & Sandwiches", appliesTo: { categories: ["Burger with Fries", "French Fry", "Wings"] } },
+    { name: "Extra Fries Portion", price: 150, group: "Burgers & Sandwiches", appliesTo: { categories: ["Burger with Fries", "Wrap with Fries"] } },
 
-    // Drink Extras
-    { name: "Boba", price: 50, image: "images/boba.jpg", type: "drink" },
-    { name: "Flavour Shot", price: 70, image: "images/flavour.jpg", type: "drink" },
-    { name: "Extra Ice", price: 20, image: "images/ice.jpg", type: "drink" },
-    { name: "Extra Sugar", price: 20, image: "images/sugar.jpg", type: "drink" },
+    // ==================== PIZZA ====================
+    { name: "Extra Mozzarella",       price: 100, group: "Pizza", appliesTo: { categories: ["Pizza"] } },
+    { name: "Extra Chicken Topping",  price: 150, group: "Pizza", appliesTo: { categories: ["Pizza"] } },
+    { name: "Extra Veggies",          price: 80,  group: "Pizza", appliesTo: { categories: ["Pizza", "Keema Noodles", "Chow Mein", "Fried Rice", "Thukpa"] } },
+    { name: "Extra Olives",           price: 70,  group: "Pizza", appliesTo: { categories: ["Pizza"] } },
+    { name: "Extra Mushroom",         price: 70,  group: "Pizza", appliesTo: { categories: ["Pizza", "Keema Noodles", "Chow Mein", "Fried Rice", "Thukpa"] } },
+    { name: "Stuffed Crust",          price: 120, group: "Pizza", appliesTo: { categories: ["Pizza"] } },
+    { name: "Extra Oregano",          price: 20,  group: "Pizza", appliesTo: { categories: ["Pizza"] } },
 
-    // Misc Extras (for hukka, etc.)
-    { name: "Extra Coil", price: 50, image: "images/coil.jpg", type: "misc" },
-    { name: "Extra Flavour", price: 250, image: "images/extraflavour.jpg", type: "misc" }
+    // ==================== MOMO ====================
+    { name: "Extra Chutney",       price: 30,  group: "Mo:Mo", appliesTo: { categories: ["Steam Mo:Mo", "Jhol Mo:Mo", "Kothey Mo:Mo", "C Mo:Mo", "Chilly"] } },
+    { name: "Extra Mayo Dip",      price: 40,  group: "Mo:Mo", appliesTo: { categories: ["Steam Mo:Mo", "Jhol Mo:Mo", "Kothey Mo:Mo", "C Mo:Mo", "Chilly"] } },
+    { name: "Extra Cheese Dip",    price: 60,  group: "Mo:Mo", appliesTo: { categories: ["Steam Mo:Mo", "Jhol Mo:Mo", "Kothey Mo:Mo", "C Mo:Mo"] } },
+    { name: "Extra Mo:Mo (5 pcs)", price: 120, group: "Mo:Mo", appliesTo: { categories: ["Steam Mo:Mo", "Jhol Mo:Mo", "Kothey Mo:Mo", "C Mo:Mo", "Chilly"] } },
+
+    // ==================== NOODLES / RICE / THUKPA ====================
+    { name: "Extra Chicken",       price: 100, group: "Noodles & Rice", appliesTo: { categories: ["Keema Noodles", "Chow Mein", "Fried Rice", "Thukpa"] } },
+    { name: "Extra Buff",          price: 80,  group: "Noodles & Rice", appliesTo: { categories: ["Keema Noodles", "Chow Mein", "Fried Rice", "Thukpa"] } },
+    { name: "Extra Egg",           price: 50,  group: "Noodles & Rice", appliesTo: { categories: ["Keema Noodles", "Chow Mein", "Fried Rice", "Thukpa"] } },
+
+    // ==================== WINGS / FRIES / LAPING ====================
+    { name: "Extra Dip",           price: 50,  group: "Wings, Fries & Laping", appliesTo: { categories: ["Wings", "French Fry", "Laping"] } },
+    { name: "Spicy Sauce",         price: 40,  group: "Wings, Fries & Laping", appliesTo: { categories: ["Wings", "French Fry", "Laping"] } },
+    { name: "Extra Chips",         price: 90,  group: "Wings, Fries & Laping", appliesTo: { categories: ["Laping"] } },
+
+    // ==================== BREAKFAST ====================
+    { name: "Extra Toast",         price: 50,  group: "Breakfast", appliesTo: { categories: ["Breakfast"] } },
+    { name: "Extra Butter",        price: 30,  group: "Breakfast", appliesTo: { categories: ["Breakfast"] } },
+    { name: "Extra Jam",           price: 40,  group: "Breakfast", appliesTo: { categories: ["Breakfast"] } },
+    { name: "Extra Honey",         price: 40,  group: "Breakfast", appliesTo: { categories: ["Breakfast", "Tea"] } },
+    { name: "Extra Sausage (2pc)", price: 80,  group: "Breakfast", appliesTo: { categories: ["Breakfast"] } },
+
+    // ==================== COFFEE ====================
+    { name: "Extra Espresso Shot", price: 70,  group: "Coffee", appliesTo: { categories: ["Hot Coffee", "Cold Coffee", "Frappe / Blended"] } },
+    { name: "Vanilla Syrup",       price: 70,  group: "Coffee", appliesTo: { categories: ["Hot Coffee", "Cold Coffee", "Frappe / Blended"] } },
+    { name: "Caramel Syrup",       price: 70,  group: "Coffee", appliesTo: { categories: ["Hot Coffee", "Cold Coffee", "Frappe / Blended"] } },
+    { name: "Hazelnut Syrup",      price: 70,  group: "Coffee", appliesTo: { categories: ["Hot Coffee", "Cold Coffee", "Frappe / Blended"] } },
+    { name: "Whipped Cream",       price: 50,  group: "Coffee", appliesTo: { categories: ["Hot Coffee", "Cold Coffee", "Frappe / Blended"] } },
+    { name: "Soy Milk",            price: 70,  group: "Coffee", appliesTo: { categories: ["Hot Coffee", "Cold Coffee"] } },
+    { name: "Almond Milk",         price: 90,  group: "Coffee", appliesTo: { categories: ["Hot Coffee", "Cold Coffee"] } },
+    { name: "Oat Milk",            price: 90,  group: "Coffee", appliesTo: { categories: ["Hot Coffee", "Cold Coffee"] } },
+    { name: "Extra Milk",          price: 40,  group: "Coffee", appliesTo: { categories: ["Hot Coffee", "Cold Coffee"] } },
+
+    // ==================== TEA ====================
+    { name: "Extra Lemon",         price: 20,  group: "Tea", appliesTo: { categories: ["Tea"] } },
+    { name: "Extra Ginger",        price: 25,  group: "Tea", appliesTo: { categories: ["Tea"] } },
+    { name: "Extra Hot Water",     price: 0,   group: "Tea", appliesTo: { categories: ["Tea"] } },
+
+    // ==================== COLD DRINKS / LEMONADE / MOJITO / BUBBLE TEA ====================
+    { name: "Extra Ice",           price: 20,  group: "Cold Drinks", appliesTo: { categories: ["Soft Drinks", "Lemonade", "Mojito", "Iced Tea", "Cold Coffee", "Frappe / Blended", "Lassi", "Bubble Tea"] } },
+    { name: "Extra Sugar Syrup",   price: 25,  group: "Cold Drinks", appliesTo: { categories: ["Lemonade", "Mojito", "Iced Tea", "Bubble Tea"] } },
+    { name: "Boba Pearls",         price: 60,  group: "Cold Drinks", appliesTo: { categories: ["Bubble Tea", "Iced Tea", "Lemonade", "Mojito"] } },
+    { name: "Extra Flavour Shot",  price: 70,  group: "Cold Drinks", appliesTo: { categories: ["Lemonade", "Mojito", "Iced Tea"] } },
+    { name: "Fresh Mint",          price: 30,  group: "Cold Drinks", appliesTo: { categories: ["Mojito", "Lemonade"] } },
+
+    // ==================== LASSI ====================
+    { name: "Extra Fruit Topping", price: 60,  group: "Lassi", appliesTo: { categories: ["Lassi"] } },
+    { name: "Extra Nuts",          price: 80,  group: "Lassi", appliesTo: { categories: ["Lassi"] } },
+
+    // ==================== MISC (Hukka etc.) ====================
+    { name: "Extra Coil",          price: 50,  group: "Misc", appliesTo: { items: ["Hukka"] } },
+    { name: "Extra Flavour",       price: 250, group: "Misc", appliesTo: { items: ["Hukka"] } },
+    { name: "Extra Ice Bucket",    price: 100, group: "Misc", appliesTo: { items: ["Hukka", "Water"] } },
+    { name: "Extra Mint",          price: 50,  group: "Misc", appliesTo: { items: ["Hukka"] } },
 ];
 let discountCodes = {
     "SAVE10": 10,
@@ -380,6 +449,9 @@ const menuSections = {
     ],
     "Misc": [
         "Misc"
+    ],
+    "Combo": [
+        "Combo"
     ]
 };
 
@@ -1800,11 +1872,13 @@ function renderMenuItemsForSection(sectionName) {
     filteredItems.forEach(item => {
         const div = document.createElement('div');
         const isSoldOut = Boolean(item.isOutOfStock);
-        div.className = `menu-item${isSoldOut ? ' sold-out' : ''}`;
+        const cardTitle = item.cardTitle || item.name;
+        div.className = `menu-item${item.cardTitle ? ' combo-pairing-card' : ''}${isSoldOut ? ' sold-out' : ''}`;
         div.style.opacity = isSoldOut ? '0.45' : '1';
         div.innerHTML = `
             <img src="${getSafeImagePath(item.image)}" alt="${escapeHtml(item.name)}" loading="lazy" onerror="handleImageError(this)">
-            <p>${escapeHtml(item.name)}</p>
+            <p>${escapeHtml(cardTitle)}</p>
+            ${item.cardDescription ? `<p class="menu-item-description">${escapeHtml(item.cardDescription)}</p>` : ''}
             <div class="price">${isSoldOut ? 'SOLD OUT' : `Rs ${item.price.toFixed(2)}`}</div>
         `;
         div.addEventListener('contextmenu', event => {
@@ -1859,12 +1933,14 @@ function renderMenuItemsForCategory(categoryName = null) {
     filteredItems.forEach(item => {
         const div = document.createElement('div');
         const isSoldOut = Boolean(item.isOutOfStock);
-        div.className = `menu-item${isSoldOut ? ' sold-out' : ''}`;
+        const cardTitle = item.cardTitle || item.name;
+        div.className = `menu-item${item.cardTitle ? ' combo-pairing-card' : ''}${isSoldOut ? ' sold-out' : ''}`;
         div.style.opacity = isSoldOut ? '0.45' : '1';
         
         div.innerHTML = `
             <img src="${getSafeImagePath(item.image)}" alt="${escapeHtml(item.name)}" loading="lazy" onerror="handleImageError(this)">
-            <p>${escapeHtml(item.name)}</p>
+            <p>${escapeHtml(cardTitle)}</p>
+            ${item.cardDescription ? `<p class="menu-item-description">${escapeHtml(item.cardDescription)}</p>` : ''}
             <div class="price">${isSoldOut ? 'SOLD OUT' : `Rs ${item.price.toFixed(2)}`}</div>
         `;
 
@@ -1945,63 +2021,122 @@ function renderOrderItems() {
     orderItemsDiv.innerHTML = '';
     const fragment = document.createDocumentFragment();
 
-    orders[currentTable].forEach((item, index) => {
-        const extrasTotal = item.extras?.reduce((sum, e) => sum + (Number(e.price) || 0), 0) || 0;
-        const isFinalized = item.finalized;
-        const isDiscountable = item.discountable !== false;
-        const itemName = escapeHtml(item.name || 'Unknown Item');
-        const priceDisplayHTML = `Rs ${(item.quantity * (item.price + extrasTotal)).toFixed(2)}`;
+    // ---- Build render order: add-ons appear directly under their parent ----
+    const allItems = orders[currentTable];
+    const pendingAddOns = allItems
+        .map((item, idx) => ({ item, index: idx }))
+        .filter(({ item }) => item.isAddOn === true);
 
-        let statusBadge = '';
-        if (isFinalized) {
-            statusBadge = '<span class="finalized-badge">FINALIZED</span>';
-            if (item.kotNumber) {
-                statusBadge += ` <span class="kot-info-badge">KOT: ${escapeHtml(item.kotNumber)}</span>`;
+    const renderOrder = [];
+    allItems.forEach((item, idx) => {
+        if (item.isAddOn) return; // handled below
+        renderOrder.push({ item, index: idx });
+        for (let i = 0; i < pendingAddOns.length; i++) {
+            if (pendingAddOns[i].item.parentItemName === item.name) {
+                renderOrder.push(pendingAddOns[i]);
+                pendingAddOns.splice(i, 1);
+                i--;
             }
-        } else if (item.quantity > 0 && item.name) {
-            statusBadge = '<span class="pending-kot-badge" style="color:orange; font-size:0.8em; margin-left:5px;">PENDING KOT</span>';
+        }
+    });
+    // Orphans (parent was removed): keep them so nothing is lost
+    renderOrder.push(...pendingAddOns);
+
+    renderOrder.forEach(({ item, index }) => {
+        const extrasTotal = item.extras?.reduce((sum, e) => sum + (Number(e.price) || 0), 0) || 0;
+        const isFinalized = item.finalized === true;
+        const isLoyaltyFree = item.loyaltyFree === true;
+        const isAddOn = item.isAddOn === true;
+        const itemControlsLocked = (isFinalized && !isAddOn) || isLoyaltyFree;
+        const isDiscountable = item.discountable !== false;
+
+        const displayName = item.name || 'Unknown Item';
+        const unitPrice = (Number(item.price) || 0) + extrasTotal;
+        const itemValue = unitPrice * (Number(item.quantity) || 1);
+        const priceDisplay = isLoyaltyFree ? 'FREE' : `Rs ${itemValue.toFixed(2)}`;
+
+        // ---- Badges ----
+        const badges = [];
+        if (isAddOn) {
+            badges.push(`<span class="order-badge order-badge-addon"><i class="fas fa-plus-circle"></i> Add-on</span>`);
+            if (!isFinalized) badges.push(`<span class="order-badge order-badge-pending">Pending</span>`);
+        } else {
+            if (isLoyaltyFree) badges.push(`<span class="order-badge order-badge-loyalty"><i class="fas fa-gift"></i> Loyalty</span>`);
+            if (isFinalized) {
+                badges.push(`<span class="order-badge order-badge-final"><i class="fas fa-paper-plane"></i> Sent</span>`);
+            } else if (item.quantity > 0) {
+                badges.push(`<span class="order-badge order-badge-pending"><i class="fas fa-hourglass-half"></i> Pending</span>`);
+            }
+            if (!isDiscountable) badges.push(`<span class="order-badge order-badge-info">No discount</span>`);
+            if (isFinalized && item.kotNumber) {
+                const shortKot = String(item.kotNumber).replace(/^KOT-/, '').slice(-6);
+                badges.push(`<span class="order-badge order-badge-kot" title="${escapeHtml(item.kotNumber)}"><i class="fas fa-receipt"></i> ${escapeHtml(shortKot)}</span>`);
+            }
         }
 
-        let comboDetailsHTML = '';
-        if (item.type === 'combo' && Array.isArray(item.details) && item.details.length > 0) {
-            comboDetailsHTML = `<ul class="combo-details-list" style="margin: 4px 0 0 0; padding-left: 18px; font-size: 0.95em; color: #0a4d6a;">
-                ${item.details.map(detail => `<li>${escapeHtml(detail)}</li>`).join('')}
-            </ul>`;
-        }
+        const extrasStrip = (!isAddOn && item.extras?.length)
+            ? `<div class="order-item-extras">
+                   <i class="fas fa-plus-circle" aria-hidden="true"></i>
+                   ${item.extras.map(e => `${escapeHtml(e.name)}${e.price > 0 ? ` <span class="extra-price-tag">+${e.price}</span>` : ''}`).join('<span class="extra-sep">·</span>')}
+               </div>`
+            : '';
+
+        const notesStrip = (!isAddOn && item.notes)
+            ? `<div class="order-item-notes"><i class="fas fa-sticky-note"></i>${escapeHtml(item.notes)}</div>`
+            : '';
 
         const itemDiv = document.createElement('div');
-        itemDiv.className = 'order-item';
+        itemDiv.className = `order-item${isAddOn ? ' order-item-addon' : ''}${isLoyaltyFree ? ' order-item-loyalty' : ''}`;
         itemDiv.dataset.index = index;
-        itemDiv.innerHTML = `
-            <div class="order-item-details">
-                <p>
-                    ${itemName} x${item.quantity} - ${priceDisplayHTML}
-                    ${!isDiscountable ? '<span class="non-discountable">(Non-discountable)</span>' : ''}
-                    ${statusBadge}
-                </p>
-                ${comboDetailsHTML}
-                ${item.extras?.length ? `<p class="extras-display" style="font-size: 0.8em; color: #555; margin-top: 4px;">Extras: ${item.extras.map(e => `${escapeHtml(e.name)} (+Rs ${e.price.toFixed(2)})`).join(', ')}</p>` : ''}
-                ${item.notes ? `<p class="notes">Notes: ${escapeHtml(item.notes)}</p>` : ''}
-            </div>
-            <div class="order-item-controls">
-                <div class="quantity-control">
-                    <button class="decrement-btn" ${isFinalized ? 'disabled' : ''}>-</button>
-                    <input type="number" value="${item.quantity}" min="1" ${isFinalized ? 'disabled' : ''}>
-                    <button class="increment-btn">+</button>
+
+        if (isAddOn) {
+            // Add-on: single plain line, name + price only.
+            itemDiv.innerHTML = `
+                <div class="order-item-header">
+                    <span class="order-item-name">${escapeHtml(displayName)}</span>
+                    <span class="order-item-total">${priceDisplay}</span>
                 </div>
-                <button class="notes-btn" style="background-color: #2196f3; color: white;" ${isFinalized ? 'disabled' : ''}>Notes</button>
-                <button class="extras-btn" data-name="${escapeHtml(item.name)}"
-                        style="background-color: #ff9800; color: white;" ${isFinalized ? 'disabled' : ''}>Extras</button>
-                <button class="void-btn" style="background-color: #ef4444; color: white;">Void</button>
-            </div>
-        `;
+            `;
+        } else {
+            itemDiv.innerHTML = `
+                <div class="order-item-header">
+                    <span class="order-item-name">${escapeHtml(displayName)}</span>
+                    <span class="order-item-total">${priceDisplay}</span>
+                </div>
+                <div class="order-item-meta">
+                    <span class="order-item-qty">${item.quantity} × Rs ${unitPrice.toFixed(2)}</span>
+                    <div class="order-item-badges">${badges.join('')}</div>
+                </div>
+                ${extrasStrip}
+                ${notesStrip}
+                <div class="order-item-controls">
+                    <div class="quantity-control">
+                        <button class="decrement-btn" type="button" ${itemControlsLocked ? 'disabled' : ''} aria-label="Decrease quantity">−</button>
+                        <input type="number" value="${item.quantity}" min="1" ${itemControlsLocked ? 'disabled' : ''} aria-label="Quantity">
+                        <button class="increment-btn" type="button" ${itemControlsLocked ? 'disabled' : ''} aria-label="Increase quantity">+</button>
+                    </div>
+                    <div class="order-item-actions">
+                        <button class="notes-btn" type="button" ${itemControlsLocked ? 'disabled' : ''} title="Add note" aria-label="Notes">
+                            <i class="fas fa-sticky-note"></i>
+                        </button>
+                        ${!isLoyaltyFree ? `<button class="extras-btn" type="button"
+                                style="background:${isFinalized ? '#7c3aed' : '#f59e0b'};color:#fff;"
+                                title="${isFinalized ? 'Add a new extras line (creates a new KOT)' : 'Add extras'}"
+                                aria-label="${isFinalized ? 'Add-on' : 'Extras'}">
+                            <i class="fas fa-plus"></i> ${isFinalized ? 'Add-on' : 'Extras'}
+                        </button>` : ''}
+                        ${isLoyaltyFree ? `<button class="undo-loyalty-reward-btn" type="button" title="Undo reward" aria-label="Undo reward"><i class="fas fa-rotate-left"></i></button>` : ''}
+                        <button class="void-btn" type="button" title="Void item" aria-label="Void"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `;
+        }
 
         fragment.appendChild(itemDiv);
     });
 
     orderItemsDiv.appendChild(fragment);
     updateTotal();
-
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -2031,11 +2166,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 showNotesModal();
             } else if (target.classList.contains('extras-btn')) {
                 if (target.disabled) {
-                    notifications.show("Cannot add extras to a finalized item.", "warning");
+                    notifications.show("Loyalty-free items cannot have extras added.", "warning");
                     return;
                 }
                 currentItemIndex = index;
                 showExtrasModal();
+            } else if (target.classList.contains('undo-loyalty-reward-btn')) {
+                await undoLoyaltyReward(index);
             } else if (target.classList.contains('void-btn')) {
                 voidItem(index);
             }
@@ -2163,48 +2300,115 @@ function showExtrasModal() {
         return;
     }
 
-    if (orders[currentTable][currentItemIndex].finalized) {
-        notifications.show("Cannot add extras to a finalized item.", "warning");
+    const currentItem = orders[currentTable][currentItemIndex];
+
+    if (currentItem.loyaltyFree) {
+        notifications.show("Cannot modify a loyalty-free item.", "warning");
         return;
     }
 
-    const currentItem = orders[currentTable][currentItemIndex];
     itemNameEl.textContent = currentItem.name;
 
-    let itemType = currentItem.type || 'food';
-
-    if (currentItem.name.toLowerCase().includes('hukka')) {
-        itemType = 'misc';
-    }
-
+    // ---- Filter extras by appliesTo rules (categories, items, sections) ----
     const filteredExtras = extras.filter(extra => {
-        return extra.type === itemType || !extra.type;
+        if (!extra.appliesTo) return true;
+        const { sections, categories, items } = extra.appliesTo;
+        if (items && items.includes(currentItem.name)) return true;
+        if (categories && categories.includes(currentItem.category)) return true;
+        if (sections && sections.includes(currentItem.section)) return true;
+        return false;
     });
 
-    content.innerHTML = filteredExtras.map(extra => {
-        const isChecked = currentItem.extras?.some(e => e.name === extra.name) || false;
-        return `
-            <div class="extra-option">
-                <input type="checkbox" id="extra-${extra.name.replace(/\s+/g, '-')}"
-                    data-name="${escapeHtml(extra.name)}" data-price="${extra.price}"
-                    ${isChecked ? 'checked' : ''}>
-                <label for="extra-${extra.name.replace(/\s+/g, '-')}">
-                    ${escapeHtml(extra.name)} (+Rs ${extra.price.toFixed(2)})
+    // ---- Banner when item is already sent to kitchen ----
+    const isSentItem = Boolean(currentItem.finalized);
+    const banner = isSentItem
+        ? `<div class="extras-addon-banner">
+               <i class="fas fa-info-circle"></i>
+               <div>
+                   <strong>This item was already sent to the kitchen.</strong>
+                   <span>New extras will be created as a <strong>separate add-on line</strong> and sent to the kitchen as a new KOT. Existing extras can't be removed.</span>
+               </div>
+           </div>`
+        : '';
+
+    if (filteredExtras.length === 0) {
+        content.innerHTML = `${banner}<p class="text-muted text-center py-3">No extras available for this item.</p>`;
+        modal.style.display = 'block';
+        return;
+    }
+
+    // ---- Group extras by their group label ----
+    const grouped = {};
+    filteredExtras.forEach(extra => {
+        const groupName = extra.group || 'Other';
+        if (!grouped[groupName]) grouped[groupName] = [];
+        grouped[groupName].push(extra);
+    });
+
+    // ---- Build UI ----
+    let html = banner;
+    Object.entries(grouped).forEach(([groupName, groupExtras]) => {
+        html += `<div class="extras-group"><h6 class="extras-group-title">${escapeHtml(groupName)}</h6>`;
+        groupExtras.forEach(extra => {
+            const isChecked = currentItem.extras?.some(e => e.name === extra.name) || false;
+            const isLocked = isSentItem && isChecked; // can't remove extras already sent
+            const safeId = `extra-${extra.name.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}`;
+            const priceLabel = extra.price > 0 ? `+Rs ${extra.price.toFixed(2)}` : 'FREE';
+            html += `
+                <label class="extra-option ${isLocked ? 'locked' : ''}" for="${safeId}">
+                    <input type="checkbox" id="${safeId}"
+                        data-name="${escapeHtml(extra.name)}"
+                        data-price="${extra.price}"
+                        data-locked="${isLocked}"
+                        ${isChecked ? 'checked' : ''}
+                        ${isLocked ? 'disabled' : ''}>
+                    <span class="extra-name">${escapeHtml(extra.name)}${isLocked ? ' <small class="locked-tag">already sent</small>' : ''}</span>
+                    <span class="extra-price">${priceLabel}</span>
                 </label>
-            </div>
-        `;
-    }).join('');
+            `;
+        });
+        html += `</div>`;
+    });
 
-    const existingSaveBtn = content.querySelector('.save-extras-btn');
-    if (existingSaveBtn) existingSaveBtn.remove();
+    // ---- Live total preview ----
+    html += `<div class="extras-total-preview" id="extras-total-preview"></div>`;
 
+    content.innerHTML = html;
+
+    // ---- Save button ----
     const saveBtn = document.createElement('button');
-    saveBtn.textContent = 'Save Extras';
+    saveBtn.textContent = isSentItem ? 'Add as Add-on' : 'Save Extras';
     saveBtn.className = 'save-extras-btn';
     saveBtn.addEventListener('click', saveExtras);
     content.appendChild(saveBtn);
 
+    // ---- Wire up live preview ----
+    content.querySelectorAll('input[type="checkbox"]:not([disabled])').forEach(cb => {
+        cb.addEventListener('change', updateExtrasPreview);
+    });
+    updateExtrasPreview();
+
     modal.style.display = 'block';
+}
+
+function updateExtrasPreview() {
+    const previewEl = document.getElementById('extras-total-preview');
+    if (!previewEl) return;
+    const currentItem = orders[currentTable]?.[currentItemIndex];
+    if (!currentItem) { previewEl.innerHTML = ''; return; }
+
+    const checked = Array.from(document.querySelectorAll('#extras-content input[type="checkbox"]:checked'));
+    const newTotal = checked.reduce((sum, cb) => sum + (parseFloat(cb.dataset.price) || 0), 0);
+
+    if (currentItem.finalized) {
+        // Only the newly added extras will be charged
+        const oldTotal = (currentItem.extras || []).reduce((s, e) => s + (Number(e.price) || 0), 0);
+        const addOnTotal = Math.max(0, newTotal - oldTotal);
+        previewEl.innerHTML = `Add-on charge: <strong>Rs ${addOnTotal.toFixed(2)}</strong> (creates a new KOT)`;
+    } else {
+        const qty = currentItem.quantity || 1;
+        previewEl.innerHTML = `Extras total: <strong>Rs ${newTotal.toFixed(2)}</strong> per unit × ${qty} = <strong>Rs ${(newTotal * qty).toFixed(2)}</strong>`;
+    }
 }
 
 function closeExtrasModal() {
@@ -2214,26 +2418,24 @@ function closeExtrasModal() {
 
 async function saveExtras() {
     const content = document.getElementById('extras-content');
-
     if (!content) {
-        console.error("Extras modal content area not found!");
         notifications.show("Error saving extras. UI element missing.", "error");
         return;
     }
     if (!currentTable || !orders[currentTable]) {
-        console.error("Cannot save extras: No current table or order selected.");
         notifications.show("Please select a table with an order first.", "warning");
         closeExtrasModal();
         return;
     }
     if (currentItemIndex === null || currentItemIndex === undefined || !orders[currentTable][currentItemIndex]) {
-        console.error("Cannot save extras: Invalid item index.", currentItemIndex);
         notifications.show("Error identifying the item to add extras to.", "error");
         closeExtrasModal();
         return;
     }
-    if (orders[currentTable][currentItemIndex].finalized) {
-        notifications.show("Cannot add extras to a finalized item.", "warning");
+
+    const currentItem = orders[currentTable][currentItemIndex];
+    if (currentItem.loyaltyFree) {
+        notifications.show("Cannot modify extras on a loyalty-free item.", "warning");
         closeExtrasModal();
         return;
     }
@@ -2243,28 +2445,97 @@ async function saveExtras() {
     const checkboxes = content.querySelectorAll('input[type="checkbox"]');
     const selectedExtras = Array.from(checkboxes)
         .filter(cb => cb.checked)
-        .map(cb => ({
-            name: cb.dataset.name,
-            price: parseFloat(cb.dataset.price)
-        }));
+        .map(cb => ({ name: cb.dataset.name, price: parseFloat(cb.dataset.price) || 0 }))
+        .sort((a, b) => a.name.localeCompare(b.name));
 
-    const currentItem = orders[currentTable][currentItemIndex];
-    const currentExtras = currentItem.extras || [];
-    const extrasChanged = JSON.stringify(selectedExtras.sort((a,b)=>a.name.localeCompare(b.name))) !== JSON.stringify(currentExtras.sort((a,b)=>a.name.localeCompare(b.name)));
+    const currentExtras = (currentItem.extras || []).slice().sort((a, b) => a.name.localeCompare(b.name));
+    const extrasChanged = JSON.stringify(selectedExtras) !== JSON.stringify(currentExtras);
 
-    if (currentItem.quantity > 1 && extrasChanged) {
-        // Split: create a new item with quantity 1 and the new extras
+    if (!extrasChanged) {
+        notifications.show("No changes to extras.", 'info');
+        closeExtrasModal();
+        hideLoadingSpinner();
+        return;
+    }
+
+    // ==================================================================
+    // CASE A: Item was already sent to the kitchen → create add-on line
+    // ==================================================================
+    if (currentItem.finalized) {
+        const addedExtras = selectedExtras.filter(newEx =>
+            !currentExtras.some(oldEx => oldEx.name === newEx.name)
+        );
+
+        if (addedExtras.length === 0) {
+            notifications.show("Cannot remove extras from an item already sent to the kitchen. Void and re-order instead.", "warning", 5000);
+            closeExtrasModal();
+            hideLoadingSpinner();
+            return;
+        }
+
+        const addOnPrice = addedExtras.reduce((s, e) => s + e.price, 0);
+
+        const addOnItem = {
+            name: `Add-on: ${addedExtras.map(e => e.name).join(', ')} (for ${currentItem.name})`,
+            price: addOnPrice,
+            quantity: 1,
+            extras: addedExtras,
+            notes: `Add-on for already-sent item: ${currentItem.name}`,
+            category: currentItem.category,
+            section: currentItem.section,
+            type: currentItem.type || 'food',
+            discountable: currentItem.discountable !== false,
+            orderSessionId: currentItem.orderSessionId,
+            sentQuantity: 0,
+            finalized: false,
+            isAddOn: true,
+            parentItemName: currentItem.name,
+            status: 'pending'
+        };
+
+        orders[currentTable].push(addOnItem);
+
+        persistAllData();
+        renderOrderItems();
+        updateTotal();
+        closeExtrasModal();
+        hideLoadingSpinner();
+
+        notifications.show(
+            `Add-on created: ${addedExtras.map(e => e.name).join(', ')}. Tap "Send to Kitchen" to notify the kitchen.`,
+            'success',
+            5500
+        );
+        return;
+    }
+
+    // ==================================================================
+    // CASE B: Item is NOT finalized → same as before
+    // ==================================================================
+    if (currentItem.quantity > 1) {
         const newItem = {
             ...currentItem,
             quantity: 1,
-            extras: selectedExtras
+            extras: selectedExtras,
+            sentQuantity: 0,
+            finalized: false,
+            notes: currentItem.notes || ''
         };
-        orders[currentTable].push(newItem);
+        delete newItem.kotNumber;
+
         currentItem.quantity -= 1;
-        notifications.show("Extras added to one item. Quantity split.", "success");
+        if (currentItem.sentQuantity > currentItem.quantity) {
+            currentItem.sentQuantity = currentItem.quantity;
+        }
+
+        orders[currentTable].splice(currentItemIndex + 1, 0, newItem);
+        notifications.show("Extras added to one item. Quantity was split.", "success");
     } else {
-        // Update the existing item
         currentItem.extras = selectedExtras;
+        if (currentItem.sentQuantity > 0) {
+            currentItem.finalized = false;
+            delete currentItem.kotNumber;
+        }
         notifications.show("Extras updated successfully!", "success");
     }
 
@@ -2646,6 +2917,8 @@ function calculateSalesMetrics(sales) {
     let refundedTransactions = 0;
     let refundedTotal = 0;
     let discountedTransactions = 0;
+    let loyaltyFreeCoffeeCount = 0;
+    let loyaltyFreeCoffeeValue = 0;
     const discountUsage = {};
     const paymentTotals = {};
     const itemTotals = {};
@@ -2700,7 +2973,13 @@ function calculateSalesMetrics(sales) {
         totalMobile += mobilePaidForSale;
         (sale.items || []).forEach(item => {
             const itemQuantity = Number(item.quantity) || 0;
-            const itemRevenue = ((Number(item.price) || 0) + (item.extras || []).reduce((sum, extra) => sum + (Number(extra.price) || 0), 0)) * itemQuantity;
+            const itemUnitValue = (Number(item.price) || 0) + (item.extras || []).reduce((sum, extra) => sum + (Number(extra.price) || 0), 0);
+            const isLoyaltyFree = item.loyaltyFree === true;
+            if (isLoyaltyFree) {
+                loyaltyFreeCoffeeCount += itemQuantity;
+                loyaltyFreeCoffeeValue += itemUnitValue * itemQuantity;
+            }
+            const itemRevenue = itemUnitValue * (isLoyaltyFree ? 0 : itemQuantity);
             itemTotals[item.name] = itemTotals[item.name] || { quantity: 0, revenue: 0 };
             itemTotals[item.name].quantity += itemQuantity;
             itemTotals[item.name].revenue += itemRevenue;
@@ -2739,6 +3018,8 @@ function calculateSalesMetrics(sales) {
         refundedTransactions,
         refundedTotal,
         discountedTransactions,
+        loyaltyFreeCoffeeCount,
+        loyaltyFreeCoffeeValue: roundToTwo(loyaltyFreeCoffeeValue),
         averageDiscountPercent: discountedTransactions > 0 ? sales.filter(sale => sale.status !== 'voided' && sale.status !== 'refunded' && Number(sale.discountAmount) > 0).reduce((sum, sale) => { const discountAmount = Number(sale.discountAmount) || 0; const discountedBase = (Number(sale.total) || 0) + discountAmount; return sum + (discountedBase ? discountAmount / discountedBase * 100 : 0); }, 0) / discountedTransactions : 0,
         paymentTotals,
         paymentShareBase: totalCash + totalMobile,
@@ -2839,7 +3120,7 @@ function collectVoidReasons(startDate, endDate) {
 
 function buildSalesAnalysisHTML(metrics, reportSales = []) {
     const paymentBase = metrics.paymentShareBase || 0;
-    const paymentRows = Object.entries({ Cash: metrics.totalCash, Mobile: metrics.totalMobile }).map(([method, amount]) => `<tr><td class="payment-method-${method.toLowerCase()}"><strong>${method}</strong></td><td class="numeric">Rs ${amount.toFixed(2)}</td><td class="numeric">${paymentBase ? ((amount / paymentBase) * 100).toFixed(1) : '0.0'}%</td></tr>`).join('');
+    const paymentRows = Object.entries({ Cash: metrics.totalCash, Mobile: metrics.totalMobile, Loyalty: metrics.paymentTotals.Loyalty || 0 }).map(([method, amount]) => `<tr><td class="payment-method-${method.toLowerCase()}"><strong>${method}</strong></td><td class="numeric">Rs ${amount.toFixed(2)}</td><td class="numeric">${paymentBase ? ((amount / paymentBase) * 100).toFixed(1) : '0.0'}%</td></tr>`).join('');
     const maxCategoryRevenue = metrics.categoryDetails[0]?.revenue || 1;
     const categoryCards = metrics.categoryDetails.map(category => `<div class="category-card-report"><div class="category-card-report-main"><img src="${getSafeImagePath(category.image)}" alt="${escapeHtml(category.name)}" onerror="handleImageError(this)"><div><small>Category: ${escapeHtml(category.name)}</small><strong>Rs ${category.revenue.toFixed(2)}</strong></div></div><div class="category-card-report-meta"><span>Top item: ${escapeHtml(category.topItem || category.name)}</span><span>${category.quantity} sold</span></div><div class="category-progress"><span style="width:${Math.min(100, (category.revenue / maxCategoryRevenue) * 100)}%"></span></div></div>`).join('');
     const bestItemRows = metrics.topItems.map(([name, item], index) => `<tr><td><strong>${index + 1}. ${escapeHtml(name)}</strong></td><td class="numeric">${item.quantity}</td><td class="numeric">Rs ${item.revenue.toFixed(2)}</td></tr>`).join('');
@@ -2863,20 +3144,20 @@ function buildSalesAnalysisHTML(metrics, reportSales = []) {
     const peakHour = Object.entries(metrics.hourlyTotals).sort((a, b) => b[1] - a[1])[0];
     const orderRows = reportSales.map(sale => {
         const breakdown = calculateSaleBreakdown(sale);
-        const items = (sale.items || []).map(item => `${escapeHtml(item.name)} x${Number(item.quantity) || 0}`).join(', ');
+        const items = (sale.items || []).map(item => `${escapeHtml(item.name)} x${Number(item.quantity) || 0}${item.loyaltyFree ? ' (LOYALTY FREE)' : ''}`).join(', ');
         return `<tr><td>${escapeHtml(sale.orderNumber || '-')}</td><td>${escapeHtml(new Date(sale.timestamp).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }))}</td><td>${escapeHtml(String(sale.table || '-'))}</td><td>${items || '-'}</td><td class="numeric">${(sale.items || []).reduce((sum, item) => sum + (Number(item.quantity) || 0), 0)}</td><td class="numeric">Rs ${breakdown.grossSales.toFixed(2)}</td><td class="numeric">Rs ${breakdown.discountAmount.toFixed(2)}</td><td class="numeric">Rs ${breakdown.vat.toFixed(2)}</td><td class="numeric">Rs ${Number(sale.total || 0).toFixed(2)}</td><td>${escapeHtml((sale.paymentMethods || []).map(payment => payment.method).join(' + ') || '-')}</td><td>${escapeHtml(sale.status || 'completed')}</td><td>${escapeHtml(sale.user || 'Unknown')}</td></tr>`;
     }).join('');
     const voidRefundDetails = reportSales.filter(sale => ['voided', 'refunded'].includes(sale.status)).map(sale => `<tr><td>${escapeHtml(sale.status)}</td><td>${escapeHtml(sale.orderNumber || '-')}</td><td>Rs ${Number(sale.total || 0).toFixed(2)}</td><td>${escapeHtml(sale.reason || 'No reason recorded')}</td><td>${escapeHtml(sale.user || 'Unknown')}</td><td>${escapeHtml(new Date(sale.timestamp).toLocaleString('en-GB'))}</td></tr>`).join('');
     return `<div class="sales-analysis">
         <div class="executive-summary" data-sales-tab-section="overview"><div class="executive-card primary"><span class="metric-label">Total Collected</span><span class="metric-value">Rs ${metrics.totalSales.toFixed(2)}</span><small class="metric-subvalue">Completed orders after VAT and service charge</small></div><div class="executive-card orders"><span class="metric-label">Orders</span><span class="metric-value">${metrics.completedTransactions}</span><small class="metric-subvalue">${metrics.voidedTransactions} voided (${metrics.voidedTotal.toFixed(2)}) | ${metrics.refundedTransactions} refunded (${metrics.refundedTotal.toFixed(2)})</small></div><div class="executive-card average"><span class="metric-label">Average Order</span><span class="metric-value">Rs ${metrics.atv.toFixed(2)}</span><small class="metric-subvalue">Per completed order</small></div><div class="executive-card peak"><span class="metric-label">Peak Hour</span><span class="metric-value">${peakHour ? `${String(peakHour[0]).padStart(2, '0')}:00-${String(Number(peakHour[0]) + 1).padStart(2, '0')}:00` : 'Not enough data'}</span><small class="metric-subvalue">${peakHour ? `Rs ${peakHour[1].toFixed(2)} · ${metrics.hourlyTotals[peakHour[0]] ? 1 : 0} order(s)` : 'No completed orders'}</small></div></div>
-        <div class="payment-tally" data-sales-tab-section="overview"><div class="payment-tally-card cash"><div><span class="metric-label"><i class="fas fa-money-bill-wave"></i> Net Cash Collected</span><strong>Rs ${metrics.totalCash.toFixed(2)}</strong></div><small>Cash tendered less change</small></div><div class="payment-tally-card mobile"><div><span class="metric-label"><i class="fas fa-mobile-screen-button"></i> Mobile Collected</span><strong>Rs ${metrics.totalMobile.toFixed(2)}</strong></div><small>Supported digital payments</small></div></div>
+        <div class="payment-tally" data-sales-tab-section="overview"><div class="payment-tally-card cash"><div><span class="metric-label"><i class="fas fa-money-bill-wave"></i> Net Cash Collected</span><strong>Rs ${metrics.totalCash.toFixed(2)}</strong></div><small>Cash tendered less change</small></div><div class="payment-tally-card mobile"><div><span class="metric-label"><i class="fas fa-mobile-screen-button"></i> Mobile Collected</span><strong>Rs ${metrics.totalMobile.toFixed(2)}</strong></div><small>Supported digital payments</small></div><div class="payment-tally-card"><div><span class="metric-label"><i class="fas fa-gift"></i> Loyalty Coffees</span><strong>${metrics.loyaltyFreeCoffeeCount}</strong></div><small>Rs ${metrics.loyaltyFreeCoffeeValue.toFixed(2)} promotional value</small></div></div>
         <div class="trend-grid" data-sales-tab-section="overview">${trendCard('Today vs yesterday', 'Today', 'Yesterday', comparisons.today)}${trendCard('Week to date vs same days last week', 'This week', 'Last week', comparisons.week)}</div>
         <section class="report-panel trend-panel" data-sales-tab-section="trends"><div class="report-panel-title"><h4><i class="fas fa-chart-line text-primary me-2"></i>Sales Trend</h4><small>Hourly revenue</small></div><div class="trend-chart-wrap"><canvas id="sales-trend-chart"></canvas></div></section>
         <section class="report-panel" data-sales-tab-section="overview"><div class="report-panel-title"><h4><i class="fas fa-credit-card text-primary me-2"></i>Payment Split</h4><small>Completed transactions</small></div><div class="payment-panel-grid"><div class="report-table-wrap payment-split-wrap"><table class="modern-table payment-split-table"><thead><tr><th>Method</th><th class="numeric">Total</th><th class="numeric">Share</th></tr></thead><tbody>${paymentRows}</tbody></table></div><div class="payment-chart-wrap"><canvas id="payment-chart"></canvas></div></div></section>
         <section class="report-panel" data-sales-tab-section="items"><div class="report-panel-title"><h4><i class="fas fa-layer-group text-primary me-2"></i>Category Revenue</h4><small>Revenue and quantity sold</small></div><div class="category-grid">${categoryCards || '<div class="empty-state">No category sales</div>'}</div></section>
         <section class="report-panel" data-sales-tab-section="items"><div class="report-panel-title"><h4><i class="fas fa-ranking-star text-primary me-2"></i>Best Selling Items</h4><small>Top 5 by quantity</small></div><div class="report-table-wrap"><table class="modern-table"><thead><tr><th>Item</th><th class="numeric">Qty Sold</th><th class="numeric">Revenue</th></tr></thead><tbody>${bestItemRows || '<tr><td colspan="3">No items sold</td></tr>'}</tbody></table></div></section>
         <section class="report-panel" data-sales-tab-section="staff"><div class="report-panel-title"><h4><i class="fas fa-users text-primary me-2"></i>Staff Performance</h4><small>Orders, sales and average bill</small></div><div class="report-table-wrap"><table class="modern-table"><thead><tr><th>Staff</th><th class="numeric">Orders</th><th class="numeric">Sales</th><th class="numeric">Avg Bill</th></tr></thead><tbody>${staffRows || '<tr><td colspan="4">No staff sales</td></tr>'}</tbody></table></div></section>
-        <section class="report-panel" data-sales-tab-section="overview"><div class="report-panel-title"><h4><i class="fas fa-tags text-warning me-2"></i>Discount Summary</h4><small>Applied discounts</small></div><div class="discount-grid"><div class="discount-card"><span>Total Discount</span><strong>Rs ${metrics.totalDiscount.toFixed(2)}</strong></div><div class="discount-card"><span>Discounted Orders</span><strong>${metrics.discountedTransactions}</strong></div><div class="discount-card"><span>Most Used</span><strong>${escapeHtml(metrics.mostUsedDiscount)}</strong></div></div></section>
+        <section class="report-panel" data-sales-tab-section="overview"><div class="report-panel-title"><h4><i class="fas fa-tags text-warning me-2"></i>Discount Summary</h4><small>Applied discounts</small></div><div class="discount-grid"><div class="discount-card"><span>Total Discount</span><strong>Rs ${metrics.totalDiscount.toFixed(2)}</strong></div><div class="discount-card"><span>Discounted Orders</span><strong>${metrics.discountedTransactions}</strong></div><div class="discount-card"><span>Most Used</span><strong>${escapeHtml(metrics.mostUsedDiscount)}</strong></div><div class="discount-card"><span>Free Coffee Rewards</span><strong>${metrics.loyaltyFreeCoffeeCount}</strong><small>Rs ${metrics.loyaltyFreeCoffeeValue.toFixed(2)} value</small></div></div></section>
         <section class="report-panel" data-sales-tab-section="overview"><div class="report-panel-title"><h4><i class="fas fa-calculator text-primary me-2"></i>Accounting Summary</h4><small>VAT added at checkout</small></div><div class="report-footer-summary"><div><span>Gross Sales</span><strong>Rs ${metrics.grossSales.toFixed(2)}</strong></div><div><span>Discounts</span><strong>- Rs ${metrics.totalDiscount.toFixed(2)}</strong></div><div><span>Net Sales</span><strong>Rs ${metrics.netSales.toFixed(2)}</strong></div><div><span>Service Charge</span><strong>Rs ${metrics.totalServiceCharge.toFixed(2)}</strong></div><div><span>VAT</span><strong>Rs ${metrics.totalVat.toFixed(2)}</strong></div><div><span>Total Collected</span><strong>Rs ${metrics.totalSales.toFixed(2)}</strong></div></div></section>
         <section class="report-panel" data-sales-tab-section="overview"><div class="report-panel-title"><h4><i class="fas fa-cash-register text-primary me-2"></i>Cash Reconciliation</h4><small>Drawer count can be completed at shift close</small></div><div class="report-footer-summary"><div><span>Cash Tendered</span><strong>Rs ${(metrics.totalCash + reportSales.filter(isActiveSale).reduce((sum, sale) => sum + Number(sale.change || 0), 0)).toFixed(2)}</strong></div><div><span>Change Given</span><strong>Rs ${reportSales.filter(isActiveSale).reduce((sum, sale) => sum + Number(sale.change || 0), 0).toFixed(2)}</strong></div><div><span>Net Cash Collected</span><strong>Rs ${metrics.totalCash.toFixed(2)}</strong></div><div><span>Expected / Actual Drawer</span><strong>Not counted</strong></div><div><span>Over / Short</span><strong>Not counted</strong></div></div></section>
         <section class="report-panel order-detail-panel" data-sales-tab-section="overview"><div class="report-panel-title"><h4><i class="fas fa-receipt text-primary me-2"></i>Order Detail</h4><small>Completed, voided, and refunded records</small></div><div class="report-table-wrap order-detail-wrap"><table class="modern-table order-detail-table"><thead><tr><th>Order #</th><th>Time</th><th>Table</th><th>Items</th><th>Qty</th><th>Gross</th><th>Discount</th><th>VAT</th><th>Net / Total</th><th>Payment</th><th>Status</th><th>Staff</th></tr></thead><tbody>${orderRows || '<tr><td colspan="12">No sales in selected period.</td></tr>'}</tbody></table></div></section>
@@ -2946,17 +3227,20 @@ function exportSalesReport() {
         return isActiveSale(sale) && saleDate >= new Date(startDate) && saleDate <= new Date(endDate);
     });
 
-    const headers = ["Order ID", "Table", "Total", "Discount", "Payment Methods", "Timestamp", "Items"];
+    const headers = ["Order ID", "Table", "Total", "Discount", "Free Coffees", "Free Coffee Value", "Payment Methods", "Timestamp", "Items"];
     const csvRows = [headers.join(',')];
 
     filteredSales.forEach(sale => {
         const paymentMethodsStr = sale.paymentMethods.map(pm => `${pm.method}: Rs ${pm.amount.toFixed(2)}`).join('; ');
-        const itemsStr = sale.items.map(item => `${item.name} x${item.quantity}`).join('; ');
+        const itemsStr = sale.items.map(item => `${item.name} x${item.quantity}${item.loyaltyFree ? ' (LOYALTY FREE)' : ''}`).join('; ');
+        const loyaltySummary = getLoyaltyFreeCoffeeSummary(sale.items);
         csvRows.push([
             `"${sale.orderNumber}"`,
             `"${sale.table}"`,
             sale.total.toFixed(2),
             sale.discountAmount,
+            loyaltySummary.quantity,
+            loyaltySummary.value.toFixed(2),
             `"${paymentMethodsStr}"`,
             `"${new Date(sale.timestamp).toLocaleString()}"`,
             `"${itemsStr}"`
@@ -3743,10 +4027,11 @@ function resetCheckoutState() {
 }
 
 function showCheckoutDialog() {
-    if (!currentTable || !orders[currentTable] || !orders[currentTable].length) {
-        notifications.show('No items to checkout!', 'warning');
+    if (!currentTable) {
+        notifications.show('Please select a table before checkout.', 'warning');
         return;
     }
+    orders[currentTable] ??= [];
 
     const restoredCheckoutState = restoreCheckoutState();
     if (restoredCheckoutState && restoredCheckoutState.currentTable === currentTable) {
@@ -3985,12 +4270,17 @@ function renderPaymentMethods() {
         return;
     }
 
-    paymentList.innerHTML = paymentAllocations.map((pm, index) => `
+    const loyaltySummary = getLoyaltyFreeCoffeeSummary(orders[currentTable]);
+    const paymentRows = paymentAllocations.map((pm, index) => `
         <li class="payment-method-${pm.method.toLowerCase()}">
-            <span><i class="fas ${pm.method === 'Cash' ? 'fa-money-bill-wave' : 'fa-mobile-screen-button'}"></i> ${pm.method}<strong>Rs ${pm.amount.toFixed(2)}</strong></span>
+            <span><i class="fas ${pm.method === 'Cash' ? 'fa-money-bill-wave' : pm.method === 'Loyalty' ? 'fa-gift' : 'fa-mobile-screen-button'}"></i> ${pm.method}<strong>Rs ${pm.amount.toFixed(2)}</strong></span>
             <button class="remove-payment-btn" data-index="${index}"><i class="fas fa-xmark"></i> Remove</button>
         </li>
     `).join('');
+    const loyaltyRow = loyaltySummary.quantity > 0
+        ? `<li class="payment-method-loyalty"><span><i class="fas fa-gift"></i> Loyalty Reward (${loyaltySummary.quantity} coffee${loyaltySummary.quantity === 1 ? '' : 's'})<strong>Rs 0.00</strong></span></li>`
+        : '';
+    paymentList.innerHTML = paymentRows + loyaltyRow;
 
     if (!paymentList.dataset.listenersAdded) {
         paymentList.addEventListener('click', handlePaymentListClick);
@@ -4043,7 +4333,7 @@ function updateChange() {
     
     // Completion requires both enough recorded payment and a selected method.
     if (completeBtn) {
-        const hasPaymentMethod = paymentAllocations.length > 0;
+        const hasPaymentMethod = paymentAllocations.length > 0 || getLoyaltyFreeCoffeeSummary(orders[currentTable]).quantity > 0;
         const canComplete = hasPaymentMethod && paidSoFar >= exactTotal - 0.01;
         completeBtn.disabled = !canComplete;
         completeBtn.classList.toggle('payment-ready', canComplete);
@@ -4089,6 +4379,7 @@ function calculateTotal() {
     let nonDiscountableTotal = 0;
 
     currentItems.forEach(item => {
+        if (item.loyaltyFree === true) return;
         const extrasTotal = (item.extras && Array.isArray(item.extras))
             ? item.extras.reduce((s, e) => s + (Number(e.price) || 0), 0)
             : 0;
@@ -4113,16 +4404,22 @@ function calculateTotal() {
 function calculateSaleAmounts(items) {
     let discountableTotal = 0;
     let nonDiscountableTotal = 0;
+    let loyaltyFreeValue = 0;
 
     (items || []).forEach(item => {
         const extrasTotal = (item.extras || []).reduce((sum, extra) => sum + (Number(extra.price) || 0), 0);
         const itemTotal = (Number(item.price) + extrasTotal) * (Number(item.quantity) || 1);
+        if (item.loyaltyFree === true) {
+            loyaltyFreeValue += itemTotal;
+            return;
+        }
         if (item.discountable !== false) discountableTotal += itemTotal;
         else nonDiscountableTotal += itemTotal;
     });
 
-    const discountAmount = roundToTwo(discountableTotal * (discount / 100));
-    const afterDiscount = roundToTwo(discountableTotal - discountAmount + nonDiscountableTotal);
+    const percentageDiscount = roundToTwo(discountableTotal * (discount / 100));
+    const discountAmount = roundToTwo(percentageDiscount + loyaltyFreeValue);
+    const afterDiscount = roundToTwo(discountableTotal - percentageDiscount + nonDiscountableTotal);
     const serviceChargeAmount = roundToTwo(afterDiscount * (serviceChargePercent / 100));
     const vatAmount = roundToTwo((afterDiscount + serviceChargeAmount) * (vatPercent / 100));
     return { discountAmount, serviceChargeAmount, vatAmount };
@@ -4178,6 +4475,299 @@ function closeQRCodeDialog() {
     }
 }
 
+// =========================================================================
+// ===================== LOYALTY QR =========================================
+// =========================================================================
+const LOYALTY_SITE_URL = 'https://tabochebhakatpur.netlify.app';
+const LOYALTY_ISSUE_URL = LOYALTY_SITE_URL + '/.netlify/functions/loyalty-issue-token';
+const LOYALTY_REDEEM_URL = LOYALTY_SITE_URL + '/.netlify/functions/loyalty-redeem-reward';
+let loyaltyQrTimer = null;
+
+async function showLoyaltyCode() {
+    const modal = document.getElementById('loyalty-code-modal');
+    const container = document.getElementById('loyalty-qr-container');
+    const status = document.getElementById('loyalty-qr-status');
+    if (!modal || !container) return;
+
+    modal.style.display = 'block';
+    document.documentElement.classList.add('modal-open');
+    document.body.classList.add('modal-open');
+
+    await refreshLoyaltyQr();
+    clearInterval(loyaltyQrTimer);
+    loyaltyQrTimer = setInterval(refreshLoyaltyQr, 2 * 60 * 1000);
+}
+
+async function refreshLoyaltyQr() {
+    const container = document.getElementById('loyalty-qr-container');
+    const status = document.getElementById('loyalty-qr-status');
+    if (!container) return;
+
+    if (status) status.textContent = 'Loading…';
+
+    try {
+        const res = await fetch(LOYALTY_ISSUE_URL, { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        if (!data.token) throw new Error('No token');
+
+        const url = LOYALTY_SITE_URL + '/loyalty/loyalty.html?t=' + encodeURIComponent(data.token);
+
+        if (typeof qrcode !== 'function') {
+            container.innerHTML = '<p style="font-size:.75rem;word-break:break-all">' + url + '</p>';
+        } else {
+            const qr = qrcode(0, 'M');
+            qr.addData(url);
+            qr.make();
+            container.innerHTML = qr.createImgTag(6, 12);
+        }
+
+        if (status) status.textContent = 'Ready — customer scans to get 1 stamp';
+    } catch (err) {
+        console.error('Loyalty QR error:', err);
+        if (status) status.textContent = 'Cannot load QR. Check connection.';
+    }
+}
+
+function closeLoyaltyCode() {
+    const modal = document.getElementById('loyalty-code-modal');
+    if (modal) modal.style.display = 'none';
+    document.documentElement.classList.remove('modal-open');
+    document.body.classList.remove('modal-open');
+    if (loyaltyQrTimer) {
+        clearInterval(loyaltyQrTimer);
+        loyaltyQrTimer = null;
+    }
+}
+
+function showFreeCoffeeModal() {
+    if (!currentTable) {
+        notifications.show('Select a table before redeeming a free coffee.', 'warning');
+        return;
+    }
+
+    const modal = document.getElementById('free-coffee-modal');
+    const coffeeSelect = document.getElementById('free-coffee-select');
+    const confirmButton = document.getElementById('confirm-free-coffee');
+    const coffees = menuItems.filter(item => String(item.category || '').toLowerCase().includes('coffee'));
+    if (!modal || !coffeeSelect || !confirmButton || coffees.length === 0) return;
+
+    if (getLoyaltyFreeCoffeeSummary(orders[currentTable]).quantity > 0) {
+        notifications.show('Only one free coffee reward can be used per order.', 'warning');
+        return;
+    }
+
+    const orderedCoffees = (orders[currentTable] || [])
+        .map((item, index) => ({ item, index }))
+        .filter(({ item }) => item.loyaltyFree !== true && String(item.category || '').toLowerCase().includes('coffee'));
+    const orderOptions = orderedCoffees.map(({ item, index }) => {
+        const quantity = Number(item.quantity) || 1;
+        const price = (Number(item.price) || 0) + (item.extras || []).reduce((sum, extra) => sum + (Number(extra.price) || 0), 0);
+        return `<option value="order:${index}">${escapeHtml(item.name)} x${quantity} - Rs ${(price * quantity).toFixed(2)}</option>`;
+    }).join('');
+    const newCoffeeOptions = coffees.map((coffee, index) =>
+        `<option value="new:${index}">${escapeHtml(coffee.name)} - Rs ${Number(coffee.price || 0).toFixed(2)}</option>`
+    ).join('');
+    coffeeSelect.innerHTML = `${orderOptions ? `<optgroup label="Apply reward to a coffee already ordered">${orderOptions}</optgroup>` : ''}<optgroup label="Add a separate reward coffee">${newCoffeeOptions}</optgroup>`;
+    confirmButton.disabled = false;
+    modal.style.display = 'block';
+}
+
+function closeFreeCoffeeModal() {
+    const modal = document.getElementById('free-coffee-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+async function confirmFreeCoffeeReward() {
+    const coffeeSelect = document.getElementById('free-coffee-select');
+    const confirmButton = document.getElementById('confirm-free-coffee');
+    if (!currentTable || !coffeeSelect) {
+        notifications.show('Select a table and coffee before redeeming a loyalty reward.', 'warning');
+        return;
+    }
+    if (!navigator.onLine) {
+        notifications.show('Loyalty redemption requires an internet connection.', 'warning');
+        return;
+    }
+
+    orders[currentTable] ??= [];
+    if (getLoyaltyFreeCoffeeSummary(orders[currentTable]).quantity > 0) {
+        closeFreeCoffeeModal();
+        notifications.show('Only one free coffee reward can be used per order.', 'warning');
+        return;
+    }
+
+    const [selectionType, selectionIndex] = coffeeSelect.value.split(':');
+    const orderItem = selectionType === 'order' ? orders[currentTable][Number(selectionIndex)] : null;
+    const menuCoffee = selectionType === 'new'
+        ? menuItems.filter(item => String(item.category || '').toLowerCase().includes('coffee'))[Number(selectionIndex)]
+        : null;
+    const selectedCoffee = orderItem || menuCoffee;
+    if (!selectedCoffee || selectedCoffee.loyaltyFree === true) return;
+    const code = await showPromptModal(
+        'Redeem Loyalty Reward',
+        'Enter the 8-character code from the customer’s loyalty card:',
+        { placeholder: '8-character code' }
+    );
+    if (!code) return;
+    const normalizedCode = code.trim().toUpperCase();
+    if (!/^[0-9A-HJKMNP-TV-Z]{8}$/.test(normalizedCode)) {
+        notifications.show('Enter a valid 8-character reward code.', 'warning');
+        return;
+    }
+
+    const selectedValue = ((Number(selectedCoffee.price) || 0) + (selectedCoffee.extras || []).reduce((sum, extra) => sum + (Number(extra.price) || 0), 0))
+        * (orderItem ? Math.max(1, Number(selectedCoffee.quantity) || 1) : 1);
+    const selectionLabel = selectionType === 'order' ? 'Apply reward to' : 'Add as a free item';
+    const confirmed = await showConfirmModal(
+        'Confirm loyalty redemption',
+        `${selectionLabel} ${selectedCoffee.name} (${orderItem ? `quantity ${selectedCoffee.quantity}, ` : ''}menu value Rs ${selectedValue.toFixed(2)})? The reward code will be verified online before the coffee is added free.`
+    );
+    if (!confirmed) {
+        closeFreeCoffeeModal();
+        return;
+    }
+
+    if (!navigator.onLine) {
+        notifications.show('Loyalty redemption requires an internet connection.', 'warning');
+        return;
+    }
+
+    if (selectionType === 'order' && orders[currentTable][Number(selectionIndex)] !== orderItem) {
+        notifications.show('The selected order item changed. Please review it again.', 'warning');
+        return;
+    }
+
+    if (confirmButton) confirmButton.disabled = true;
+    const orderSessionId = orders[currentTable][0]?.orderSessionId || `${currentTable}-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+    let redemption;
+    try {
+        const response = await fetch(LOYALTY_REDEEM_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                code: normalizedCode,
+                storeId: localStorage.getItem('store-id') || 'unknown',
+                orderNumber: orderSessionId,
+                staffName: currentUser?.email || 'Local Staff'
+            })
+        });
+        redemption = await response.json();
+        if (!response.ok || !redemption.ok) {
+            const messages = {
+                not_found: 'Code not recognised.',
+                already_used: 'Code already redeemed.',
+                expired: 'Code expired. Ask the customer to generate a new one.',
+                rate_limited: 'Too many attempts. Wait a minute and try again.'
+            };
+            notifications.show(messages[redemption.reason] || 'Redemption failed.', 'warning', 6000);
+            if (confirmButton) confirmButton.disabled = false;
+            return;
+        }
+    } catch (error) {
+        notifications.show('Could not verify the reward. No free coffee was added.', 'warning', 6000);
+        if (confirmButton) confirmButton.disabled = false;
+        return;
+    }
+
+    let rewardItem;
+
+    if (selectionType === 'order') {
+        const itemIndex = Number(selectionIndex);
+        const orderedItem = orders[currentTable][itemIndex];
+        if (!orderedItem || orderedItem.loyaltyFree === true) return;
+
+        const originalQuantity = Math.max(1, Number(orderedItem.quantity) || 1);
+        const originalSentQuantity = Math.min(originalQuantity, Math.max(0, Number(orderedItem.sentQuantity) || 0));
+        const originalKotNumber = orderedItem.kotNumber;
+        if (originalQuantity === 1) {
+            rewardItem = orderedItem;
+        } else {
+            const paidQuantity = originalQuantity - 1;
+            orderedItem.quantity = paidQuantity;
+            orderedItem.sentQuantity = Math.min(originalSentQuantity, paidQuantity);
+            orderedItem.finalized = orderedItem.sentQuantity >= paidQuantity;
+
+            rewardItem = {
+                ...orderedItem,
+                quantity: 1,
+                sentQuantity: Math.max(0, originalSentQuantity - paidQuantity),
+                finalized: originalSentQuantity >= originalQuantity,
+                orderSessionId: orderedItem.orderSessionId || orderSessionId,
+                loyaltyFree: true,
+                loyaltyRewardType: 'free-coffee',
+                notes: [orderedItem.notes, 'Staff-verified loyalty reward'].filter(Boolean).join('; ')
+            };
+            if (rewardItem.finalized && originalKotNumber) rewardItem.kotNumber = originalKotNumber;
+            else {
+                rewardItem.finalized = false;
+                delete rewardItem.kotNumber;
+            }
+            orders[currentTable].splice(itemIndex + 1, 0, rewardItem);
+        }
+
+        rewardItem.loyaltyFree = true;
+        rewardItem.loyaltyRewardType = 'free-coffee';
+        rewardItem.orderSessionId ||= orderSessionId;
+        rewardItem.notes = [rewardItem.notes, 'Staff-verified loyalty reward'].filter(Boolean).join('; ');
+    } else {
+        const coffees = menuItems.filter(item => String(item.category || '').toLowerCase().includes('coffee'));
+        const coffee = coffees[Number(selectionIndex)];
+        if (!coffee) return;
+        rewardItem = {
+            ...coffee,
+            quantity: 1,
+            sentQuantity: 0,
+            extras: [],
+            notes: 'Staff-verified loyalty reward',
+            orderSessionId,
+            status: 'pending',
+            finalized: false,
+            loyaltyFree: true,
+            loyaltyRewardType: 'free-coffee',
+            loyaltyRewardId: redemption.rewardId
+        };
+        orders[currentTable].push(rewardItem);
+    }
+    rewardItem.loyaltyRewardId = redemption.rewardId;
+    rewardItem.loyaltyCustomerId = redemption.customerId;
+
+    closeFreeCoffeeModal();
+    persistAllData();
+    renderOrderItems();
+    renderPaymentMethods();
+    document.getElementById('dialog-total-amount').textContent = calculateTotal().toFixed(2);
+    updateChange();
+    persistCheckoutState();
+    if (orders[currentTable].some(item => (Number(item.quantity) || 0) > (Number(item.sentQuantity) || 0))) {
+        await finalizeOrder();
+    }
+    notifications.show(`${rewardItem.name} added as a loyalty reward.`, 'success');
+}
+
+async function undoLoyaltyReward(itemIndex) {
+    if (!currentTable || orders[currentTable]?.[itemIndex]?.loyaltyFree !== true) return;
+    const item = orders[currentTable][itemIndex];
+    const itemValue = ((Number(item.price) || 0) + (item.extras || []).reduce((sum, extra) => sum + (Number(extra.price) || 0), 0)) * (Number(item.quantity) || 1);
+    const confirmed = await showConfirmModal(
+        'Undo free coffee reward',
+        `Make ${item.name} chargeable again at Rs ${itemValue.toFixed(2)}? The reward was already redeemed online and will not be restored.`
+    );
+    if (!confirmed || orders[currentTable]?.[itemIndex] !== item) return;
+
+    item.loyaltyFree = false;
+    delete item.loyaltyRewardType;
+    item.notes = (item.notes || '').replace(/(?:^|; )Staff-verified loyalty reward/g, '').trim();
+    item.notes = item.notes.replace(/^;\s*|;\s*$/g, '').trim();
+    persistAllData();
+    renderOrderItems();
+    renderPaymentMethods();
+    document.getElementById('dialog-total-amount').textContent = calculateTotal().toFixed(2);
+    updateChange();
+    persistCheckoutState();
+    notifications.show(`${item.name} is chargeable again.`, 'info');
+}
+
 async function completePayment() {
     if (isProcessingPayment) return;
     isProcessingPayment = true;
@@ -4209,8 +4799,9 @@ async function completePayment() {
             notifications.show("No order to complete!", 'warning');
             return;
         }
-        if (paymentAllocations.length === 0) {
-            notifications.show('Select Cash or Mobile before completing payment.', 'warning');
+        const loyaltyFreeSummary = getLoyaltyFreeCoffeeSummary(orders[currentTable]);
+        if (paymentAllocations.length === 0 && loyaltyFreeSummary.quantity === 0) {
+            notifications.show('Select Cash or Mobile, or redeem a verified loyalty reward.', 'warning');
             return;
         }
         const paidSoFar = roundToTwo(paymentAllocations.reduce((sum, pm) => sum + (Number(pm.amount) || 0), 0));
@@ -4242,14 +4833,32 @@ async function completePayment() {
         showLoadingSpinner();
 
         const orderId = generateOrderId();
+        const loyaltyRewards = settlementItems
+            .filter(item => item.loyaltyFree === true || item.loyaltyRewardId)
+            .map(item => ({
+                type: 'free-coffee',
+                itemName: item.name,
+                quantity: Number(item.quantity) || 1,
+                rewardId: item.loyaltyRewardId || null,
+                freeItemApplied: item.loyaltyFree === true,
+                value: ((Number(item.price) || 0) + (item.extras || []).reduce((sum, extra) => sum + (Number(extra.price) || 0), 0)) * (Number(item.quantity) || 1)
+            }));
+        const discountLabels = [];
+        if (discountCodeApplied) discountLabels.push(discountCodeApplied);
+        else if (discount) discountLabels.push(`${discount}%`);
+        if (loyaltyRewards.length) discountLabels.push('Loyalty Free Coffee');
         const sale = {
             orderNumber: orderId,
             table: currentTable,
             items: JSON.parse(JSON.stringify(orders[currentTable])),
             total,
-            paymentMethods: JSON.parse(JSON.stringify(paymentAllocations)),
-            discount: discountCodeApplied || (discount ? `${discount}%` : 'None'),
+            paymentMethods: JSON.parse(JSON.stringify([
+                ...paymentAllocations,
+                ...(loyaltyRewards.length ? [{ method: 'Loyalty', amount: 0 }] : [])
+            ])),
+            discount: discountLabels.join(' + ') || 'None',
             discountAmount: saleAmounts.discountAmount,
+            loyaltyRewards,
             serviceChargeAmount: saleAmounts.serviceChargeAmount,
             vatAmount: saleAmounts.vatAmount,
             timestamp: new Date().toISOString(),
@@ -4272,6 +4881,14 @@ async function completePayment() {
             amountPaisa: Math.round((sale.total || 0) * 100),
             reason: (sale.paymentMethods || []).map(payment => payment.method).join('+') || 'cash'
         });
+        if (loyaltyRewards.length) {
+            logAudit('loyalty.reward.redeemed', {
+                table: sale.table,
+                orderId: sale.orderNumber,
+                rewardCount: loyaltyRewards.reduce((sum, reward) => sum + reward.quantity, 0),
+                valuePaisa: Math.round(loyaltyRewards.reduce((sum, reward) => sum + reward.value, 0) * 100)
+            });
+        }
 
         delete orders[currentTable];
         if (tableTimers[currentTable]) delete tableTimers[currentTable];
@@ -4391,7 +5008,7 @@ function printKOT(kotItems, type, table = currentTable) {
             <div class="items">
                 ${kotItems.map(item => `
                     <div class="item">
-                        <strong>${escapeHtml(item.name || 'Unknown Item')}</strong> x${Number(item.quantity) || 0}
+                        <strong>${escapeHtml(item.name || 'Unknown Item')}</strong> x${Number(item.quantity) || 0}${item.loyaltyFree ? ' [LOYALTY FREE]' : ''}
                         ${item.extras?.length ? '<br/>Extras: ' + item.extras.map(e => escapeHtml(e.name || '')).join(', ') : ''}
                     </div>
                 `).join('')}
@@ -4697,6 +5314,7 @@ function printReceipt() {
         items: orders[currentTable],
         total: calculateTotal(),
         discountAmount: (calculateOriginalTotal() - calculateTotal()),
+        loyaltyRewards: getLoyaltyFreeCoffeeSummary(orders[currentTable]).quantity > 0 ? [{ type: 'free-coffee' }] : [],
         timestamp: new Date().toISOString(),
         user: currentUser?.email || 'Guest',
         paymentMethods: [],
@@ -4844,9 +5462,9 @@ function generateReceipt(order) {
             const safeItemName = escapeHtml(item.name || 'Unknown Item');
             let itemRow = `
                 <tr>
-                    <td class="col-item" title="${safeItemName}">${safeItemName}</td>
+                    <td class="col-item" title="${safeItemName}">${safeItemName}${item.loyaltyFree ? ' (LOYALTY FREE)' : ''}</td>
                     <td class="col-qty">${item.quantity}</td>
-                    <td class="col-price">${itemTotal.toFixed(2)}</td>
+                    <td class="col-price">${item.loyaltyFree ? `FREE (${itemTotal.toFixed(2)})` : itemTotal.toFixed(2)}</td>
                 </tr>`;
 
             if (item.extras && item.extras.length > 0) {
@@ -4895,7 +5513,7 @@ function generateReceipt(order) {
                 
                 <div class="summary-section">
                     <div class="summary-line"><span>Subtotal</span><span class="text-right">Rs ${subtotal.toFixed(2)}</span></div>
-                    ${discountAmount > 0 ? `<div class="summary-line"><span>Discount</span><span class="text-right">-Rs ${discountAmount.toFixed(2)}</span></div>` : ''}
+                    ${discountAmount > 0 ? `<div class="summary-line"><span>${order.loyaltyRewards?.length ? 'Discount / Loyalty Reward' : 'Discount'}</span><span class="text-right">-Rs ${discountAmount.toFixed(2)}</span></div>` : ''}
                     <div class="summary-line"><span>Service Charge (${receiptServiceChargePercent}%)</span><span class="text-right">Rs ${serviceChargeAmount.toFixed(2)}</span></div>
                     <div class="summary-line"><span>VAT (${receiptVatPercent}%)</span><span class="text-right">Rs ${vatAmount.toFixed(2)}</span></div>
                     
@@ -5096,6 +5714,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("void-btn")?.addEventListener("click", voidOrder);
     document.getElementById("print-receipt-btn")?.addEventListener("click", printReceipt);
     document.getElementById("clear-all-btn")?.addEventListener("click", clearAllItems);
+    document.getElementById('free-coffee-btn')?.addEventListener('click', showFreeCoffeeModal);
+    document.getElementById('loyalty-code-btn')?.addEventListener('click', showLoyaltyCode);
 
     // Sidebar navigation uses one delegated router so dynamically rendered content cannot lose handlers.
     document.querySelector('.sidebar-content')?.addEventListener('click', event => {
@@ -5133,6 +5753,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // Checkout Dialog Listeners
     document.getElementById('close-checkout-dialog')?.addEventListener('click', closeCheckoutDialog);
     document.getElementById('close-extras-modal')?.addEventListener('click', closeExtrasModal);
+    document.getElementById('close-free-coffee-modal')?.addEventListener('click', closeFreeCoffeeModal);
+    document.getElementById('confirm-free-coffee')?.addEventListener('click', confirmFreeCoffeeReward);
+    document.getElementById('close-loyalty-code-modal')?.addEventListener('click', closeLoyaltyCode);
     document.getElementById('clear-input')?.addEventListener('click', clearInput);
     document.getElementById('apply-discount-code')?.addEventListener('click', applyDiscountCode);
     document.getElementById('clear-discount')?.addEventListener('click', clearDiscount);
@@ -5601,6 +6224,8 @@ function showShiftCloseModal() {
     let mobileTotal = 0;
     let changeTotal = 0;
     let totalItemsCount = 0;
+    let loyaltyFreeCoffeeCount = 0;
+    let loyaltyFreeCoffeeValue = 0;
     let voidAmount = 0;
     
     const itemsBreakdown = {};
@@ -5615,11 +6240,15 @@ function showShiftCloseModal() {
             const extrasTotal = (item.extras || []).reduce((sum, extra) => sum + (Number(extra.price) || 0), 0);
             const itemTotal = ((Number(item.price) || 0) + extrasTotal) * (Number(item.quantity) || 1);
             grossAmount += itemTotal;
+            if (item.loyaltyFree === true) {
+                loyaltyFreeCoffeeCount += Number(item.quantity) || 0;
+                loyaltyFreeCoffeeValue += itemTotal;
+            }
             if (!itemsBreakdown[itemName]) {
                 itemsBreakdown[itemName] = { count: 0, total: 0 };
             }
             itemsBreakdown[itemName].count += Number(item.quantity) || 1;
-            itemsBreakdown[itemName].total += itemTotal;
+            itemsBreakdown[itemName].total += item.loyaltyFree === true ? 0 : itemTotal;
         });
         
         // Payment methods
@@ -5686,11 +6315,19 @@ function showShiftCloseModal() {
                         <span class="stat-value">${shiftSales.length}</span>
                     </div>
                 </div>
-                <div class="stat-item stat-items">
+                    <div class="stat-item stat-items">
                     <i class="fas fa-box"></i>
                     <div class="stat-content">
-                        <span class="stat-label">Items Sold</span>
+                        <span class="stat-label">Items Served</span>
                         <span class="stat-value">${totalItemsCount}</span>
+                    </div>
+                </div>
+                <div class="stat-item stat-items">
+                    <i class="fas fa-gift"></i>
+                    <div class="stat-content">
+                        <span class="stat-label">Free Coffees</span>
+                        <span class="stat-value">${loyaltyFreeCoffeeCount}</span>
+                        <span class="stat-label">Rs ${roundToTwo(loyaltyFreeCoffeeValue).toFixed(2)} value</span>
                     </div>
                 </div>
                 <div class="stat-item stat-voids">
@@ -6369,6 +7006,8 @@ document.addEventListener('keydown', (e) => {
         const overlayPriority = [
             { id: 'extras-modal', close: closeExtrasModal },
             { id: 'notes-modal', close: closeNotesModal },
+            { id: 'free-coffee-modal', close: closeFreeCoffeeModal },
+            { id: 'loyalty-code-modal', close: closeLoyaltyCode },
             { id: 'checkout-dialog', close: closeCheckoutDialog },
             { id: 'sidebar-content-modal', close: closeSidebarContentModal },
             { id: 'qr-code-dialog', close: closeQRCodeDialog }
