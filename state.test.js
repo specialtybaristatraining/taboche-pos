@@ -56,6 +56,26 @@ describe('production state', () => {
     expect(migrated.schemaVersion).toBe(3);
   });
 
+  it('corrects saved add-on lines so their extras are not charged twice', () => {
+    const { migrateStoredData } = loadProductionState();
+    const migrated = migrateStoredData({
+      orders: {
+        T1: [{
+          name: 'Add-on: Extra Espresso Shot',
+          isAddOn: true,
+          quantity: 1,
+          price: 70,
+          extras: [{ name: 'Extra Espresso Shot', price: 70 }]
+        }]
+      }
+    });
+    const addOn = migrated.orders.T1[0];
+    const total = (addOn.price + addOn.extras.reduce((sum, extra) => sum + extra.price, 0)) * addOn.quantity;
+
+    expect(addOn.price).toBe(0);
+    expect(total).toBe(70);
+  });
+
   it('compresses production history and retains audit records', () => {
     const { compressDataState } = loadProductionState();
     const compressed = compressDataState({

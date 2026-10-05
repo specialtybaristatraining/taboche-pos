@@ -4760,8 +4760,41 @@ body.dark-mode .order-badge-info    { background: #334155; color: #cbd5e1; }
 
 /* Add-on line items in the order list */
 .order-item.order-item-addon {
+    flex-direction: column;
+    align-items: stretch;
     border-left: 4px solid #7c3aed;
     background: linear-gradient(90deg, #faf5ff 0%, #ffffff 60%);
+}
+.order-item-addon-header {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    width: 100%;
+}
+.order-item-addon-header .order-item-name {
+    flex: 1;
+    min-width: 0;
+}
+.order-item-addon-header .order-item-total {
+    white-space: nowrap;
+}
+.addon-remove-btn {
+    flex: 0 0 auto;
+    min-width: 30px;
+    min-height: 30px;
+    padding: 4px 7px;
+    border: 0;
+    border-radius: 6px;
+    background: #fee2e2;
+    color: #b91c1c;
+    cursor: pointer;
+}
+.addon-remove-btn:hover {
+    background: #fecaca;
+}
+.order-item-addon-status {
+    width: 100%;
+    margin-top: 0.25rem;
 }
 .addon-badge {
     display: inline-block;

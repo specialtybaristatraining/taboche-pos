@@ -2059,7 +2059,9 @@ function renderOrderItems() {
         const badges = [];
         if (isAddOn) {
             badges.push(`<span class="order-badge order-badge-addon"><i class="fas fa-plus-circle"></i> Add-on</span>`);
-            if (!isFinalized) badges.push(`<span class="order-badge order-badge-pending">Pending</span>`);
+            badges.push(isFinalized
+                ? `<span class="order-badge order-badge-final">Sent</span>`
+                : `<span class="order-badge order-badge-pending">Pending</span>`);
         } else {
             if (isLoyaltyFree) badges.push(`<span class="order-badge order-badge-loyalty"><i class="fas fa-gift"></i> Loyalty</span>`);
             if (isFinalized) {
@@ -2090,12 +2092,17 @@ function renderOrderItems() {
         itemDiv.dataset.index = index;
 
         if (isAddOn) {
-            // Add-on: single plain line, name + price only.
             itemDiv.innerHTML = `
-                <div class="order-item-header">
+                <div class="order-item-header order-item-addon-header">
                     <span class="order-item-name">${escapeHtml(displayName)}</span>
                     <span class="order-item-total">${priceDisplay}</span>
+                    <button class="addon-remove-btn" type="button"
+                        title="${isFinalized ? 'Void sent add-on' : 'Remove add-on'}"
+                        aria-label="${isFinalized ? 'Void sent add-on' : 'Remove add-on'}">
+                        <i class="fas fa-trash" aria-hidden="true"></i>
+                    </button>
                 </div>
+                <div class="order-item-addon-status">${badges.join('')}</div>
             `;
         } else {
             itemDiv.innerHTML = `
@@ -2175,6 +2182,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 await undoLoyaltyReward(index);
             } else if (target.classList.contains('void-btn')) {
                 voidItem(index);
+            } else if (target.closest('.addon-remove-btn')) {
+                const item = orders[currentTable]?.[index];
+                if (item?.finalized || (Number(item?.sentQuantity) || 0) > 0) {
+                    await voidItem(index);
+                } else {
+                    await removeOrderItem(index);
+                }
             }
         });
 
@@ -2326,7 +2340,7 @@ function showExtrasModal() {
                <i class="fas fa-info-circle"></i>
                <div>
                    <strong>This item was already sent to the kitchen.</strong>
-                   <span>New extras will be created as a <strong>separate add-on line</strong> and sent to the kitchen as a new KOT. Existing extras can't be removed.</span>
+                   <span>New extras are a separate add-on line. Remove it before sending to the kitchen, or void it with a reason after it has been sent. Existing extras on this item can't be removed.</span>
                </div>
            </div>`
         : '';
@@ -2473,11 +2487,9 @@ async function saveExtras() {
             return;
         }
 
-        const addOnPrice = addedExtras.reduce((s, e) => s + e.price, 0);
-
         const addOnItem = {
             name: `Add-on: ${addedExtras.map(e => e.name).join(', ')} (for ${currentItem.name})`,
-            price: addOnPrice,
+            price: 0,
             quantity: 1,
             extras: addedExtras,
             notes: `Add-on for already-sent item: ${currentItem.name}`,
