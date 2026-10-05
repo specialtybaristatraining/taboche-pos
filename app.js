@@ -3233,7 +3233,7 @@ function exportSalesReport() {
     filteredSales.forEach(sale => {
         const paymentMethodsStr = sale.paymentMethods.map(pm => `${pm.method}: Rs ${pm.amount.toFixed(2)}`).join('; ');
         const itemsStr = sale.items.map(item => `${item.name} x${item.quantity}${item.loyaltyFree ? ' (LOYALTY FREE)' : ''}`).join('; ');
-        const loyaltySummary = getLoyaltyFreeCoffeeSummary(sale.items);
+        const loyaltySummary = getLoyaltyFreeCoffeeSummaryForApp(sale.items);
         csvRows.push([
             `"${sale.orderNumber}"`,
             `"${sale.table}"`,
@@ -4263,6 +4263,24 @@ function processPayment(method) {
     }
 }
 
+function getLoyaltyFreeCoffeeSummaryForApp(items = []) {
+    if (typeof getLoyaltyFreeCoffeeSummary === 'function') {
+        return getLoyaltyFreeCoffeeSummary(items);
+    }
+
+    const summary = { quantity: 0, value: 0 };
+    (Array.isArray(items) ? items : []).forEach(item => {
+        if (item?.loyaltyFree !== true) return;
+        const quantity = Math.max(0, Number(item.quantity) || 0);
+        const extrasValue = (Array.isArray(item.extras) ? item.extras : [])
+            .reduce((total, extra) => total + (Number(extra.price) || 0), 0);
+        summary.quantity += quantity;
+        summary.value += ((Number(item.price) || 0) + extrasValue) * quantity;
+    });
+    summary.value = Math.round((summary.value + Number.EPSILON) * 100) / 100;
+    return summary;
+}
+
 function renderPaymentMethods() {
     const paymentList = document.getElementById('payment-methods');
     if (!paymentList) {
@@ -4270,7 +4288,7 @@ function renderPaymentMethods() {
         return;
     }
 
-    const loyaltySummary = getLoyaltyFreeCoffeeSummary(orders[currentTable]);
+    const loyaltySummary = getLoyaltyFreeCoffeeSummaryForApp(orders[currentTable]);
     const paymentRows = paymentAllocations.map((pm, index) => `
         <li class="payment-method-${pm.method.toLowerCase()}">
             <span><i class="fas ${pm.method === 'Cash' ? 'fa-money-bill-wave' : pm.method === 'Loyalty' ? 'fa-gift' : 'fa-mobile-screen-button'}"></i> ${pm.method}<strong>Rs ${pm.amount.toFixed(2)}</strong></span>
@@ -4333,7 +4351,7 @@ function updateChange() {
     
     // Completion requires both enough recorded payment and a selected method.
     if (completeBtn) {
-        const hasPaymentMethod = paymentAllocations.length > 0 || getLoyaltyFreeCoffeeSummary(orders[currentTable]).quantity > 0;
+        const hasPaymentMethod = paymentAllocations.length > 0 || getLoyaltyFreeCoffeeSummaryForApp(orders[currentTable]).quantity > 0;
         const canComplete = hasPaymentMethod && paidSoFar >= exactTotal - 0.01;
         completeBtn.disabled = !canComplete;
         completeBtn.classList.toggle('payment-ready', canComplete);
@@ -4552,7 +4570,7 @@ function showFreeCoffeeModal() {
     const coffees = menuItems.filter(item => String(item.category || '').toLowerCase().includes('coffee'));
     if (!modal || !coffeeSelect || !confirmButton || coffees.length === 0) return;
 
-    if (getLoyaltyFreeCoffeeSummary(orders[currentTable]).quantity > 0) {
+    if (getLoyaltyFreeCoffeeSummaryForApp(orders[currentTable]).quantity > 0) {
         notifications.show('Only one free coffee reward can be used per order.', 'warning');
         return;
     }
@@ -4591,7 +4609,7 @@ async function confirmFreeCoffeeReward() {
     }
 
     orders[currentTable] ??= [];
-    if (getLoyaltyFreeCoffeeSummary(orders[currentTable]).quantity > 0) {
+    if (getLoyaltyFreeCoffeeSummaryForApp(orders[currentTable]).quantity > 0) {
         closeFreeCoffeeModal();
         notifications.show('Only one free coffee reward can be used per order.', 'warning');
         return;
@@ -4799,7 +4817,7 @@ async function completePayment() {
             notifications.show("No order to complete!", 'warning');
             return;
         }
-        const loyaltyFreeSummary = getLoyaltyFreeCoffeeSummary(orders[currentTable]);
+        const loyaltyFreeSummary = getLoyaltyFreeCoffeeSummaryForApp(orders[currentTable]);
         if (paymentAllocations.length === 0 && loyaltyFreeSummary.quantity === 0) {
             notifications.show('Select Cash or Mobile, or redeem a verified loyalty reward.', 'warning');
             return;
@@ -5314,7 +5332,7 @@ function printReceipt() {
         items: orders[currentTable],
         total: calculateTotal(),
         discountAmount: (calculateOriginalTotal() - calculateTotal()),
-        loyaltyRewards: getLoyaltyFreeCoffeeSummary(orders[currentTable]).quantity > 0 ? [{ type: 'free-coffee' }] : [],
+        loyaltyRewards: getLoyaltyFreeCoffeeSummaryForApp(orders[currentTable]).quantity > 0 ? [{ type: 'free-coffee' }] : [],
         timestamp: new Date().toISOString(),
         user: currentUser?.email || 'Guest',
         paymentMethods: [],
