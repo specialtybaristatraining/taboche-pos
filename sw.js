@@ -1,196 +1,135 @@
-const CACHE_NAME = 'taboche-pos-v8';
-const urlsToCache = [
-  './',
-  './index.html',
-  './manifest.json',
-  './images/logo.png',
-  './images/logo-print.png',
-  './qr.jpeg',
-  './qr.png',
-  './js/state.js',
-  './js/storage.js',
-  './js/cloud-sync.js',
-  './app.js',
-  './styles.css',
-  // Add CSS and JS if they become external files
+const CACHE_NAME = 'taboche-site-v15';
+const assetsToCache = [
+  '/',
+  '/styles.css',
+  '/script.js',
+  '/theme.js',
+  '/manifest.webmanifest',
+  '/offline.html',
+  '/loyalty/loyalty.html',
+  '/loyalty/loyalty.css',
+  '/loyalty/loyalty.js',
+  '/404.html',
+  '/success.html',
+  '/captions.vtt',
+  '/images/logo.png',
+  '/images/apple-touch-icon.png',
+  '/images/icon-192.png',
+  '/images/icon-512.png',
+  '/images/icon-maskable-512.png'
 ];
 
-// Install event - cache essential files
 self.addEventListener('install', event => {
-  console.log('[SW] Installing...');
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('[SW] Caching essential files');
-        return cache.addAll(urlsToCache);
-      })
-      .then(() => self.skipWaiting()) // Activate immediately
+    caches.open(CACHE_NAME).then(async cache => {
+      await Promise.all(assetsToCache.map(async asset => {
+        try {
+          await cache.add(asset);
+        } catch (err) {
+          console.warn('Failed to cache asset during install:', asset, err);
+        }
+      }));
+    })
   );
 });
 
-// Activate event - clean up old caches
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
+});
+
 self.addEventListener('activate', event => {
-  console.log('[SW] Activating...');
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('[SW] Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    }).then(() => self.clients.claim()) // Take control immediately
+    caches.keys().then(keys => Promise.all(
+      keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+    )).then(() => self.clients.claim())
   );
 });
 
-// Fetch event - network first with cache fallback for dynamic content
+function fromNetwork(request, timeout) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject('timeout'), timeout);
+    fetch(request).then(response => {
+      clearTimeout(timer);
+      if (!response) return reject('no-response');
+      resolve(response);
+    }, reject);
+  });
+}
+
 self.addEventListener('fetch', event => {
-  const requestUrl = new URL(event.request.url);
+  const req = event.request;
 
-  // Skip cross-origin requests
-  if (requestUrl.origin !== location.origin) {
-    return;
-  }
-
-  // For HTML pages - network first, then cache
-  if (event.request.mode === 'navigate') {
+  if (req.mode === 'navigate' || (req.method === 'GET' && req.headers.get('accept') && req.headers.get('accept').includes('text/html'))) {
+    // Navigation request: try network first, fallback to cache, then offline page
     event.respondWith(
-      fetch(event.request, { cache: 'no-cache' })
-        .then(response => {
-          // Cache the fresh copy
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, responseClone);
-          });
-          return response;
-        })
-        .catch(() => {
-          // If network fails, serve cached version
-          return caches.match(event.request);
-        })
+      fromNetwork(req, 6000).then(networkResponse => {
+        if (!networkResponse.ok) return networkResponse;
+        return caches.open(CACHE_NAME).then(cache => {
+          cache.put(req, networkResponse.clone());
+          return networkResponse;
+        });
+      }).catch(() => caches.match(req).then(cacheResp => cacheResp || caches.match('/offline.html')))
     );
     return;
   }
 
-  // For images - network first so updated menu photos reach installed devices.
-  if (event.request.destination === 'image' ||
-      event.request.url.includes('/images/')) {
-    event.respondWith(cacheFirst(event.request, event));
-    return;
-  }
-
-  // Always prefer fresh application code so sync fixes reach installed tablets.
-  if (['script', 'style'].includes(event.request.destination)) {
-    event.respondWith(networkFirst(event.request));
-    return;
-  }
-
-  // For everything else - cache first, then network (stale-while-revalidate)
+  // For other requests: stale-while-revalidate for static assets, then network fallback.
   event.respondWith(
-    caches.match(event.request)
-      .then(cachedResponse => {
-        const fetchPromise = fetch(event.request)
-          .then(networkResponse => {
-            // Update cache with fresh response
-            caches.open(CACHE_NAME).then(cache => {
-              cache.put(event.request, networkResponse.clone());
-            });
-            return networkResponse;
-          })
-          .catch(error => {
-            console.log('[SW] Fetch failed:', error);
-            // Return cached response even if stale
-            return cachedResponse;
-          });
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.match(req).then(cacheResp => {
+        const fetchPromise = fetch(req).then(networkResponse => {
+          if (networkResponse && networkResponse.status === 200) {
+            cache.put(req, networkResponse.clone());
+          }
+          return networkResponse;
+        }).catch(() => null);
 
-        // Return cached response immediately if available, otherwise wait for network
-        return cachedResponse || fetchPromise;
-      })
+        if (cacheResp) {
+          // Serve stale content while updating cache in the background.
+          fetchPromise.catch(() => {});
+          return cacheResp;
+        }
+
+        return fetchPromise.then(networkResponse => {
+          if (networkResponse) return networkResponse;
+          if (req.destination === 'image') return cache.match('/images/logo.png');
+          return cache.match('/offline.html');
+        });
+      });
+    })
   );
 });
 
-// Background sync for offline orders
-self.addEventListener('sync', event => {
-  if (event.tag === 'sync-orders') {
-    event.waitUntil(syncOrders());
-  }
-});
-
-async function syncOrders() {
-  const cache = await caches.open('pending-orders');
-  const requests = await cache.keys();
-
-  for (const request of requests) {
-    try {
-      const response = await fetch(request);
-      if (response.ok) {
-        await cache.delete(request);
-        console.log('[SW] Synced order successfully');
-      }
-    } catch (error) {
-      console.log('[SW] Failed to sync order:', error);
-    }
-  }
-}
-
-// Push notification support
 self.addEventListener('push', event => {
-  const options = {
-    body: event.data.text(),
-    icon: './images/logo.png',
-    badge: './images/logo.png',
-    vibrate: [200, 100, 200],
-    requireInteraction: true
-  };
-
+  let data = { title: 'Taboche Offer', body: 'Check our latest specialty drinks and seasonal deals.' };
+  if (event.data) {
+    try { data = event.data.json(); } catch (e) { /* use default notification */ }
+  }
   event.waitUntil(
-    self.registration.showNotification('Taboche POS', options)
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: 'images/logo.png',
+      badge: 'images/logo.png',
+      vibrate: [100, 50, 100],
+      data: { url: data.url || '/' }
+    })
   );
 });
 
 self.addEventListener('notificationclick', event => {
   event.notification.close();
+  const target = new URL(event.notification.data?.url || '/', self.location.origin);
+  const targetUrl = target.origin === self.location.origin ? target.href : self.location.origin + '/';
   event.waitUntil(
-    clients.openWindow('./')
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windowClients => {
+      for (const client of windowClients) {
+        if (new URL(client.url).origin === self.location.origin && 'focus' in client) {
+          return client.navigate(targetUrl).then(() => client.focus());
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
+    })
   );
 });
-
-async function networkFirst(request, fallbackUrl = null) {
-  try {
-    const response = await fetch(request, { cache: 'no-cache' });
-    if (response.ok) {
-      const cache = await caches.open(CACHE_NAME);
-      await cache.put(request, response.clone());
-    }
-    return response;
-  } catch {
-    const cachedResponse = await caches.match(request);
-    if (cachedResponse) return cachedResponse;
-    return fallbackUrl ? caches.match(fallbackUrl) : Response.error();
-  }
-}
-
-async function cacheFirst(request, event) {
-  const cache = await caches.open(CACHE_NAME);
-  const cachedResponse = await cache.match(request);
-  if (cachedResponse) {
-    const refresh = fetch(request)
-      .then(response => {
-        if (response.ok) return cache.put(request, response.clone());
-        return null;
-      })
-      .catch(() => {});
-    event.waitUntil(refresh);
-    return cachedResponse;
-  }
-
-  try {
-    const response = await fetch(request);
-    if (response.ok) await cache.put(request, response.clone());
-    return response;
-  } catch {
-    return cache.match('./images/logo.png');
-  }
-}

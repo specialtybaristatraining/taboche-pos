@@ -1,0 +1,683 @@
+import 'package:printing/printing.dart';
+import 'package:flutter/material.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:pdf/pdf.dart';
+import '../models/table_model.dart'; // Ensure this path is correct
+import '../models/menu_item.dart'; // Ensure MenuItem import is correct
+import '../widgets/receipt_dialog.dart'; // Import for receipt dialog
+
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({Key? key}) : super(key: key);
+
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int selectedTableIndex = -1;
+  String selectedCategory = 'All';void _printReceipt(TableModel table) async {
+  final pdf = pw.Document();
+
+  // Build the receipt content
+  pdf.addPage(pw.Page(
+    build: (pw.Context context) {
+      return pw.Column(
+        children: [
+          // Restaurant Name, Logo, and Contact Information
+          pw.Align(
+            alignment: pw.Alignment.center,
+            child: pw.Text(
+              'Restaurant Name',  // Replace with your restaurant name
+              style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+              textAlign: pw.TextAlign.center,
+            ),
+          ),
+          pw.Align(
+            alignment: pw.Alignment.center,
+            child: pw.Text(
+              'Address Line 1\nAddress Line 2\nContact: (Phone/Email)',
+              style: pw.TextStyle(fontSize: 12),
+              textAlign: pw.TextAlign.center,
+            ),
+          ),
+          pw.SizedBox(height: 10),
+
+          // Logo (if available, use this to display an image)
+          // pw.Image(logoImage),  // Add this if you want to display a logo
+
+          // Separator Line
+          pw.Divider(),
+          
+          // Receipt Info: Receipt #, Date, Server, Time
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Text('Receipt #: 12345'),
+              pw.Text('Date: ${DateTime.now().toLocal().toString().split(' ')[0]}'),
+            ],
+          ),
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Text('Server: John Doe'),
+              pw.Text('Time: ${DateTime.now().toLocal().toString().split(' ')[1]}'),
+            ],
+          ),
+          pw.SizedBox(height: 10),
+
+          // Separator Line
+          pw.Divider(),
+
+          // Table Info
+          pw.Row(
+            children: [
+              pw.Text('Table: ${table.number}', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+            ],
+          ),
+          pw.SizedBox(height: 10),
+
+          // Items List (Item Name, Quantity, Price, Total per Item)
+          pw.Text('Items:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+          pw.SizedBox(height: 5),
+          ...table.orderedItems.map((item) {
+            return pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text('${item.name}   ${item.quantity} x \$${item.price.toStringAsFixed(2)}'),
+                pw.Text('\$${(item.price * item.quantity).toStringAsFixed(2)}'),
+              ],
+            );
+          }).toList(),
+          pw.SizedBox(height: 10),
+          pw.Divider(),
+
+          // Totals: Subtotal, Tax, Total
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Text('Subtotal:'),
+              pw.Text('\$${calculateTotal(table).toStringAsFixed(2)}'),
+            ],
+          ),
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Text('Tax (10%):'),
+              pw.Text('\$${(calculateTotal(table) * 0.10).toStringAsFixed(2)}'),
+            ],
+          ),
+          pw.SizedBox(height: 10),
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Text('Total:'),
+              pw.Text('\$${(calculateTotal(table) * 1.10).toStringAsFixed(2)}'),
+            ],
+          ),
+          pw.SizedBox(height: 10),
+
+          // Payment Method, Amount Tendered, Change Due
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Text('Payment Method: Cash'),
+              pw.Text('Amount Tendered: \$70.00'),
+            ],
+          ),
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Text('Change Due:'),
+              pw.Text('\$4.00'),
+            ],
+          ),
+          pw.SizedBox(height: 20),
+
+          // Footer: Thank You Note and Website
+          pw.Divider(),
+          pw.Align(
+            alignment: pw.Alignment.center,
+            child: pw.Text(
+              'Thank You for Dining with Us!\nVisit us at: www.restaurant.com',
+              style: pw.TextStyle(fontSize: 10),
+              textAlign: pw.TextAlign.center,
+            ),
+          ),
+        ],
+      );
+    },
+  ));
+
+  // Print the document
+  await Printing.layoutPdf(onLayout: (format) async => pdf.save());
+}
+
+
+  final List<TableModel> tables = List.generate(
+    10,
+    (index) => TableModel(number: index + 1, orderedItems: []),
+  );
+
+  final List<String> categories = [
+    'All', 'Starters', 'Breakfast', 'Lunch', 'Dinner', 'Desserts', 'Beverages'
+  ];
+
+  final List<MenuItem> items = [
+    MenuItem(name: 'Schezwan Egg Noodles', price: 20.0, imageUrl: 'https://via.placeholder.com/150'),
+    MenuItem(name: 'Thai Style Fried Noodles', price: 20.0, imageUrl: 'https://via.placeholder.com/150'),
+    MenuItem(name: 'Chinese Prawn Spaghetti', price: 24.0, imageUrl: 'https://via.placeholder.com/150'),
+    MenuItem(name: 'Japanese Soba Noodles', price: 24.0, imageUrl: 'https://via.placeholder.com/150'),
+    MenuItem(name: 'Chili Garlic Thai Noodles', price: 24.0, imageUrl: 'https://via.placeholder.com/150'),
+    MenuItem(name: 'Udon Egg Noodles', price: 24.0, imageUrl: 'https://via.placeholder.com/150'),
+  ];
+
+  String currentView = 'Home'; // Tracks whether Home, Orders, or Settings is displayed
+
+  void switchTable(int index) {
+    setState(() {
+      selectedTableIndex = index;
+      currentView = 'Home'; // Switch to Home view for taking orders
+    });
+  }
+
+  void switchCategory(String category) {
+    setState(() {
+      selectedCategory = category;
+    });
+  }
+
+  void switchView(String view) {
+    setState(() {
+      currentView = view;
+    });
+  }
+
+  double calculateTotal(TableModel table) {
+    return table.orderedItems.fold(
+      0,
+      (sum, item) => sum + (item.price * item.quantity),
+    );
+  }
+
+  void showSettlementDialog(TableModel table) {
+    TextEditingController amountController = TextEditingController();
+    double total = calculateTotal(table);
+    double tendered = 0;
+    double change = 0;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text('Settle Table ${table.number}'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Total: \$${total.toStringAsFixed(2)}'),
+                  TextField(
+                    controller: amountController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'Enter amount tendered'),
+                    onChanged: (value) {
+                      setState(() {
+                        tendered = double.tryParse(value) ?? 0;
+                        change = tendered - total;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {},
+                        child: const Text('Cash'),
+                      ),
+                      ElevatedButton(
+  onPressed: () {
+    showDialog(
+      context: context,
+      builder: (context) {
+        TextEditingController splitController = TextEditingController();
+        return StatefulBuilder(
+          builder: (context, setState) {
+            int splitCount = int.tryParse(splitController.text) ?? 0;
+            double splitAmount = splitCount > 0
+                ? calculateTotal(tables[selectedTableIndex]) / splitCount
+                : 0;
+            return AlertDialog(
+              title: const Text('Split Bill'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: splitController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Number of people to split',
+                    ),
+                    onChanged: (value) => setState(() {}),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    splitCount > 0
+                        ? 'Each Person Owes: \$${splitAmount.toStringAsFixed(2)}'
+                        : 'Enter a valid number.',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Close'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  },
+  child: const Text('Split Bill'),
+),
+
+
+                      ElevatedButton(
+                        onPressed: () {},
+                        child: const Text('Card'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {},
+                        child: const Text('Online'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {},
+                        child: const Text('Discount'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Text('Change: \$${change >= 0 ? change.toStringAsFixed(2) : '0.00'}',
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  if (change < 0)
+                    const Text('Additional amount required',
+                        style: TextStyle(color: Colors.red)),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: change >= 0
+                      ? () {
+                          setState(() {
+                            table.orderedItems.clear();
+                          });
+                          Navigator.of(context).pop();
+                        }
+                      : null,
+                  child: const Text('Confirm Payment'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void logout() {
+    // Add logout functionality here, e.g., navigate to login screen
+    Navigator.pushReplacementNamed(context, '/login');
+  }
+
+  // Export PDF function for Sales Summary
+  void exportReport(double totalSales, int totalTransactions, List<MenuItem> topSellingItems) async {
+    final pdf = pw.Document();
+
+    // Add the sales summary to the PDF
+    pdf.addPage(pw.Page(
+      build: (pw.Context context) {
+        return pw.Column(
+          children: [
+            pw.Text('Sales Summary', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 20),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text('Total Sales:'),
+                pw.Text('\$${totalSales.toStringAsFixed(2)}'),
+              ],
+            ),
+            pw.SizedBox(height: 10),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text('Total Transactions:'),
+                pw.Text('$totalTransactions'),
+              ],
+            ),
+            pw.SizedBox(height: 20),
+            pw.Text('Top Selling Items:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 10),
+            ...topSellingItems.take(5).map((item) {
+              return pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text(item.name),
+                  pw.Text('${item.quantity} sold'),
+                ],
+              );
+            }).toList(),
+          ],
+        );
+      },
+    ));
+
+    // Generate PDF and show preview
+    await Printing.layoutPdf(onLayout: (format) async => pdf.save());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Taboche Restaurant POS System'),
+        backgroundColor: Colors.deepOrange,
+      ),
+      body: Row(
+        children: [
+          // Left side: Navigation Buttons
+          Expanded(
+            flex: 1,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ElevatedButton(
+                  onPressed: () => switchView('Home'),
+                  child: const Text('Home'),
+                ),
+                ElevatedButton(
+                  onPressed: () => switchView('Settings'),
+                  child: const Text('Settings'),
+                ),
+                ElevatedButton(
+                  onPressed: logout,
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                  child: const Text('Logout'),
+                ),
+              ],
+            ),
+          ),
+          // Right side: POS Display
+          Expanded(
+            flex: 5,
+            child: currentView == 'Home'
+                ? buildHomeView()
+                : currentView == 'Settings'
+                    ? buildSettingsView()
+                    : buildOrdersView(),
+          ),
+        ],
+      ),
+    );
+  }
+
+ Widget buildHomeView() {
+  return Row(
+    children: [
+      // Left side: Menu, Orders, and Table Selection
+      Expanded(
+        flex: 3,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Table Selection Buttons
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Wrap(
+                spacing: 8.0,
+                runSpacing: 8.0,
+                children: List.generate(tables.length, (index) {
+                  final isOccupied = tables[index].orderedItems.isNotEmpty;
+                  return ElevatedButton(
+                    onPressed: () => switchTable(index),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: selectedTableIndex == index
+                          ? Colors.blueAccent
+                          : isOccupied
+                              ? Colors.redAccent
+                              : Colors.grey[300],
+                    ),
+                    child: Text('Table ${tables[index].number}'),
+                  );
+                }),
+              ),
+            ),
+            if (selectedTableIndex >= 0)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  'Selected Table: ${tables[selectedTableIndex].number}',
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+            // Categories
+            Container(
+              height: 50,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: categories.length,
+                itemBuilder: (context, index) {
+                  final category = categories[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: ElevatedButton(
+                      onPressed: () => switchCategory(category),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: selectedCategory == category
+                            ? Colors.blueAccent
+                            : Colors.grey[300],
+                      ),
+                      child: Text(category),
+                    ),
+                  );
+                },
+              ),
+            ),
+            // Item Grid
+            Expanded(
+              child: GridView.builder(
+                padding: const EdgeInsets.all(8.0),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                ),
+                itemCount: items.length,
+                itemBuilder: (context, index) {
+                  final item = items[index];
+                  return GestureDetector(
+                    onTap: () {
+                      if (selectedTableIndex >= 0) {
+                        setState(() {
+                          final table = tables[selectedTableIndex];
+                          table.orderedItems.add(MenuItem(
+                            name: item.name,
+                            price: item.price,
+                            imageUrl: item.imageUrl,
+                            quantity: 1,
+                          ));
+                        });
+                      }
+                    },
+                    child: Card(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Image.network(item.imageUrl, width: 100, height: 100),
+                          Text(item.name),
+                          Text('\$${item.price.toStringAsFixed(2)}'),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+      // Right side: Current Orders and Receipt Summary
+      if (selectedTableIndex >= 0)
+        Expanded(
+          flex: 2,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Current Orders for Table ${tables[selectedTableIndex].number}',
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: tables[selectedTableIndex].orderedItems.length,
+                    itemBuilder: (context, index) {
+                      final item = tables[selectedTableIndex].orderedItems[index];
+                      return ListTile(
+                        title: Text(item.name),
+                        subtitle: Text('x${item.quantity}'),
+                        trailing: Text('\$${(item.quantity * item.price).toStringAsFixed(2)}'),
+                      );
+                    },
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () => showSettlementDialog(tables[selectedTableIndex]),
+                  child: const Text('Settle'),
+                ),
+                const SizedBox(height: 10),
+                // Display the receipt summary here
+                Text('Receipt Summary:',
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ...tables[selectedTableIndex].orderedItems.map((item) {
+                      return Text(
+                          '${item.name} (x${item.quantity}): \$${(item.quantity * item.price).toStringAsFixed(2)}');
+                    }).toList(),
+                    const Divider(),
+                    Text(
+                      'Total: \$${calculateTotal(tables[selectedTableIndex]).toStringAsFixed(2)}',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: () {
+                        // Trigger the print functionality
+                        _printReceipt(tables[selectedTableIndex]);
+                      },
+                      child: const Text('Print Receipt'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+    ],
+  );
+}
+
+  Widget buildSettingsView() {
+    // Calculate total sales, total transactions, and top-selling items
+    double totalSales = 0;
+    int totalTransactions = 0;
+    List<MenuItem> topSellingItems = [];
+
+    for (var table in tables) {
+      totalSales += calculateTotal(table);
+      totalTransactions += table.orderedItems.length;
+
+      for (var item in table.orderedItems) {
+        final existingItemIndex = topSellingItems.indexWhere((e) => e.name == item.name);
+        if (existingItemIndex >= 0) {
+          topSellingItems[existingItemIndex].quantity += item.quantity;
+        } else {
+          topSellingItems.add(MenuItem(
+            name: item.name,
+            price: item.price,
+            imageUrl: item.imageUrl,
+            quantity: item.quantity,
+          ));
+        }
+      }
+    }
+
+    // Sort top-selling items
+    topSellingItems.sort((a, b) => b.quantity.compareTo(a.quantity));
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          const Text(
+            'Sales Summary',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Total Sales:', style: TextStyle(fontSize: 18)),
+              Text('\$${totalSales.toStringAsFixed(2)}', style: const TextStyle(fontSize: 18)),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Total Transactions:', style: TextStyle(fontSize: 18)),
+              Text('$totalTransactions', style: const TextStyle(fontSize: 18)),
+            ],
+          ),
+          const SizedBox(height: 10),
+          const Text('Top Selling Items:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: topSellingItems.take(5).map((item) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(item.name),
+                    Text('${item.quantity} sold'),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () => exportReport(totalSales, totalTransactions, topSellingItems),
+            child: const Text('Export Report'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildOrdersView() {
+    return Center(child: Text('Orders View'));
+  }
+}

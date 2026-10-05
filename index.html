@@ -1,302 +1,809 @@
-﻿
 <!DOCTYPE html>
-<html lang="en">
+
+<html class="scroll-smooth" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Taboche POS</title>
-    <meta name="description" content="A fast, organized, and modern POS system.">
-    <meta name="theme-color" content="#1976d2">
-    <link rel="icon" href="images/logo.png" type="image/png">
-    <link rel="apple-touch-icon" href="images/logo.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="images/logo.png">
-    <link rel="apple-touch-icon" sizes="192x192" href="images/logo.png">
-    <link rel="apple-touch-icon" sizes="512x512" href="images/logo.png">
-    <!-- Conditionally load manifest for PWA (only works over HTTP/HTTPS) -->
-    <script>
-        if (location.protocol !== 'file:') {
-            const manifestLink = document.createElement('link');
-            manifestLink.rel = 'manifest';
-            manifestLink.href = 'manifest.json';
-            document.head.appendChild(manifestLink);
-        }
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Taboche | Coffee by Siddhapokhari, Bhaktapur</title>
+<meta content="100% Arabica coffee, food, and a relaxed lakeside setting by Siddhapokhari in Bhaktapur." name="description"/>
+<meta content="Taboche Restaurant Bhaktapur, coffee shop Bhaktapur, cafe near Siddhapokhari, breakfast Bhaktapur, specialty coffee Nepal" name="keywords"/>
+<meta content="telephone=no" name="format-detection"/>
+<meta content="index, follow" name="robots"/>
+<meta content="#2D2424" media="(prefers-color-scheme: light)" name="theme-color"/>
+<meta content="#141212" media="(prefers-color-scheme: dark)" name="theme-color"/>
+<meta content="NP-BA" name="geo.region"/>
+<meta content="Bhaktapur" name="geo.placename"/>
+<meta content="27.6710;85.4298" name="geo.position"/>
+<meta content="27.6710, 85.4298" name="ICBM"/>
+<meta content="+9779824926296" name="support-phone"/>
+<meta content="Taboche Restaurant &amp; Coffee" name="author"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="Taboche" name="apple-mobile-web-app-title"/>
+<!-- Open Graph -->
+<meta content="Taboche Restaurant &amp; Coffee – Bhaktapur" property="og:title"/>
+<meta content="Coffee by Siddhapokhari — 100% Arabica coffee, food, and a relaxed lakeside setting in Bhaktapur." property="og:description"/>
+<meta content="https://taboche.netlify.app/images/og-image.jpg" property="og:image"/>
+<meta content="https://taboche.netlify.app/images/og-image.jpg" property="og:image:secure_url"/>
+<meta content="image/jpeg" property="og:image:type"/>
+<meta content="1200" property="og:image:width"/>
+<meta content="630" property="og:image:height"/>
+<meta content="Taboche specialty cappuccino beside Siddhapokhari" property="og:image:alt"/>
+<meta content="website" property="og:type"/>
+<meta content="https://taboche.netlify.app/" property="og:url"/>
+<meta content="Taboche Restaurant &amp; Coffee" property="og:site_name"/>
+<meta content="en_US" property="og:locale"/>
+<!-- Twitter / X -->
+<meta content="summary_large_image" name="twitter:card"/>
+<meta content="Taboche Restaurant &amp; Coffee – Bhaktapur" name="twitter:title"/>
+<meta content="Coffee by Siddhapokhari with food and a relaxed lakeside setting in Bhaktapur." name="twitter:description"/>
+<meta content="https://taboche.netlify.app/images/og-image.jpg" name="twitter:image"/>
+<meta content="Taboche specialty cappuccino" name="twitter:image:alt"/>
+<link href="https://www.facebook.com" rel="preconnect"/>
+<link href="https://connect.facebook.net" rel="preconnect"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&amp;family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link as="style" href="styles.css" rel="preload"/>
+<link as="image" type="image/webp" fetchpriority="high" href="images/Cappuccino-1086.webp" imagesizes="100vw" imagesrcset="images/Cappuccino-640.webp 640w, images/Cappuccino-1086.webp 1086w" rel="preload"/>
+<script src="theme.js"></script>
+<link href="styles.css" rel="stylesheet"/>
+<link href="images/logo.png" rel="icon"/>
+<link href="images/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
+<link href="manifest.webmanifest" rel="manifest"/>
+<link href="https://taboche.netlify.app/" rel="canonical"/>
+<script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+    "@type": ["Restaurant", "CafeOrCoffeeShop"],
+      "@id": "https://taboche.netlify.app/#restaurant",
+      "name": "Taboche Restaurant & Coffee",
+      "url": "https://taboche.netlify.app/",
+      "description": "A specialty coffee and dining destination beside Siddhapokhari in Bhaktapur.",
+      "logo": "https://taboche.netlify.app/images/logo.png",
+    "image": ["https://taboche.netlify.app/images/og-image.jpg"],
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Opposite Siddhapokhari",
+        "addressLocality": "Bhaktapur",
+        "addressCountry": "NP"
+      },
+      "telephone": "+977-9824926296",
+      "openingHoursSpecification": [{
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+        "opens": "07:00",
+        "closes": "20:00"
+      }],
+            "priceRange": "NPR 100-580",
+      "currenciesAccepted": "NPR",
+      "geo": { "@type": "GeoCoordinates", "latitude": 27.6710, "longitude": 85.4298 },
+      "servesCuisine": ["Coffee", "Cafe", "Nepalese"],
+      "acceptsReservations": true,
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "reviewCount": "120"
+      },
+      "paymentAccepted": "Cash, NFC Mobile Payments",
+      "hasMenu": {
+        "@type": "Menu",
+        "name": "Taboche Menu",
+        "url": "https://taboche.netlify.app/#menu",
+        "inLanguage": "en",
+        "hasMenuSection": [
+          {
+            "@type": "MenuSection",
+            "name": "Hot Coffee",
+            "hasMenuItem": [
+              { "@type": "MenuItem", "name": "Americano", "description": "Double shot of espresso diluted with hot water.", "offers": { "@type": "Offer", "price": "150", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Latte", "description": "Espresso with steamed milk and light foam.", "offers": { "@type": "Offer", "price": "190", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Cappuccino", "description": "Balanced espresso, steamed milk, and thick foam layer.", "offers": { "@type": "Offer", "price": "200", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Vanilla Latte", "description": "Classic Arabica latte with sweet vanilla syrup.", "offers": { "@type": "Offer", "price": "260", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Hazelnut Latte", "description": "Classic Arabica latte with roasted hazelnut flavor.", "offers": { "@type": "Offer", "price": "260", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Caramel Latte", "description": "Classic Arabica latte with rich caramel syrup.", "offers": { "@type": "Offer", "price": "260", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Hot Chocolate", "description": "Creamy, rich chocolate blended with steamed milk.", "offers": { "@type": "Offer", "price": "260", "priceCurrency": "NPR" } }
+            ]
+          },
+          {
+            "@type": "MenuSection",
+            "name": "Cold Coffee",
+            "hasMenuItem": [
+              { "@type": "MenuItem", "name": "Iced Latte", "description": "Chilled milk and espresso over ice.", "offers": { "@type": "Offer", "price": "220", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Iced Americano", "description": "Smooth espresso and cold water over ice.", "offers": { "@type": "Offer", "price": "200", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Iced Cappuccino", "description": "Espresso and chilled milk topped with cold foam.", "offers": { "@type": "Offer", "price": "240", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Iced Vanilla", "description": "Vanilla-flavored chilled coffee.", "offers": { "@type": "Offer", "price": "290", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Iced Caramel", "description": "Caramel-flavored chilled coffee.", "offers": { "@type": "Offer", "price": "290", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Iced Mocha", "description": "Chilled coffee with chocolate syrup and milk.", "offers": { "@type": "Offer", "price": "290", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Iced Hazelnut", "description": "Hazelnut-flavored chilled coffee.", "offers": { "@type": "Offer", "price": "290", "priceCurrency": "NPR" } }
+            ]
+          },
+          {
+            "@type": "MenuSection",
+            "name": "Tea",
+            "hasMenuItem": [
+              { "@type": "MenuItem", "name": "Green Pearl Tea", "description": "Seasonal organic green tea from Ilam.", "offers": { "@type": "Offer", "price": "120", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Green Tea", "description": "Classic green tea with clean, vegetal flavor.", "offers": { "@type": "Offer", "price": "150", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "The Earl Grey", "description": "Black tea scented with bergamot.", "offers": { "@type": "Offer", "price": "150", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Pearl Black", "description": "Rich black tea with smooth malt notes.", "offers": { "@type": "Offer", "price": "150", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Ilam Black Tea", "description": "Classic Nepalese black tea.", "offers": { "@type": "Offer", "price": "100", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Chamomile", "description": "Gentle floral calming tea.", "offers": { "@type": "Offer", "price": "150", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Jasmine", "description": "Delicate green tea scented with jasmine.", "offers": { "@type": "Offer", "price": "150", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Hibiscus (Roselle)", "description": "Tart hibiscus tea with vibrant red color.", "offers": { "@type": "Offer", "price": "180", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Butterfly Pea Flower", "description": "Natural blue tea with soft floral notes.", "offers": { "@type": "Offer", "price": "180", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Calming Tea", "description": "Chamomile and lavender blend.", "offers": { "@type": "Offer", "price": "200", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Midnight Red Rose", "description": "Earl Grey with rose petals.", "offers": { "@type": "Offer", "price": "200", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Floral Delight", "description": "Green tea with rose petals.", "offers": { "@type": "Offer", "price": "200", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Black Roselle", "description": "Black tea blended with roselle.", "offers": { "@type": "Offer", "price": "150", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Lemongrass Tea", "description": "Bright, citrusy herbal tea.", "offers": { "@type": "Offer", "price": "150", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Peppermint Tea", "description": "Cooling mint tea with a crisp finish.", "offers": { "@type": "Offer", "price": "150", "priceCurrency": "NPR" } }
+            ]
+          },
+          {
+            "@type": "MenuSection",
+            "name": "Refreshers",
+            "hasMenuItem": [
+              { "@type": "MenuItem", "name": "Orange Juice", "description": "Freshly squeezed orange juice over ice.", "offers": { "@type": "Offer", "price": "300", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Apple Juice", "description": "Fresh apple juice pressed from crisp fruit.", "offers": { "@type": "Offer", "price": "300", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Iced Hibiscus Tea", "description": "Chilled hibiscus tea over ice.", "offers": { "@type": "Offer", "price": "300", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Iced Green Tea", "description": "Cold green tea brewed from Ilam leaves.", "offers": { "@type": "Offer", "price": "300", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Peach Iced Tea", "description": "Sweet peach-infused iced tea.", "offers": { "@type": "Offer", "price": "300", "priceCurrency": "NPR" } }
+            ]
+          },
+          {
+            "@type": "MenuSection",
+            "name": "Main Food",
+            "hasMenuItem": [
+              { "@type": "MenuItem", "name": "Burger with Fries", "description": "Chicken, Buff, or Veg patty with fries.", "offers": { "@type": "Offer", "price": "295", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Steamed Mo Mo", "description": "Chicken, Buff, or Veg dumplings.", "offers": { "@type": "Offer", "price": "220", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Jhol Mo Mo", "description": "Dumplings in a spiced broth.", "offers": { "@type": "Offer", "price": "250", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Keema Noodles", "description": "Noodles with minced chicken, buff, or egg.", "offers": { "@type": "Offer", "price": "250", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Wraps", "description": "Chicken, Buff, or Veg wrap.", "offers": { "@type": "Offer", "price": "280", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Pizza", "description": "Cheese or Chicken pizza.", "offers": { "@type": "Offer", "price": "500", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Fried Rice", "description": "Chicken, Buff, or Egg fried rice.", "offers": { "@type": "Offer", "price": "285", "priceCurrency": "NPR" } }
+            ]
+          },
+          {
+            "@type": "MenuSection",
+            "name": "Sides & Snacks",
+            "hasMenuItem": [
+              { "@type": "MenuItem", "name": "Chilly", "description": "Spicy stir-fry, Chicken or Buff.", "offers": { "@type": "Offer", "price": "320", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "French Fry", "description": "Classic golden fries.", "offers": { "@type": "Offer", "price": "350", "priceCurrency": "NPR" } },
+              { "@type": "MenuItem", "name": "Wings", "description": "Crispy fried chicken wings.", "offers": { "@type": "Offer", "price": "480", "priceCurrency": "NPR" } }
+            ]
+          }
+        ]
+      },
+      "sameAs": [
+        "https://www.facebook.com/tabochebhaktapur",
+        "https://www.instagram.com/taboche_bhaktapur",
+        "https://www.tiktok.com/@taboche7"
+      ]
+    }
     </script>
-    <!-- POS and Analytics Libraries -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 </head>
 <body>
-    <h1 class="visually-hidden">Taboche POS - Point of Sale System</h1>
-    <div id="offline-banner" class="offline-banner"><i class="fas fa-wifi-slash me-1"></i>Offline. Data is saved locally. <span id="offline-queue-count">0</span> pending actions.</div>
-    
-    <!-- =================================================================== -->
-    <!-- ======================= CORE UI STRUCTURE ======================= -->
-    <!-- =================================================================== -->
-    <header>
-        <div class="hamburger-menu" id="hamburger-menu" role="button" tabindex="0" aria-label="Open menu">
-            <i class="fas fa-bars"></i>
-        </div>
-        <div class="restaurant-logo-container">
-            <img src="./images/logo.png" alt="Taboche Restaurant Logo" loading="lazy" class="restaurant-logo" onerror="handleImageError(this)">
-            <div class="restaurant-name">
-                Taboche Restaurant
-                <!-- Mobile app icon added here -->
-                <i class="fas fa-mobile-alt" style="margin-left: 10px; font-size: 0.8em; vertical-align: middle;"></i>
-            </div>
-        </div>
-        <div class="datetime" id="datetime" aria-live="polite"></div>
-        <div id="network-status" class="offline" aria-live="polite">Offline</div>
-        <div id="storage-indicator" class="topbar-storage-indicator">💾 0.0MB / 10MB</div>
-        <div id="offline-queue-badge" class="offline-queue-badge hidden">
-            <i class="fas fa-clock"></i> <span id="pending-count">0</span> pending
-        </div>
-        <i class="fas fa-moon" id="theme-toggle" role="button" tabindex="0" aria-label="Toggle theme"></i>
-    </header>
-
-    <div class="notification-toast" id="notification-toast" aria-live="polite" aria-atomic="false"></div>
-
-    <div class="loading-spinner" id="loading-spinner">
-        <i class="fas fa-spinner fa-spin"></i>
-    </div>
-
-    <div id="auto-save-status" class="auto-save-status">
-        <i class="fas fa-save"></i> All changes saved
-    </div>
-
-    <div class="pos-container">
-        <div class="tables-dashboard" id="tables-dashboard"></div>
-        <div class="main-content">
-            <div class="menu-section">
-                <label for="search" class="visually-hidden">Search menu</label>
-                <div class="main-search-row"><input type="text" id="search" class="search-bar" placeholder="Search menu..."><span class="search-shortcut-hint"><kbd>Ctrl</kbd> + <kbd>K</kbd></span></div>
-                
-                <!-- NEW: Menu Navigation Header -->
-                <div class="menu-navigation-header">
-                    <button id="back-button" class="menu-back-button"><i class="fas fa-arrow-left me-2"></i>Back</button>
-                    <div class="menu-navigation-title-group">
-                        <h4 id="menu-section-title"></h4>
-                    </div>
-                </div>
-
-                <div class="categories" id="categories"></div>
-                <div class="menu" id="menu"></div>
-            </div>
-            <button class="order-drawer-toggle" id="order-drawer-toggle" type="button" aria-controls="order-section" aria-expanded="false">
-                <i class="fas fa-receipt" aria-hidden="true"></i> Order <span id="order-item-count" aria-label="0 items">0</span>
-            </button>
-            <div class="order-section" id="order-section">
-                <div class="order-header">
-                    <h3>Table <span id="selected-table">-</span></h3>
-                    <input type="text" id="table-notes" class="form-control table-notes-input" placeholder="Add table note..." aria-label="Table note">
-                </div>
-                <div class="order-items" id="order-items"></div>
-                <div class="order-footer">
-                    <p class="order-summary-line"><span>Items: <span id="total-items">0</span></span><span>Total: Rs <span id="total-amount">0.00</span></span></p>
-                    <div class="order-footer-buttons">
-                        <button class="finalize-btn" id="finalize-btn">Send to Kitchen</button>
-                        <button class="checkout-btn" id="checkout-btn">Pay</button>
-                        <button class="change-table-btn" id="change-table-btn">Change Table</button>
-                        <button class="void-btn" id="void-btn">Void Order</button>
-                        <button class="print-receipt-btn" id="print-receipt-btn">Print</button>
-                        <button class="clear-all-btn" id="clear-all-btn">Clear All</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-header-brand">
-                <h2><img src="./images/logo.png" alt="" class="sidebar-brand-mark">Taboche POS</h2>
-                <div class="sidebar-user-info">
-                    <span class="user-name" id="sidebar-user-name">Local Staff</span>
-                    <span class="user-role">POS Operator</span>
-                </div>
-            </div>
-            <button class="close-sidebar" id="close-sidebar" type="button" aria-label="Close menu">×</button>
-        </div>
-        <div class="sidebar-content">
-            <!-- Operations Section -->
-            <div class="sidebar-section">
-                <span class="section-title">Operations</span>
-                <a href="#" id="nav-kitchen-view"><i class="fas fa-utensils" aria-hidden="true"></i>Kitchen Display</a>
-                <a href="#" id="nav-merge-tables"><i class="fas fa-object-ungroup" aria-hidden="true"></i>Merge Tables</a>
-                <a href="#" id="nav-shift-close"><i class="fas fa-cash-register" aria-hidden="true"></i>Close Shift</a>
-            </div>
-
-            <!-- Reports & Analytics Section -->
-            <div class="sidebar-section">
-                <span class="section-title">Reports & Analytics</span>
-                <a href="#" id="nav-sales-reports"><i class="fas fa-chart-line" aria-hidden="true"></i>Sales Reports</a>
-                <a href="#" id="nav-items-sold"><i class="fas fa-boxes-stacked" aria-hidden="true"></i>Items Sold Report</a>
-                <a href="#" id="nav-order-history"><i class="fas fa-history" aria-hidden="true"></i>Order History</a>
-                <a href="#" id="nav-void-details"><i class="fas fa-ban" aria-hidden="true"></i>Void Details</a>
-            </div>
-
-            <!-- System & Settings Section -->
-            <div class="sidebar-section">
-                <span class="section-title">System & Settings</span>
-                <a href="#" id="nav-settings"><i class="fas fa-cog" aria-hidden="true"></i>Settings</a>
-                <a href="#" id="nav-help"><i class="fas fa-circle-question" aria-hidden="true"></i>Help</a>
-                <a href="#" id="nav-lock-screen"><i class="fas fa-lock" aria-hidden="true"></i>Lock Screen</a>
-            </div>
-
-            <!-- Danger Zone Section -->
-            <div class="sidebar-section sidebar-danger-zone">
-                <span class="section-title">Danger Zone</span>
-                <a href="#" id="nav-backup-data"><i class="fas fa-download" aria-hidden="true"></i>Backup Data</a>
-                <a href="#" id="nav-restore-data"><i class="fas fa-upload" aria-hidden="true"></i>Restore Data</a>
-                <a href="#" id="nav-storage-manager"><i class="fas fa-database" aria-hidden="true"></i>Storage Manager</a>
-                <a href="#" id="nav-reset-data" class="danger-link"><i class="fas fa-trash-restore" aria-hidden="true"></i>Reset All Data</a>
-            </div>
-        </div>
-    </div>
-    <div class="sidebar-overlay" id="sidebar-overlay" aria-hidden="true"></div>
-
-    <!-- =================================================================== -->
-    <!-- ======================= MODAL DEFINITIONS ======================= -->
-    <!-- =================================================================== -->
-
-    <!-- Main Modal for Sidebar Content -->
-    <div class="modal" id="sidebar-content-modal">
-        <div class="modal-content">
-            <span class="close-modal" id="close-sidebar-content-modal">×</span>
-            <div id="modal-content-area"></div>
-        </div>
-    </div>
-
-    <!-- Checkout Dialog -->
-    <div class="modal" id="checkout-dialog">
-        <div class="modal-content modal-content-wide">
-            <span class="close-modal" id="close-checkout-dialog">×</span>
-            <h3>Checkout - Table <span id="selected-table-checkout">-</span></h3>
-            <div class="row">
-                <div class="col-md-7">
-                    <p class="h4">Total Due: <strong class="text-primary">Rs <span id="dialog-total-amount">0</span></strong></p>
-                    <label for="numeric-input" class="visually-hidden">Amount</label>
-                    <input type="text" class="numeric-input" id="numeric-input" value="0" inputmode="decimal" autocomplete="off">
-                    <div id="keypad">
-                        <button data-num="1">1</button><button data-num="2">2</button><button data-num="3">3</button>
-                        <button data-num="4">4</button><button data-num="5">5</button><button data-num="6">6</button>
-                        <button data-num="7">7</button><button data-num="8">8</button><button data-num="9">9</button>
-                        <button data-num="0">0</button><button data-num=".">.</button><button id="clear-input">C</button>
-                    </div>
-                    <div id="quick-amounts" class="mt-2">
-                         <button data-amount="exact" title="Fills the remaining due amount">Exact</button><button data-amount="500" title="Adds 500">500</button><button data-amount="1000" title="Adds 1000">1000</button><button data-amount="2000" title="Adds 2000">2000</button>
-                    </div>
-                    <div class="payment-buttons mt-3">
-                        <button id="cash-btn" class="btn-lg"><i class="fas fa-money-bill-wave me-2"></i>Cash</button>
-                        <button id="mobile-btn" class="btn-lg"><i class="fas fa-mobile-alt me-2"></i> Mobile</button>
-                    </div>
-                </div>
-               <div class="col-md-5 border-start">
-                    <h5 class="mb-3">Payment Summary</h5>
-                    <ul class="payment-methods" id="payment-methods"></ul>
-                    <hr>
-                    
-                    <!-- ✅ CORRECTED DISCOUNT SECTION -->
-                    <div id="discount-section">
-                        <p class="small text-muted mb-1 w-100">Apply Discount</p>
-                        <button data-discount="5">5%</button>
-                        <button data-discount="10">10%</button>
-                        <button data-discount="15">15%</button>
-                        <input type="text" id="discount-code" placeholder="Enter Code">
-                        <button id="apply-discount-code">Apply</button>
-                        <button id="clear-discount">Clear</button>
-                    </div>
-                    
-                    <hr>
-                    <div class="h5 d-flex justify-content-between">
-                        <span>Remaining Due:</span> 
-                        <span id="remaining-due" class="text-danger">Rs 0.00</span>
-                    </div>
-                    <div class="h5 d-flex justify-content-between">
-                        <span>Change:</span> 
-                        <span id="change-amount" class="text-success">Rs 0.00</span>
-                    </div>
-                    <div id="insufficient-message" class="text-danger" style="display:none; font-size: 0.95rem; margin-top: 0.5rem;"></div>
-                    <button id="complete-btn" data-sound="confirm" class="btn-primary btn-lg w-100 mt-3" disabled>Complete Payment</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- QR Code Dialog -->
-    <div id="qr-code-dialog">
-        <div class="qr-dialog-content">
-            <button id="close-qr-code-dialog" class="qr-close-btn">×</button>
-            <h3 class="qr-dialog-title">Scan to Pay</h3>
-            <img id="qr-code-image" class="qr-image" alt="QR Code" src="./qr.jpeg" loading="lazy" onerror="this.onerror=null; this.src='./qr.png';">
-            <p class="qr-instruction">Please scan the QR code to complete your mobile payment.</p>
-        </div>
-    </div>
-
-<!-- Extras Modal -->
-<div class="modal" id="extras-modal">
-    <div class="modal-content modal-md-width">
-        <span class="close-modal" id="close-extras-modal">×</span>
-        <h3>Add Extras for <span id="extras-item-name" class="text-primary">Item</span></h3>
-        <p class="text-muted small">Select additional options for this item.</p>
-        <hr>
-        <div id="extras-content" class="mb-3">
-            <!-- Checkboxes will be dynamically inserted here by JavaScript -->
-        </div>
-        <!-- The "Save" button will be dynamically added by the script -->
-    </div>
+<!-- =====================================================
+         SVG ICON SPRITE — hidden, referenced via <use href="#i-..."/>
+         ===================================================== -->
+<svg aria-hidden="true" focusable="false" height="0" style="position:absolute" width="0">
+<defs>
+<symbol id="i-coffee" viewbox="0 0 24 24">
+<path d="M4 8h12v6a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V8z"></path>
+<path d="M16 10h2a2 2 0 0 1 0 4h-2"></path>
+<path d="M6 3v2M10 3v2M14 3v2"></path>
+</symbol>
+<symbol id="i-dining" viewbox="0 0 24 24">
+<path d="M6 3v18"></path>
+<path d="M6 3c0 4 2 6 2 8s-1 3-2 3"></path>
+<path d="M10 3c0 4-2 6-2 8s1 3 2 3"></path>
+<path d="M18 3v18"></path>
+<path d="M18 3c-2 0-3 3-3 6s1 5 3 5"></path>
+</symbol>
+<symbol id="i-clock" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="9"></circle>
+<path d="M12 7v5l3 2"></path>
+</symbol>
+<symbol id="i-pin" viewbox="0 0 24 24">
+<path d="M12 22s7-6 7-12a7 7 0 1 0-14 0c0 6 7 12 7 12z"></path>
+<circle cx="12" cy="10" r="3"></circle>
+</symbol>
+<symbol id="i-leaf" viewbox="0 0 24 24">
+<path d="M20 4c-8 0-14 4-14 10a6 6 0 0 0 6 6c6 0 10-6 10-14a2 2 0 0 0-2-2z"></path>
+<path d="M6 20c2-6 6-10 12-12"></path>
+</symbol>
+<symbol id="i-chef" viewbox="0 0 24 24">
+<path d="M6 14h12v5H6z"></path>
+<path d="M6 14a3 3 0 0 1-2-5 3 3 0 0 1 4-4 4 4 0 0 1 8 0 3 3 0 0 1 4 4 3 3 0 0 1-2 5"></path>
+</symbol>
+<symbol id="i-star" viewbox="0 0 24 24">
+<path d="M12 2l3 7h7l-6 4 2 7-6-4-6 4 2-7-6-4h7z"></path>
+</symbol>
+<symbol id="i-phone" viewbox="0 0 24 24">
+<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+</symbol>
+</defs>
+</svg>
+<a class="skip-to-content" href="#main-content">Skip to main content</a>
+<div aria-label="Install app prompt" class="install-banner" id="install-banner" role="region">
+<div class="install-banner-copy">
+<p class="text-sm">Install Taboche for faster access to our menu and reservations.</p>
+<div class="install-banner-actions">
+<button class="install-cta" id="install-pwa-banner-btn" type="button">Install Now</button>
+<button aria-label="Dismiss install prompt" class="install-dismiss" id="install-pwa-dismiss" type="button">×</button>
 </div>
-    
-    <!-- Modal for adding/editing item notes -->
-    <div class="modal" id="notes-modal">
-        <div class="modal-content">
-            <span class="close-modal" id="close-notes-modal">×</span>
-            <h3>Add/Edit Note</h3>
-            <p>Add special instructions for this item.</p>
-            <textarea id="item-notes" class="form-control" rows="4" placeholder="e.g., Extra spicy, no onions..."></textarea>
-            <button id="save-notes-btn" class="btn btn-primary w-100 mt-3">Save Note</button>
-        </div>
-    </div>
-
-    <!-- Generic Prompt/Confirm Modal (Used by showPromptModal, showConfirmModal) -->
-    <div class="generic-modal-overlay" id="generic-prompt-modal" role="dialog" aria-modal="true" aria-labelledby="generic-prompt-title" aria-hidden="true">
-        <div class="generic-modal-content" tabindex="-1">
-            <h3 id="generic-prompt-title"></h3>
-            <p id="generic-prompt-message"></p>
-            <div id="generic-prompt-input-container">
-                <!-- Input or textarea will be inserted here -->
+</div>
+</div>
+<nav aria-label="Primary" id="navbar">
+<div class="nav-inner">
+<a aria-label="Taboche home" class="nav-brand-link" href="#home">
+<div class="logo-wrap"><img alt="" height="36" src="images/logo.png" width="36"/></div>
+<div class="nav-brand-text">
+<span class="nav-brand">TABOCHE</span>
+<span class="nav-tagline">Restaurant &amp; Coffee</span>
+</div>
+</a>
+<ul class="nav-links">
+<li><a class="nav-link" href="#home">Home</a></li>
+<li><a class="nav-link" href="#experience">Experience</a></li>
+<li><a class="nav-link" href="#signatures">Signatures</a></li>
+<li><a class="nav-link" href="#menu">Menu</a></li>
+<li><a class="nav-link" href="#story">Story</a></li>
+<li><a class="nav-link" href="#visit">Visit</a></li>
+<li><a class="nav-link" href="loyalty/loyalty.html">Loyalty</a></li>
+</ul>
+<div class="nav-right">
+<button aria-label="Toggle dark mode" aria-pressed="false" id="theme-toggle" type="button"><span aria-hidden="true" id="theme-toggle-icon"></span></button>
+<button aria-label="Install App" id="install-pwa-btn" type="button">Install App</button>
+<a class="button button-primary" href="#reservations">Reserve</a>
+<button aria-controls="mobile-menu" aria-expanded="false" aria-label="Open menu" class="mobile-menu-toggle" id="mobile-menu-button" type="button">
+<svg aria-hidden="true" fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="20"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+</button>
+</div>
+</div>
+<div aria-hidden="true" aria-label="Mobile navigation" aria-modal="true" class="mobile-menu" id="mobile-menu" role="dialog">
+<nav>
+<a href="#home" style="--i:0">Home</a>
+<a href="#experience" style="--i:1">Experience</a>
+<a href="#signatures" style="--i:2">Signatures</a>
+<a href="#menu" style="--i:3">Menu</a>
+<a href="#story" style="--i:4">Our Story</a>
+<a href="#gallery" style="--i:5">Gallery</a>
+<a href="#reviews" style="--i:6">Reviews</a>
+<a href="#reservations" style="--i:7">Reservations</a>
+<a href="#visit" style="--i:8">Visit Us</a>
+<a href="#loyalty-promo" style="--i:9">Loyalty</a>
+<a href="#updates" style="--i:10">Updates</a>
+</nav>
+<button aria-label="Toggle dark mode" aria-pressed="false" id="theme-toggle-mobile" type="button"><span aria-hidden="true" id="theme-toggle-icon-mobile"></span></button>
+</div>
+</nav>
+<main id="main-content" tabindex="-1">
+<!-- ===================== 01 HERO ===================== -->
+<header class="hero" id="home">
+<div class="hero-bg">
+<picture>
+<source sizes="100vw" srcset="images/Cappuccino-640.webp 640w, images/Cappuccino-1086.webp 1086w" type="image/webp"/>
+<img alt="" aria-hidden="true" fetchpriority="high" height="1448" src="images/Cappuccino.png" width="1086"/>
+</picture>
+<div class="hero-gradient"></div>
+</div>
+<div class="hero-content">
+<div class="hero-badge hero-stagger" style="--d:0">
+                Coffee by Siddhapokhari <span aria-hidden="true">•</span> Bhaktapur
             </div>
-            <div class="generic-modal-actions">
-                <button id="generic-prompt-cancel-btn" class="btn-secondary">Cancel</button>
-                <button id="generic-prompt-confirm-btn" class="btn-primary">Confirm</button>
-            </div>
-        </div>
-    </div>
+<h1 class="hero-stagger" style="--d:1">Taboche</h1>
+<p class="hero-tagline hero-stagger" style="--d:2">Coffee by Siddhapokhari. A place worth staying for.</p>
+<div class="hero-actions hero-stagger" style="--d:3">
+<a class="button button-primary" href="https://www.google.com/maps/search/?api=1&amp;query=Taboche+Restaurant+Bhaktapur" rel="noopener noreferrer" target="_blank">Get Directions</a>
+<a class="button button-secondary" href="#menu">View Menu</a>
+</div>
+<div class="hero-quickinfo hero-stagger" style="--d:4">
+<div class="qi-item">
+<svg aria-hidden="true" class="icon"><use href="#i-coffee"></use></svg>
+<div><strong>100% Arabica Coffee</strong><span>Crafted to order</span></div>
+</div>
+<div class="qi-item">
+<svg aria-hidden="true" class="icon"><use href="#i-dining"></use></svg>
+<div><strong>Lakeside View</strong><span>Right by Siddhapokhari</span></div>
+</div>
+<div class="qi-item">
+<svg aria-hidden="true" class="icon"><use href="#i-clock"></use></svg>
+<div><strong>Open Daily</strong><span>7:00 AM – 8:00 PM</span></div>
+</div>
+<div class="qi-item">
+<svg aria-hidden="true" class="icon"><use href="#i-pin"></use></svg>
+<div><strong>Bhaktapur</strong><span>Opposite Siddhapokhari</span></div>
+</div>
+</div>
+</div>
+</header>
+<!-- ===================== 02 EXPERIENCE ===================== -->
+<section class="section section-white" id="experience">
+<div class="container experience-grid reveal">
+<div class="experience-media">
+<picture><source sizes="(max-width: 900px) 100vw, 50vw" srcset="images/Espresso-640.webp 640w, images/Espresso-1086.webp 1086w" type="image/webp"/><img alt="Taboche coffee being crafted" decoding="async" height="1100" loading="lazy" src="images/Espresso.png" width="900"/></picture>
+</div>
+<div class="experience-copy">
+<span class="eyebrow">The Taboche Experience</span>
+<h2 class="section-heading">A place to slow down. Coffee, food, and the lake.</h2>
+<p class="lead">Whether it's a quiet morning espresso beside the lake, a long lunch with friends, or an afternoon break with a signature drink — Taboche is designed for moments worth staying for.</p>
+<ul class="experience-list">
+<li>
+<svg aria-hidden="true" class="icon"><use href="#i-coffee"></use></svg>
+<div><strong>Crafted to order</strong><p>Every cup pulled by trained baristas.</p></div>
+</li>
+<li>
+<svg aria-hidden="true" class="icon"><use href="#i-dining"></use></svg>
+<div><strong>All-day kitchen</strong><p>Breakfast, mains, and snacks from 7 AM.</p></div>
+</li>
+<li>
+<svg aria-hidden="true" class="icon"><use href="#i-leaf"></use></svg>
+<div><strong>Calm lakeside setting</strong><p>Relaxed seating right by Siddhapokhari.</p></div>
+</li>
+</ul>
+</div>
+</div>
+</section>
+<!-- ===================== 03 WHY ===================== -->
+<section class="section section-cream" id="why">
+<div class="container text-center section-header reveal">
+<p class="eyebrow">Why Taboche</p>
+<h2 class="section-heading">Come for the coffee. Stay for the place.</h2>
+<p class="lead">A relaxed spot in Bhaktapur for coffee, food, and time by Siddhapokhari.</p>
+</div>
+<div class="container grid-4 reveal">
+<div class="why-card">
+<span aria-hidden="true" class="why-icon"><svg aria-hidden="true" class="icon"><use href="#i-pin"></use></svg></span>
+<h3>Siddhapokhari View</h3><p>A peaceful setting right by one of Bhaktapur's familiar landmarks.</p>
+</div>
+<div class="why-card">
+<span aria-hidden="true" class="why-icon"><svg aria-hidden="true" class="icon"><use href="#i-coffee"></use></svg></span>
+<h3>100% Arabica Coffee</h3><p>Good coffee made to order, without making it complicated.</p>
+</div>
+<div class="why-card">
+<span aria-hidden="true" class="why-icon"><svg aria-hidden="true" class="icon"><use href="#i-dining"></use></svg></span>
+<h3>Coffee &amp; Food</h3><p>A place to meet for a coffee, stay for a meal, or take a quiet break.</p>
+</div>
+<div class="why-card">
+<span aria-hidden="true" class="why-icon"><svg aria-hidden="true" class="icon"><use href="#i-leaf"></use></svg></span>
+<h3>Easygoing Atmosphere</h3><p>Come as you are, settle in, and take your time.</p>
+</div>
+</div>
+</section>
+<!-- ===================== 04 SIGNATURES ===================== -->
+<section class="section section-white" id="signatures">
+<div class="container">
+<div class="text-center section-header reveal">
+<span class="eyebrow">Signature at Taboche</span>
+<h2 class="section-heading">Taste what Taboche is known for.</h2>
+<p class="lead">The cups and plates we're known for.</p>
+</div>
+<div class="signature-grid reveal">
+<a class="signature-card" href="#menu">
+<div class="signature-image">
+<picture><source sizes="(max-width: 768px) 100vw, 50vw" srcset="images/Cappuccino-640.webp 640w, images/Cappuccino-1086.webp 1086w" type="image/webp"/><img alt="Signature cappuccino at Taboche" decoding="async" height="600" loading="lazy" src="images/Cappuccino.png" width="600"/></picture>
+<span class="signature-badge">★ Signature</span>
+</div>
+<div class="signature-body">
+<h3>Cappuccino</h3>
+<p>Balanced Arabica espresso, silky steamed milk, and a thick velvety foam layer.</p>
+<span class="signature-cta">View on menu →</span>
+</div>
+</a>
+<a class="signature-card" href="#menu">
+<div class="signature-image">
+<picture><source sizes="(max-width: 768px) 100vw, 50vw" srcset="images/hibiscus_iced_tea-640.webp 640w, images/hibiscus_iced_tea-800.webp 800w" type="image/webp"/><img alt="Signature iced hibiscus tea at Taboche" decoding="async" height="600" loading="lazy" src="images/hibiscus_iced_tea.jpeg" width="600"/></picture>
+<span class="signature-badge">★ Signature</span>
+</div>
+<div class="signature-body">
+<h3>Hibiscus Iced Tea</h3>
+<p>Vibrant roselle brewed fresh and poured over ice — tart, refreshing, and antioxidant-rich.</p>
+<span class="signature-cta">View on menu →</span>
+</div>
+</a>
+<a class="signature-card" href="#menu">
+<div class="signature-image">
+<picture><source sizes="(max-width: 768px) 100vw, 50vw" srcset="images/Espresso-640.webp 640w, images/Espresso-1086.webp 1086w" type="image/webp"/><img alt="Signature espresso at Taboche" decoding="async" height="600" loading="lazy" src="images/Espresso.png" width="600"/></picture>
+<span class="signature-badge">★ Signature</span>
+</div>
+<div class="signature-body">
+<h3>Double Espresso</h3>
+<p>A concentrated shot with rich crema — the heart of every Taboche coffee.</p>
+<span class="signature-cta">View on menu →</span>
+</div>
+</a>
+<a class="signature-card" href="#menu">
+<div class="signature-image">
+<picture><source sizes="(max-width: 768px) 100vw, 50vw" srcset="images/Latte-640.webp 640w, images/Latte-1086.webp 1086w" type="image/webp"/><img alt="Signature latte at Taboche" decoding="async" height="600" loading="lazy" src="images/Latte.png" width="600"/></picture>
+<span class="signature-badge">★ Signature</span>
+</div>
+<div class="signature-body">
+<h3>Classic Latte</h3>
+<p>Smooth espresso with steamed milk and a light foam finish — comfort in a cup.</p>
+<span class="signature-cta">View on menu →</span>
+</div>
+</a>
+</div>
+</div>
+</section>
+<!-- ===================== 05 REVIEWS ===================== -->
+<section class="section section-cream" id="reviews">
+<div class="container">
+<div class="text-center section-header reveal">
+<span class="eyebrow">Guest Reviews</span>
+<h2 class="section-heading">Loved by our guests.</h2>
+<div class="review-rating reveal">
+<span aria-hidden="true" class="stars">★★★★★</span>
+<span class="rating-text">4.8 / 5 · 120+ Google reviews</span>
+</div>
+</div>
+<div class="review-grid reveal">
+<blockquote class="review-card">
+<span aria-hidden="true" class="stars">★★★★★</span>
+<p>"Amazing coffee and a beautiful atmosphere beside the lake. The cappuccino is easily the best in Bhaktapur."</p>
+<footer>— Google Review</footer>
+</blockquote>
+<blockquote class="review-card">
+<span aria-hidden="true" class="stars">★★★★★</span>
+<p>"Warm hospitality, great food, and a calm setting. Our new favourite spot in Bhaktapur."</p>
+<footer>— Google Review</footer>
+</blockquote>
+<blockquote class="review-card">
+<span aria-hidden="true" class="stars">★★★★★</span>
+<p>"The iced hibiscus tea is a must-try. Staff are incredibly friendly and welcoming."</p>
+<footer>— Google Review</footer>
+</blockquote>
+</div>
+</div>
+</section>
+<!-- ===================== 06 MENU ===================== -->
+<section class="section section-white" id="menu">
+<div class="container reveal">
+<div class="text-center section-header">
+<span class="eyebrow">The Menu</span>
+<h2 class="section-heading">Coffee, tea, food &amp; more.</h2>
+<p class="lead">Everything is made to order. Hot drinks served fresh, iced drinks poured over ice, teas brewed fresh.</p>
+</div>
+<div class="menu-controls">
+<div class="menu-search-wrap">
+<label class="sr-only" for="menu-search">Search the menu</label>
+<span aria-hidden="true" class="search-icon">🔍</span>
+<input id="menu-search" placeholder="Search the menu..." type="search"/>
+</div>
+</div>
+<p aria-live="polite" class="sr-only" id="menu-status" role="status"></p>
+<div class="menu-tabs" role="tablist"><button aria-controls="coffee" aria-selected="true" class="tab-btn active" data-tab="coffee" id="tab-coffee" role="tab" tabindex="0" type="button">Coffee</button><button aria-controls="tea" aria-selected="false" class="tab-btn" data-tab="tea" id="tab-tea" role="tab" tabindex="-1" type="button">Tea</button><button aria-controls="signature-drinks" aria-selected="false" class="tab-btn" data-tab="signature-drinks" id="tab-signature-drinks" role="tab" tabindex="-1" type="button">Signature Drinks</button><button aria-controls="food" aria-selected="false" class="tab-btn" data-tab="food" id="tab-food" role="tab" tabindex="-1" type="button">Food</button></div><div aria-labelledby="tab-coffee" class="tab-content" id="coffee" role="tabpanel" tabindex="0">
+<button class="menu-card signature" type="button"><span class="menu-card-text"><span class="menu-card-title">Americano <span class="diet-icon">★ Signature</span></span><span class="menu-card-desc">Double shot of espresso diluted with hot water.</span></span><span class="menu-price">रू 150</span></button>
+<button class="menu-card signature" type="button"><span class="menu-card-text"><span class="menu-card-title">Latte <span class="diet-icon">★ Signature</span></span><span class="menu-card-desc">Espresso with steamed milk and light foam.</span></span><span class="menu-price">रू 190</span></button>
+<button class="menu-card signature" type="button"><span class="menu-card-text"><span class="menu-card-title">Cappuccino <span class="diet-icon">★ Signature</span></span><span class="menu-card-desc">Balanced espresso, steamed milk, and thick foam layer.</span></span><span class="menu-price">रू 200</span></button>
+<button class="menu-card" type="button"><span class="menu-card-text"><span class="menu-card-title">Vanilla Latte</span><span class="menu-card-desc">Classic Arabica latte with sweet vanilla syrup.</span></span><span class="menu-price">रू 260</span></button>
+<button class="menu-card" type="button"><span class="menu-card-text"><span class="menu-card-title">Hazelnut Latte</span><span class="menu-card-desc">Classic Arabica latte with roasted hazelnut flavor.</span></span><span class="menu-price">रू 260</span></button>
+<button class="menu-card" type="button"><span class="menu-card-text"><span class="menu-card-title">Caramel Latte</span><span class="menu-card-desc">Classic Arabica latte with rich caramel syrup.</span></span><span class="menu-price">रू 260</span></button>
+<button class="menu-card" type="button"><span class="menu-card-text"><span class="menu-card-title">Hot Chocolate</span><span class="menu-card-desc">Creamy, rich chocolate blended with steamed milk.</span></span><span class="menu-price">रू 260</span></button>
 
-    <div class="pin-lock-overlay" id="pin-lock-overlay" role="dialog" aria-modal="true" aria-labelledby="pin-lock-title" aria-hidden="true">
-        <div class="pin-lock-card">
-            <h2 id="pin-lock-title">Taboche POS Locked</h2>
-            <p>Enter the staff PIN to continue.</p>
-            <div class="pin-dots" id="pin-dots" aria-label="PIN entry"></div>
-            <div class="pin-keypad" id="pin-keypad">
-                <button type="button" data-pin-digit="1">1</button><button type="button" data-pin-digit="2">2</button><button type="button" data-pin-digit="3">3</button>
-                <button type="button" data-pin-digit="4">4</button><button type="button" data-pin-digit="5">5</button><button type="button" data-pin-digit="6">6</button>
-                <button type="button" data-pin-digit="7">7</button><button type="button" data-pin-digit="8">8</button><button type="button" data-pin-digit="9">9</button>
-                <button type="button" class="pin-clear" data-pin-action="clear">Clear</button><button type="button" data-pin-digit="0">0</button><button type="button" class="pin-submit" data-pin-action="submit">Enter</button>
-            </div>
-            <p class="pin-error" id="pin-error" aria-live="polite"></p>
-        </div>
-    </div>
+<button class="menu-card" type="button"><span class="menu-card-text"><span class="menu-card-title">Iced Latte</span><span class="menu-card-desc">Chilled milk and espresso over ice.</span></span><span class="menu-price">रू 220</span></button>
+<button class="menu-card" type="button"><span class="menu-card-text"><span class="menu-card-title">Iced Americano</span><span class="menu-card-desc">Smooth espresso and cold water over ice.</span></span><span class="menu-price">रू 200</span></button>
+<button class="menu-card" type="button"><span class="menu-card-text"><span class="menu-card-title">Iced Cappuccino</span><span class="menu-card-desc">Espresso and chilled milk topped with cold foam.</span></span><span class="menu-price">रू 240</span></button>
+<button class="menu-card" type="button"><span class="menu-card-text"><span class="menu-card-title">Iced Vanilla</span><span class="menu-card-desc">Vanilla-flavored chilled coffee.</span></span><span class="menu-price">रू 290</span></button>
+<button class="menu-card" type="button"><span class="menu-card-text"><span class="menu-card-title">Iced Caramel</span><span class="menu-card-desc">Caramel-flavored chilled coffee.</span></span><span class="menu-price">रू 290</span></button>
+<button class="menu-card signature" type="button"><span class="menu-card-text"><span class="menu-card-title">Iced Mocha <span class="diet-icon">★ Signature</span></span><span class="menu-card-desc">Chilled coffee with chocolate syrup and milk.</span></span><span class="menu-price">रू 290</span></button>
+<button class="menu-card" type="button"><span class="menu-card-text"><span class="menu-card-title">Iced Hazelnut</span><span class="menu-card-desc">Hazelnut-flavored chilled coffee.</span></span><span class="menu-price">रू 290</span></button>
+</div><div aria-labelledby="tab-tea" class="tab-content" hidden id="tea" role="tabpanel" tabindex="0">
+<div class="menu-note">
+<h4>Tea Wellness Collection</h4>
+<p>Each tea is brewed to order, from bright green tea to calming floral blends traditionally enjoyed for relaxation.</p>
+</div>
+<button class="menu-card tea" type="button"><span class="menu-card-text"><span class="menu-card-title">Green Pearl Tea</span><span class="menu-card-desc">Seasonal organic green tea from Ilam.</span></span><span class="menu-price">रू 120</span></button>
+<button class="menu-card tea" type="button"><span class="menu-card-text"><span class="menu-card-title">Green Tea</span><span class="menu-card-desc">Classic green tea with clean, vegetal flavor.</span></span><span class="menu-price">रू 150</span></button>
+<button class="menu-card tea black" type="button"><span class="menu-card-text"><span class="menu-card-title">The Earl Grey</span><span class="menu-card-desc">Black tea scented with bergamot.</span></span><span class="menu-price">रू 150</span></button>
+<button class="menu-card tea black" type="button"><span class="menu-card-text"><span class="menu-card-title">Pearl Black</span><span class="menu-card-desc">Rich black tea with smooth malt notes.</span></span><span class="menu-price">रू 150</span></button>
+<button class="menu-card tea black" type="button"><span class="menu-card-text"><span class="menu-card-title">Ilam Black Tea</span><span class="menu-card-desc">Classic Nepalese black tea.</span></span><span class="menu-price">रू 100</span></button>
+<button class="menu-card tea flower" type="button"><span class="menu-card-text"><span class="menu-card-title">Chamomile</span><span class="menu-card-desc">Gentle floral calming tea.</span></span><span class="menu-price">रू 150</span></button>
+<button class="menu-card tea flower" type="button"><span class="menu-card-text"><span class="menu-card-title">Jasmine</span><span class="menu-card-desc">Delicate green tea scented with jasmine.</span></span><span class="menu-price">रू 150</span></button>
+<button class="menu-card tea signature flower" type="button"><span class="menu-card-text"><span class="menu-card-title">Hibiscus (Roselle) <span class="diet-icon">★ Signature</span></span><span class="menu-card-desc">Tart hibiscus tea with vibrant red color.</span></span><span class="menu-price">रू 180</span></button>
+<button class="menu-card tea flower" type="button"><span class="menu-card-text"><span class="menu-card-title">Butterfly Pea Flower</span><span class="menu-card-desc">Natural blue tea with soft floral notes.</span></span><span class="menu-price">रू 180</span></button>
+<button class="menu-card tea blend" type="button"><span class="menu-card-text"><span class="menu-card-title">Calming Tea</span><span class="menu-card-desc">Chamomile and lavender blend.</span></span><span class="menu-price">रू 200</span></button>
+<button class="menu-card tea blend signature" type="button"><span class="menu-card-text"><span class="menu-card-title">Midnight Red Rose</span><span class="menu-card-desc">Earl Grey with rose petals.</span></span><span class="menu-price">रू 200</span></button>
+<button class="menu-card tea blend" type="button"><span class="menu-card-text"><span class="menu-card-title">Floral Delight</span><span class="menu-card-desc">Green tea with rose petals.</span></span><span class="menu-price">रू 200</span></button>
+<button class="menu-card tea blend" type="button"><span class="menu-card-text"><span class="menu-card-title">Black Roselle</span><span class="menu-card-desc">Black tea blended with roselle.</span></span><span class="menu-price">रू 150</span></button>
+<button class="menu-card tea" type="button"><span class="menu-card-text"><span class="menu-card-title">Lemongrass Tea</span><span class="menu-card-desc">Bright, citrusy herbal tea.</span></span><span class="menu-price">रू 150</span></button>
+<button class="menu-card tea" type="button"><span class="menu-card-text"><span class="menu-card-title">Peppermint Tea</span><span class="menu-card-desc">Cooling mint tea with a crisp finish.</span></span><span class="menu-price">रू 150</span></button>
 
-<script src="js/state.js?v=20260919-3"></script>
-    <script src="js/storage.js?v=20260919-3"></script>
-    <script src="js/cloud-sync.js?v=20260919-3"></script>
-    <script src="app.js?v=20260919-3"></script>
+<div class="menu-note">
+<h4>Fresh Refresher Bar</h4>
+<p>Freshly squeezed juices, iced teas, and bright chillers made to order.</p>
+</div>
+<button class="menu-card refresher" type="button"><span class="menu-card-text"><span class="menu-card-title">Orange Juice</span><span class="menu-card-desc">Freshly squeezed orange juice over ice.</span></span><span class="menu-price">रू 300</span></button>
+<button class="menu-card refresher" type="button"><span class="menu-card-text"><span class="menu-card-title">Apple Juice</span><span class="menu-card-desc">Fresh apple juice pressed from crisp fruit.</span></span><span class="menu-price">रू 300</span></button>
+<button class="menu-card refresher" type="button"><span class="menu-card-text"><span class="menu-card-title">Iced Hibiscus Tea</span><span class="menu-card-desc">Chilled hibiscus tea over ice.</span></span><span class="menu-price">रू 300</span></button>
+<button class="menu-card refresher" type="button"><span class="menu-card-text"><span class="menu-card-title">Iced Green Tea</span><span class="menu-card-desc">Cold green tea brewed from Ilam leaves.</span></span><span class="menu-price">रू 300</span></button>
+<button class="menu-card refresher" type="button"><span class="menu-card-text"><span class="menu-card-title">Peach Iced Tea</span><span class="menu-card-desc">Sweet peach-infused iced tea.</span></span><span class="menu-price">रू 300</span></button>
+</div><div aria-labelledby="tab-signature-drinks" class="tab-content" hidden id="signature-drinks" role="tabpanel" tabindex="0">
+<button class="menu-card" type="button"><span class="menu-card-text"><span class="menu-card-title">Frappe / Blended</span><span class="menu-card-desc">Mocha, Vanilla, Caramel, Hazelnut, Oreo</span></span><span class="menu-price">रू 320</span></button>
+<button class="menu-card" type="button"><span class="menu-card-text"><span class="menu-card-title">Bubble Tea</span><span class="menu-card-desc">Taro, Chocolate, Strawberry, Blueberry, Vanilla, Coffee</span></span><span class="menu-price">रू 280</span></button>
+<button class="menu-card" type="button"><span class="menu-card-text"><span class="menu-card-title">Mojito</span><span class="menu-card-desc">Virgin (250), Peach (295), Blueberry (295), Mango (295), Strawberry (295)</span></span><span class="menu-price">रू 250+</span></button>
+<button class="menu-card" type="button"><span class="menu-card-text"><span class="menu-card-title">Lassi</span><span class="menu-card-desc">Sweet (195), Mango (250), Strawberry (250)</span></span><span class="menu-price">रू 195+</span></button>
+</div><div aria-labelledby="tab-food" class="tab-content" hidden id="food" role="tabpanel" tabindex="0">
+<button class="menu-card" type="button"><span class="menu-card-text"><span class="menu-card-title">Burger with Fries</span><span class="menu-card-desc">Chicken (370), Buff (350), Veg (295)</span></span><span class="menu-price">रू 295+</span></button>
+<button class="menu-card" type="button"><span class="menu-card-text"><span class="menu-card-title">Steamed Mo Mo</span><span class="menu-card-desc">Chicken (285), Buff (260), Veg (220)</span></span><span class="menu-price">रू 220+</span></button>
+<button class="menu-card spicy" type="button"><span class="menu-card-text"><span class="menu-card-title">Jhol Mo Mo <span class="diet-icon spicy">🌶️ Spicy</span></span><span class="menu-card-desc">Chicken (320), Buff (285), Veg (250)</span></span><span class="menu-price">रू 250+</span></button>
+<button class="menu-card" type="button"><span class="menu-card-text"><span class="menu-card-title">Keema Noodles</span><span class="menu-card-desc">Chicken (300), Buff (280), Egg (250)</span></span><span class="menu-price">रू 250+</span></button>
+<button class="menu-card" type="button"><span class="menu-card-text"><span class="menu-card-title">Wraps</span><span class="menu-card-desc">Chicken (350), Buff (330), Veg (280)</span></span><span class="menu-price">रू 280+</span></button>
+<button class="menu-card" type="button"><span class="menu-card-text"><span class="menu-card-title">Pizza</span><span class="menu-card-desc">Cheese (500) or Chicken (580)</span></span><span class="menu-price">रू 500+</span></button>
+<button class="menu-card" type="button"><span class="menu-card-text"><span class="menu-card-title">Fried Rice</span><span class="menu-card-desc">Chicken (360), Buff (320), Egg (285)</span></span><span class="menu-price">रू 285+</span></button>
+
+<button class="menu-card spicy" type="button"><span class="menu-card-text"><span class="menu-card-title">Chilly <span class="diet-icon spicy">🌶️ Spicy</span></span><span class="menu-card-desc">Spicy stir-fry. Chicken (360), Buff (320)</span></span><span class="menu-price">रू 320+</span></button>
+<button class="menu-card" type="button"><span class="menu-card-text"><span class="menu-card-title">French Fry</span><span class="menu-card-desc">Classic golden fries.</span></span><span class="menu-price">रू 350</span></button>
+<button class="menu-card" type="button"><span class="menu-card-text"><span class="menu-card-title">Wings</span><span class="menu-card-desc">Crispy fried chicken wings.</span></span><span class="menu-price">रू 480</span></button>
+</div>
+<!-- HOT COFFEE -->
+
+<!-- COLD COFFEE -->
+
+<!-- TEA -->
+
+<!-- REFRESHERS -->
+
+<!-- SPECIALTY -->
+
+<!-- MAIN FOOD -->
+
+<!-- SNACKS -->
+
+<div class="menu-footer">
+<div aria-label="Currency" class="chip-group" role="group">
+<button class="currency-btn active" data-currency="npr" type="button">NPR</button>
+<button class="currency-btn" data-currency="usd" type="button">USD (live rate)</button>
+</div>
+
+</div>
+</div>
+</section>
+<!-- ===================== 07 STORY ===================== -->
+<section class="section section-cream" id="story">
+<div class="container grid-2 items-center reveal">
+<div class="story-media">
+<picture><source sizes="(max-width: 768px) 100vw, 50vw" srcset="images/Espresso-640.webp 640w, images/Espresso-1086.webp 1086w" type="image/webp"/><img alt="The three brothers behind Taboche" decoding="async" height="800" loading="lazy" src="images/Espresso.png" width="800"/></picture>
+<div class="story-overlay">
+<span class="eyebrow">Owned &amp; Run By</span>
+<strong>Three Brothers</strong>
+</div>
+</div>
+<div>
+<span class="eyebrow">Our Story</span>
+<h2 class="section-heading">Three brothers. One love for coffee.</h2>
+<div class="prose">
+<p>Born in Bhaktapur. Inspired by coffee. Built with hospitality.</p>
+<p>Taboche brings together three brothers who trained at <strong>Costa Coffee UAE</strong> and <strong>The Coffee Bean &amp; Tea Leaf Malaysia</strong> — combining international standards with authentic Nepali warmth.</p>
+</div>
+<div class="team-grid">
+<div class="team-card"><h4>Sukram Lama</h4><p>Coffee &amp; Barista Craft</p></div>
+<div class="team-card"><h4>Bikram Lama</h4><p>Operations &amp; Kitchen</p></div>
+<div class="team-card"><h4>Tikram Lama</h4><p>Guest Experience</p></div>
+</div>
+</div>
+</div>
+</section>
+<!-- ===================== 08 GALLERY ===================== -->
+<section class="section section-white" id="gallery">
+<div class="container reveal">
+<div class="text-center section-header">
+<span class="eyebrow">Experience Taboche</span>
+<h2 class="section-heading">A look inside.</h2>
+<p class="lead">Real moments from our coffee bar, kitchen, and lakeside seating.</p>
+</div>
+<div class="gallery-grid">
+<button aria-label="View Americano photo" class="gallery-item" data-src="images/Americano-1086.webp" data-type="image" type="button">
+<picture><source sizes="(max-width: 768px) 100vw, 50vw" srcset="images/Americano-640.webp 640w, images/Americano-1086.webp 1086w" type="image/webp"/><img alt="Freshly prepared Americano at Taboche" class="lazy-image" decoding="async" height="800" loading="lazy" src="images/Americano.png" width="800"/></picture>
+</button>
+<button aria-label="View Latte photo" class="gallery-item" data-src="images/Latte-1086.webp" data-type="image" type="button">
+<picture><source sizes="(max-width: 768px) 100vw, 50vw" srcset="images/Latte-640.webp 640w, images/Latte-1086.webp 1086w" type="image/webp"/><img alt="Foamy latte at Taboche" class="lazy-image" decoding="async" height="800" loading="lazy" src="images/Latte.png" width="800"/></picture>
+</button>
+<button aria-label="View Hibiscus Tea photo" class="gallery-item" data-src="images/hibiscus_iced_tea-800.webp" data-type="image" type="button">
+<picture><source sizes="(max-width: 768px) 100vw, 50vw" srcset="images/hibiscus_iced_tea-640.webp 640w, images/hibiscus_iced_tea-800.webp 800w" type="image/webp"/><img alt="Iced hibiscus tea at Taboche" class="lazy-image" decoding="async" height="800" loading="lazy" src="images/hibiscus_iced_tea.jpeg" width="800"/></picture>
+</button>
+<button aria-label="Play Taboche story video" class="gallery-item video-item" data-src="images/taboche-final.mp4" data-type="video" type="button">
+<span class="video-badge">Watch Our Story</span>
+<picture><source sizes="(max-width: 768px) 100vw, 50vw" srcset="images/Espresso-640.webp 640w, images/Espresso-1086.webp 1086w" type="image/webp"/><img alt="Taboche video preview" class="lazy-image" decoding="async" height="800" loading="lazy" src="images/Espresso.png" width="800"/></picture>
+<span aria-hidden="true" class="play-icon">
+<svg fill="none" height="64" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="64"><path d="M14.5 12l-7 4.2V7.8L14.5 12z"></path><circle cx="12" cy="12" r="9"></circle></svg>
+</span>
+</button>
+</div>
+</div>
+</section>
+<!-- ===================== 09 RESERVE ===================== -->
+<section class="section reservations-section" id="reservations">
+<div class="reservations-overlay">
+<div class="reservation-card reveal">
+<div class="text-center section-header">
+<span class="eyebrow">Your Table Awaits</span>
+<h2 class="section-heading">Reserve at Taboche</h2>
+<p class="lead">Choose your preferred date and time. We'll confirm by WhatsApp.</p>
+</div>
+<form action="/success.html" data-netlify="true" id="reservation-form" method="POST" name="reservation" netlify-honeypot="bot-field">
+<input name="form-name" type="hidden" value="reservation"/>
+<input id="reservation-reference" name="reference" type="hidden" value=""/>
+<p class="sr-only"><label>Don't fill this out: <input autocomplete="off" name="bot-field" tabindex="-1"/></label></p>
+<div class="form-row form-row-2">
+<div class="form-field">
+<label class="form-label" for="res-name">Full Name</label>
+<input aria-describedby="res-name-error" autocomplete="name" id="res-name" name="name" placeholder="Full Name" required="" type="text"/>
+<p class="form-error" hidden="" id="res-name-error"></p>
+</div>
+<div class="form-field">
+<label class="form-label" for="res-phone">Phone Number</label>
+<input aria-describedby="res-phone-error" autocomplete="tel" enterkeyhint="next" id="res-phone" inputmode="tel" name="phone" placeholder="Phone Number" required="" type="tel"/>
+<p class="form-error" hidden="" id="res-phone-error"></p>
+</div>
+</div>
+<div class="form-field">
+<label class="form-label" for="res-email">Email Address (optional)</label>
+<input aria-describedby="res-email-error" autocomplete="email" enterkeyhint="next" id="res-email" inputmode="email" name="email" placeholder="Email Address (optional)" type="email"/>
+<p class="form-error" hidden="" id="res-email-error"></p>
+</div>
+<div class="form-row form-row-3">
+<div class="form-field">
+<label class="form-label" for="res-date">Date</label>
+<input aria-describedby="res-date-error" id="res-date" name="date" required="" type="date"/>
+<p class="form-error" hidden="" id="res-date-error"></p>
+</div>
+<div class="form-field">
+<label class="form-label" for="res-time">Time (07:00–20:00)</label>
+<input aria-describedby="res-time-error" id="res-time" name="time" required="" step="900" type="time"/>
+<p class="form-error" hidden="" id="res-time-error"></p>
+</div>
+<div class="form-field">
+<label class="form-label" for="res-guests">Number of guests</label>
+<select id="res-guests" name="guests">
+<option value="1">1 Guest</option>
+<option value="2">2 Guests</option>
+<option value="3">3 Guests</option>
+<option value="4">4 Guests</option>
+<option value="5">5 Guests</option>
+<option value="6">6 Guests</option>
+<option value="7+">7+ Guests</option>
+</select>
+</div>
+</div>
+<div class="form-field">
+<label class="form-label" for="res-notes">Special requests (optional)</label>
+<textarea autocomplete="off" enterkeyhint="send" id="res-notes" name="notes" placeholder="Special requests (optional)" rows="3"></textarea>
+</div>
+<button class="button button-primary button-full" id="reservation-submit" type="submit">Reserve Table</button>
+<p aria-live="polite" class="form-hint" id="reservation-status">We'll confirm by phone, email, or WhatsApp within 30 minutes.</p>
+<p class="privacy-note">Your details are used to respond to this request. When available, the form is submitted through Netlify Forms and used to prepare a WhatsApp message; this browser also keeps a local copy. This site does not define a retention period. Contact us at <a href="tel:+9779824926296">+977-9824926296</a> with privacy questions.</p>
+</form>
+</div>
+</div>
+</section>
+<!-- ===================== 10 VISIT ===================== -->
+<section class="section section-white" id="visit">
+<div class="container">
+<div class="text-center section-header reveal">
+<span class="eyebrow">Visit Taboche</span>
+<h2 class="section-heading">Come sit with us.</h2>
+<p class="lead">Opposite Siddhapokhari, Bhaktapur — open every day from 7 AM to 8 PM.</p>
+</div>
+<div class="visit-grid reveal">
+<div class="visit-map">
+<div aria-label="Taboche Restaurant location map" class="map-card" id="map-container" role="region"><noscript><iframe allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://www.google.com/maps?q=Taboche+Restaurant+Bhaktapur&amp;output=embed" title="Map showing Taboche Restaurant in Bhaktapur"></iframe></noscript></div>
+</div>
+<div class="visit-info">
+<ul class="visit-list">
+<li>
+<svg aria-hidden="true" class="icon"><use href="#i-pin"></use></svg>
+<div><strong>Address</strong><p>Opposite Siddhapokhari, Bhaktapur, Nepal</p></div>
+</li>
+<li>
+<svg aria-hidden="true" class="icon"><use href="#i-clock"></use></svg>
+<div><strong>Opening Hours</strong><p>Daily 7:00 AM – 8:00 PM</p></div>
+</li>
+<li>
+<svg aria-hidden="true" class="icon"><use href="#i-phone"></use></svg>
+<div><strong>Phone</strong><p><a class="contact-number" href="tel:+9779824926296">+977-9824926296</a></p></div>
+</li>
+</ul>
+<div class="visit-actions">
+<a class="button button-primary" href="https://www.google.com/maps/search/?api=1&amp;query=Taboche+Restaurant+Bhaktapur" rel="noopener noreferrer" target="_blank">Get Directions</a>
+<a class="button button-ghost" href="tel:+9779824926296">Call Us</a>
+<a class="button button-ghost" href="https://wa.me/9779824926296" rel="noopener noreferrer" target="_blank">WhatsApp</a>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ===================== 11 LOYALTY ===================== -->
+<section class="section section-cream" id="loyalty-promo">
+<div class="container text-center reveal">
+<span class="eyebrow">Visitor Rewards</span>
+<h2 class="section-heading">Free digital stamp card</h2>
+<p class="lead">Collect 5 stamps → free drink. Perfect for short stays in Bhaktapur.</p>
+<a class="button button-primary" href="loyalty/loyalty.html" style="margin-top:1.25rem">Open Loyalty Card</a>
+</div>
+</section>
+<!-- ===================== LATEST UPDATES (Facebook) ===================== -->
+<section class="section section-cream" id="updates">
+<div class="container">
+<div class="text-center section-header reveal">
+<span class="eyebrow">Latest Updates</span>
+<h2 class="section-heading">Follow us on Facebook</h2>
+<p class="lead">New posts appear here automatically when we publish on Facebook.</p>
+</div>
+<div class="reveal" style="display: flex; justify-content: center; padding: 0 1rem;">
+<div style="
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 16px 40px rgba(15, 11, 6, 0.10);
+        padding: 16px;
+        width: 100%;
+        max-width: 540px;
+      ">
+<iframe allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowfullscreen="true" frameborder="0" height="700" loading="lazy" scrolling="no" src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Ftabochebhaktapur&amp;tabs=timeline&amp;width=500&amp;height=700&amp;small_header=true&amp;adapt_container_width=true&amp;hide_cover=false&amp;show_facepile=false&amp;appId" style="border: none; overflow: hidden; width: 100%; height: 700px; border-radius: 12px; display: block;" title="Taboche Facebook updates" width="500">
+</iframe>
+</div>
+</div>
+<div class="text-center" style="margin-top: 1.75rem;">
+<a class="button button-ghost" href="https://www.facebook.com/tabochebhaktapur" rel="noopener noreferrer" target="_blank">
+        Visit our Facebook Page
+      </a>
+</div>
+</div>
+</section>
+<!-- LIGHTBOX -->
+<div aria-label="Media viewer" aria-modal="true" class="lightbox" hidden="" id="lightbox" role="dialog">
+<button aria-label="Close gallery view" class="lightbox-close" id="lightbox-close" type="button">×</button>
+<button aria-label="Previous image" class="lightbox-nav lightbox-previous" id="lightbox-previous" type="button">‹</button>
+<div class="lightbox-content">
+<img alt="" class="lightbox-media" id="lightbox-image" src=""/>
+<video class="lightbox-media" controls="" hidden="" id="lightbox-video" playsinline="" poster="images/Espresso-1086.webp">
+<track default="" kind="captions" label="English" src="captions.vtt" srclang="en"/>
+</video>
+</div>
+<button aria-label="Next image" class="lightbox-nav lightbox-next" id="lightbox-next" type="button">›</button>
+</div>
+</main>
+<footer class="site-footer">
+<div class="container footer-grid">
+<div class="footer-panel">
+<p class="eyebrow">Taboche</p>
+<h3>Specialty Coffee · Food · Hospitality</h3>
+<p class="muted-text">A destination beside Siddhapokhari in Bhaktapur — for coffee, food, and moments worth staying for.</p>
+<a class="button button-secondary" href="#reservations">Reserve a table</a>
+</div>
+<div class="footer-panel">
+<h4>Visit Us</h4>
+<p>Opposite Siddhapokhari, Bhaktapur</p>
+<p><a class="contact-number" href="tel:+9779824926296">+977-9824926296</a></p>
+<p>Daily 7:00 AM – 8:00 PM</p>
+</div>
+<div class="footer-panel">
+<h4>Follow Along</h4>
+<div class="footer-social">
+<a href="https://www.facebook.com/tabochebhaktapur" rel="noopener noreferrer" target="_blank">Facebook</a>
+<a href="https://www.instagram.com/taboche_bhaktapur" rel="noopener noreferrer" target="_blank">Instagram</a>
+<a href="https://www.tiktok.com/@taboche7" rel="noopener noreferrer" target="_blank">TikTok</a>
+</div>
+<p class="muted-text small">© <span id="footer-year">2026</span> Taboche Restaurant &amp; Coffee • Bhaktapur, Nepal</p>
+</div>
+</div>
+</footer>
+<a aria-label="Chat on WhatsApp" class="whatsapp-float" href="https://wa.me/9779824926296" rel="noopener noreferrer" target="_blank">
+<svg aria-hidden="true" fill="currentColor" height="28" viewbox="0 0 24 24" width="28"><path d="M20.52 3.48A11.94 11.94 0 0012 0C5.37 0 0 5.37 0 12a11.94 11.94 0 001.64 6.06L0 24l6.15-1.6A11.94 11.94 0 0012 24c6.63 0 12-5.37 12-12 0-3.2-1.25-6.22-3.48-8.52zM12 22a9.94 9.94 0 01-5.07-1.38l-.36-.22-3.66.95.98-3.57-.24-.37A9.94 9.94 0 012 12C2 6.48 6.48 2 12 2s10 4.48 10 10-4.48 10-10 10zm5.47-7.15c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.95 1.17-.17.2-.35.22-.65.07-.3-.15-1.27-.47-2.42-1.49-.89-.79-1.5-1.77-1.67-2.07-.17-.3-.02-.47.13-.62.13-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51l-.57-.01c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.49 0 1.47 1.06 2.89 1.21 3.09.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.19 1.87.12.57-.09 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.13-.27-.2-.57-.35z"></path></svg>
+</a>
+<nav aria-label="Quick navigation" class="mobile-bottom-nav">
+<a href="#home"><span aria-hidden="true">⌂</span><span>Home</span></a>
+<a href="#menu"><span aria-hidden="true">☕</span><span>Menu</span></a>
+<a href="#reservations"><span aria-hidden="true">📅</span><span>Reserve</span></a>
+<a href="tel:+9779824926296"><span aria-hidden="true">☎</span><span>Call</span></a>
+</nav>
+<div aria-live="polite" class="sr-only" id="toast-region" role="status"></div>
+<aside aria-label="App update available" class="sw-update-banner" hidden="" id="sw-update-banner">
+<span>Update available</span>
+<button id="sw-update-apply" type="button">Refresh</button>
+<button aria-label="Dismiss update" id="sw-update-dismiss" type="button">×</button>
+</aside>
+<script defer="" src="script.js"></script>
 </body>
 </html>
